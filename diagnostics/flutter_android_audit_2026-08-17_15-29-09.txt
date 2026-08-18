@@ -1,0 +1,1038 @@
+
+
+============================================================
+0) زمان و اطلاعات پایهٔ سیستم
+============================================================
+Mon Aug 17 03:29:09 PM +0330 2026
+Linux sadeq-Latitude-5400 7.0.0-28-generic #28~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Wed Jul  1 15:50:57 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+
+--- نسخهٔ Linux Mint / Ubuntu ---
+NAME="Linux Mint"
+VERSION="22.3 (Zena)"
+ID=linuxmint
+ID_LIKE="ubuntu debian"
+PRETTY_NAME="Linux Mint 22.3"
+VERSION_ID="22.3"
+HOME_URL="https://www.linuxmint.com/"
+SUPPORT_URL="https://forums.linuxmint.com/"
+BUG_REPORT_URL="http://linuxmint-troubleshooting-guide.readthedocs.io/en/latest/"
+PRIVACY_POLICY_URL="https://www.linuxmint.com/"
+VERSION_CODENAME=zena
+UBUNTU_CODENAME=noble
+
+
+============================================================
+1) مسیر واقعی ابزارهای اجرایی
+============================================================
+
+--- flutter ---
+/home/sadeq/development/flutter/bin/flutter
+flutter is /home/sadeq/development/flutter/bin/flutter
+
+--- dart ---
+/home/sadeq/development/flutter/bin/dart
+dart is /home/sadeq/development/flutter/bin/dart
+
+--- java ---
+/usr/lib/jvm/java-17-openjdk-amd64/bin/java
+java is /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+java is /usr/bin/java
+java is /bin/java
+
+--- javac ---
+/usr/lib/jvm/java-17-openjdk-amd64/bin/javac
+javac is /usr/lib/jvm/java-17-openjdk-amd64/bin/javac
+javac is /usr/bin/javac
+javac is /bin/javac
+
+--- gradle ---
+/home/sadeq/workspace/vetoapp/diagnostics/flutter_android_audit.sh: line 28: type: gradle: not found
+
+--- adb ---
+/home/sadeq/Android/Sdk/platform-tools/adb
+adb is /home/sadeq/Android/Sdk/platform-tools/adb
+
+--- sdkmanager ---
+/home/sadeq/Android/Sdk/cmdline-tools/latest/bin/sdkmanager
+sdkmanager is /home/sadeq/Android/Sdk/cmdline-tools/latest/bin/sdkmanager
+
+
+============================================================
+2) نسخهٔ ابزارهای اصلی
+============================================================
+
+--- Flutter ---
+Flutter 3.47.0 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision 4cf2416426 (6 days ago) • 2026-08-11 11:53:49 -0700
+Engine • hash 59d54a2b2896a6bbf356c94b7fac7b9e235bdacd (revision 5f77625673) (6 days ago) • 2026-08-11 16:38:36.000Z
+Tools • Dart 3.13.0 • DevTools 2.60.0
+
+--- Dart ---
+Dart SDK version: 3.13.0 (stable) (Wed Aug 5 00:28:05 2026 -0700) on "linux_x64"
+
+--- Java runtime ---
+openjdk version "17.0.19" 2026-04-21
+OpenJDK Runtime Environment (build 17.0.19+10-1-24.04.2-Ubuntu)
+OpenJDK 64-Bit Server VM (build 17.0.19+10-1-24.04.2-Ubuntu, mixed mode, sharing)
+
+--- Java compiler ---
+javac 17.0.19
+
+--- ADB ---
+Android Debug Bridge version 1.0.41
+Version 37.0.1-15733141
+Installed as /home/sadeq/Android/Sdk/platform-tools/adb
+Running on Linux 7.0.0-28-generic (x86_64)
+
+
+============================================================
+3) متغیرهای محیطی اثرگذار
+============================================================
+ANDROID_HOME=/home/sadeq/Android/Sdk
+ANDROID_SDK_ROOT=/home/sadeq/Android/Sdk
+JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:/home/sadeq/development/flutter/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/sadeq/Android/Sdk/platform-tools:/home/sadeq/Android/Sdk/cmdline-tools/latest/bin
+
+
+============================================================
+4) تنظیمات Shell که ممکن است PATH یا Proxy را تغییر دهند
+============================================================
+
+--- /home/sadeq/.profile ---
+21:    PATH="$HOME/bin:$PATH"
+26:    PATH="$HOME/.local/bin:$PATH"
+
+--- /home/sadeq/.bashrc ---
+118:export PATH="$HOME/development/flutter/bin:$PATH"
+119:# export FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
+120:# export PUB_HOSTED_URL=https://pub.flutter-io.cn
+121:alias flutter='flutter --no-version-check'
+122:# Android SDK
+123:export ANDROID_HOME="$HOME/Android/Sdk"
+124:export ANDROID_SDK_ROOT="$ANDROID_HOME"
+125:export PATH="$PATH:$ANDROID_HOME/platform-tools"
+126:export PATH="$PATH:$ANDROID_HOME/cmdline-tools/latest/bin"
+130:# Java for Android development
+131:export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
+132:export PATH="$JAVA_HOME/bin:$PATH"
+
+
+============================================================
+5) Flutter SDK و فایل version آن
+============================================================
+flutter executable: /home/sadeq/development/flutter/bin/flutter
+flutter SDK root:   /home/sadeq/development/flutter
+
+--- فایل version Flutter ---
+
+--- وضعیت Git Flutter SDK ---
+origin	https://github.com/flutter/flutter.git (fetch)
+origin	https://github.com/flutter/flutter.git (push)
+ M packages/flutter_tools/gradle/resolve_dependencies.gradle.kts
+ M packages/flutter_tools/gradle/settings.gradle.kts
+?? packages/flutter_tools/gradle/resolve_dependencies.gradle.kts.bak
+?? packages/flutter_tools/gradle/settings.gradle.kts.bak
+4cf24164269 [flutter-3.47-candidate.0] Sync engine.version to 5f77625673248ee5846fbcaf5d3e1a3878386fd7 (#190943)
+
+
+============================================================
+6) Android SDK و packageهای نصب‌شده
+============================================================
+
+--- Android SDK: /home/sadeq/Android/Sdk ---
+Build-tools:
+  36.0.0
+Platforms:
+  android-36
+NDK:
+  28.2.13676358
+Cmdline tools:
+  latest
+  latest/bin
+  latest/lib
+
+--- Android SDK: /home/sadeq/Android/Sdk ---
+Build-tools:
+  36.0.0
+Platforms:
+  android-36
+NDK:
+  28.2.13676358
+Cmdline tools:
+  latest
+  latest/bin
+  latest/lib
+
+--- Android SDK: /home/sadeq/Android/Sdk ---
+Build-tools:
+  36.0.0
+Platforms:
+  android-36
+NDK:
+  28.2.13676358
+Cmdline tools:
+  latest
+  latest/bin
+  latest/lib
+
+
+============================================================
+7) Gradle سراسری، Wrapper پروژه و تنظیمات پنهان
+============================================================
+
+--- Gradle wrapper properties ---
+distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
+distributionUrl=https\://mirrors.cloud.tencent.com/gradle/gradle-9.3.1-all.zip
+
+--- Gradle wrapper version ---
+
+------------------------------------------------------------
+Gradle 9.3.1
+------------------------------------------------------------
+
+Build time:    2026-01-29 14:15:01 UTC
+Revision:      44f4e8d3122ee6e7cbf5a248d7e20b4ca666bda3
+
+Kotlin:        2.2.21
+Groovy:        4.0.29
+Ant:           Apache Ant(TM) version 1.10.15 compiled on August 25 2024
+Launcher JVM:  17.0.19 (Ubuntu 17.0.19+10-1-24.04.2-Ubuntu)
+Daemon JVM:    /usr/lib/jvm/java-17-openjdk-amd64 (no Daemon JVM specified, using current Java home)
+OS:            Linux 7.0.0-28-generic amd64
+
+
+--- فایل‌ها و اسکریپت‌های init در ~/.gradle ---
+
+--- gradle.properties سراسری کاربر ---
+
+
+============================================================
+8) تنظیمات Android پروژهٔ VetoApp
+============================================================
+
+--- settings.gradle.kts ---
+     1	pluginManagement {
+     2	    resolutionStrategy {
+     3	        eachPlugin {
+     4	            if (
+     5	                requested.id.id == "org.jetbrains.kotlin.android" ||
+     6	                requested.id.id == "org.jetbrains.kotlin.gradle.plugin"
+     7	            ) {
+     8	                useVersion("2.4.0")
+     9	            }
+    10	        }
+    11	    }
+    12	      val flutterSdkPath =
+    13	        run {
+    14	            val properties = java.util.Properties()
+    15	            file("local.properties").inputStream().use { properties.load(it) }
+    16	            val flutterSdkPath = properties.getProperty("flutter.sdk")
+    17	            require(flutterSdkPath != null) { "flutter.sdk not set in local.properties" }
+    18	            flutterSdkPath
+    19	        }
+    20	
+    21	    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+    22	
+    23	    repositories {
+    24	         // مخزن محلی برای artifactهای تحریمی Flutter engine
+    25	        maven(url = "file:///home/sadeq/development/flutter_local_maven")
+    26	
+    27	         // Mirrorهای قابل‌دسترسی برای Android Gradle Plugin و AndroidX
+    28	        maven(url = "https://maven.aliyun.com/repository/google")
+    29	        maven(url = "https://maven.aliyun.com/repository/gradle-plugin")
+    30	        maven(url = "https://maven.aliyun.com/repository/public")
+    31	
+    32	        // مخازن رسمی به‌عنوان fallback
+    33	        google()
+    34	        mavenCentral()
+    35	        gradlePluginPortal()
+    36	    }
+    37	}
+    38	
+    39	plugins {
+    40	    id("dev.flutter.flutter-plugin-loader") version "1.0.0"
+    41	    id("com.android.application") version "9.1.0" apply false
+    42	}
+    43	
+    44	include(":app")
+
+--- app/build.gradle.kts ---
+     1	plugins {
+     2	    id("com.android.application")
+     3	    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+     4	    id("dev.flutter.flutter-gradle-plugin")
+     5	}
+     6	
+     7	android {
+     8	    namespace = "com.veto.vetoapp"
+     9	    compileSdk = flutter.compileSdkVersion
+    10	    ndkVersion = flutter.ndkVersion
+    11	
+    12	    compileOptions {
+    13	        sourceCompatibility = JavaVersion.VERSION_17
+    14	        targetCompatibility = JavaVersion.VERSION_17
+    15	    }
+    16	
+    17	    defaultConfig {
+    18	        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+    19	        applicationId = "com.veto.vetoapp"
+    20	        // You can update the following values to match your application needs.
+    21	        // For more information, see: https://flutter.dev/to/review-gradle-config.
+    22	        minSdk = flutter.minSdkVersion
+    23	        targetSdk = flutter.targetSdkVersion
+    24	        // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
+    25	        // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
+    26	        // You can force using the value of versionCode by specifying the `-P force-version-code-ignoring-abi=true`
+    27	        // flag during build.
+    28	        versionCode = flutter.versionCode
+    29	        versionName = flutter.versionName
+    30	    }
+    31	
+    32	    buildTypes {
+    33	        release {
+    34	            // TODO: Add your own signing config for the release build.
+    35	            // Signing with the debug keys for now, so `flutter run --release` works.
+    36	            signingConfig = signingConfigs.getByName("debug")
+    37	        }
+    38	    }
+    39	}
+    40	
+    41	kotlin {
+    42	    compilerOptions {
+    43	        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    44	    }
+    45	}
+    46	
+    47	flutter {
+    48	    source = "../.."
+    49	}
+
+--- gradle.properties پروژه ---
+     1	org.gradle.jvmargs=-Xmx8G -XX:MaxMetaspaceSize=4G -XX:ReservedCodeCacheSize=512m -XX:+HeapDumpOnOutOfMemoryError
+     2	android.useAndroidX=true
+     3	# This newDsl flag was added by the Flutter template
+     4	android.newDsl=true
+     5	# This builtInKotlin flag was added by the Flutter template
+     6	android.builtInKotlin=true
+     7	android.builtInKotlin=true
+
+--- gradle-wrapper.properties ---
+     1	distributionBase=GRADLE_USER_HOME
+     2	distributionPath=wrapper/dists
+     3	zipStoreBase=GRADLE_USER_HOME
+     4	zipStorePath=wrapper/dists
+     5	distributionUrl=https\://mirrors.cloud.tencent.com/gradle/gradle-9.3.1-all.zip
+
+--- local.properties (فقط مسیرهای SDK؛ بدون دادهٔ حساس) ---
+sdk.dir=/home/sadeq/Android/Sdk
+flutter.sdk=/home/sadeq/development/flutter
+
+
+============================================================
+9) جست‌وجوی تمام منابع Kotlin / AGP / Gradle در پروژه
+============================================================
+/home/sadeq/workspace/vetoapp/android/app/build.gradle.kts:2:    id("com.android.application")
+/home/sadeq/workspace/vetoapp/android/app/build.gradle.kts:43:        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+/home/sadeq/workspace/vetoapp/android/build-v3.log:8:Starting process 'Gradle build daemon'. Working directory: /home/sadeq/.gradle/daemon/9.3.1 Command: /usr/lib/jvm/java-17-openjdk-amd64/bin/java --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.xml/javax.xml.namespace=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED -XX:MaxMetaspaceSize=4G -XX:ReservedCodeCacheSize=512m -XX:+HeapDumpOnOutOfMemoryError -Xmx8G -Dfile.encoding=UTF-8 -Duser.country=US -Duser.language=en -Duser.variant -cp /home/sadeq/.gradle/wrapper/dists/gradle-9.3.1-all/5wooodlkfwsm42ictrailuf0e/gradle-9.3.1/lib/gradle-daemon-main-9.3.1.jar -javaagent:/home/sadeq/.gradle/wrapper/dists/gradle-9.3.1-all/5wooodlkfwsm42ictrailuf0e/gradle-9.3.1/lib/agents/gradle-instrumentation-agent-9.3.1.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 9.3.1
+/home/sadeq/workspace/vetoapp/android/build-v3.log:29:Resolved plugin [id: 'org.jetbrains.kotlin.jvm', version: '2.2.20']
+/home/sadeq/workspace/vetoapp/android/build-v3.log:36:Resolved plugin [id: 'com.android.application', version: '9.1.0', apply: false]
+/home/sadeq/workspace/vetoapp/android/build-v3.log:94:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:96:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:97:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:98:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:99:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:100:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:101:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:102:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:103:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:105:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:106:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:107:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:108:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:109:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:110:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:111:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:112:> Could not resolve org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:114:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:115:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:116:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:117:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:118:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:119:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:120:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:121:> Could not resolve org.jetbrains.kotlin:kotlin-build-statistics:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:123:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:124:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:125:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:126:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:127:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:128:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:129:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:130:> Could not resolve org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:132:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:133:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:134:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:135:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:136:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:137:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:138:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:139:> Could not resolve org.jetbrains.kotlin:abi-tools-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:141:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:142:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:143:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:144:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:145:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:146:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:147:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:148:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:150:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:151:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:152:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:153:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:154:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:155:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:156:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:157:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:158:> Could not resolve org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:160:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:161:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:162:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:163:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:164:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:165:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:166:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:167:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:168:> Could not resolve org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:170:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:171:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:172:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:173:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:174:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:175:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:176:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:177:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:179:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:180:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:181:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:182:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:183:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:184:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:185:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:186:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:187:> Could not resolve org.jetbrains.kotlin:kotlin-native-utils:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:189:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:190:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:191:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:192:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:193:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:194:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:195:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:196:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:197:> Could not resolve org.jetbrains.kotlin:kotlin-tooling-core:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:199:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:200:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:201:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:202:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:203:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:204:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:205:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:206:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:207:> Could not resolve org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:209:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v3.log:210:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:211:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:212:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:213:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:214:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v3.log:215:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:16:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:18:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:19:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:20:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:21:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:22:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:23:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:24:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:25:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:27:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:28:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:29:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:30:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:31:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:32:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:33:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:34:> Could not resolve org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:36:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:37:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:38:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:39:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:40:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:41:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:42:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:43:> Could not resolve org.jetbrains.kotlin:kotlin-build-statistics:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:45:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:46:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:47:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:48:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:49:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:50:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:51:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:52:> Could not resolve org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:54:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:55:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:56:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:57:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:58:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:59:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:60:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:61:> Could not resolve org.jetbrains.kotlin:abi-tools-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:63:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:64:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:65:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:66:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:67:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:68:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:69:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:70:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:72:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:73:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:74:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:75:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:76:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:77:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:78:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:79:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:80:> Could not resolve org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:82:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:83:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:84:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:85:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:86:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:87:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:88:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:89:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:90:> Could not resolve org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:92:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:93:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:94:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:95:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:96:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:97:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:98:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:99:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:101:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:102:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:103:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:104:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:105:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:106:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:107:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:108:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:109:> Could not resolve org.jetbrains.kotlin:kotlin-native-utils:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:111:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:112:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:113:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:114:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:115:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:116:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:117:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:118:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:119:> Could not resolve org.jetbrains.kotlin:kotlin-tooling-core:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:121:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:122:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:123:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:124:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:125:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:126:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:127:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:128:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:129:> Could not resolve org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:131:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v4.log:132:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:133:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:134:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:135:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:136:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v4.log:137:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/settings.gradle.kts.bak:5:                requested.id.id == "org.jetbrains.kotlin.android" ||
+/home/sadeq/workspace/vetoapp/android/settings.gradle.kts.bak:6:                requested.id.id == "org.jetbrains.kotlin.gradle.plugin"
+/home/sadeq/workspace/vetoapp/android/settings.gradle.kts.bak:8:                useVersion("2.4.0")
+/home/sadeq/workspace/vetoapp/android/settings.gradle.kts.bak:41:    id("com.android.application") version "9.1.0" apply false
+/home/sadeq/workspace/vetoapp/android/settings.gradle.kts.before-mirror.bak:22:    id("com.android.application") version "9.1.0" apply false
+/home/sadeq/workspace/vetoapp/android/settings.gradle.kts.before-mirror.bak:23:    id("org.jetbrains.kotlin.android") version "2.4.0" apply false
+/home/sadeq/workspace/vetoapp/android/build-v5.log:4:Starting process 'Gradle build daemon'. Working directory: /home/sadeq/.gradle/daemon/9.3.1 Command: /usr/lib/jvm/java-17-openjdk-amd64/bin/java --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.xml/javax.xml.namespace=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED -XX:MaxMetaspaceSize=4G -XX:ReservedCodeCacheSize=512m -XX:+HeapDumpOnOutOfMemoryError -Xmx8G -Dfile.encoding=UTF-8 -Duser.country=US -Duser.language=en -Duser.variant -cp /home/sadeq/.gradle/wrapper/dists/gradle-9.3.1-all/5wooodlkfwsm42ictrailuf0e/gradle-9.3.1/lib/gradle-daemon-main-9.3.1.jar -javaagent:/home/sadeq/.gradle/wrapper/dists/gradle-9.3.1-all/5wooodlkfwsm42ictrailuf0e/gradle-9.3.1/lib/agents/gradle-instrumentation-agent-9.3.1.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 9.3.1
+/home/sadeq/workspace/vetoapp/android/build-v5.log:23:Resolved plugin [id: 'org.jetbrains.kotlin.jvm', version: '2.2.20']
+/home/sadeq/workspace/vetoapp/android/build-v5.log:30:Resolved plugin [id: 'com.android.application', version: '9.1.0', apply: false]
+/home/sadeq/workspace/vetoapp/android/build-v5.log:88:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:90:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:91:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:92:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:93:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:94:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:95:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:96:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:97:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:99:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:100:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:101:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:102:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:103:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:104:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:105:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:106:> Could not resolve org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:108:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:109:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:110:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:111:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:112:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:113:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:114:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:115:> Could not resolve org.jetbrains.kotlin:kotlin-build-statistics:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:117:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:118:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:119:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:120:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:121:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:122:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:123:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:124:> Could not resolve org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:126:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:127:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:128:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:129:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:130:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:131:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:132:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:133:> Could not resolve org.jetbrains.kotlin:abi-tools-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:135:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:136:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:137:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:138:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:139:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:140:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:141:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:142:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:144:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:145:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:146:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:147:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:148:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:149:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:150:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:151:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:152:> Could not resolve org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:154:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:155:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:156:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:157:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:158:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:159:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:160:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:161:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:162:> Could not resolve org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:164:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:165:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:166:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:167:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:168:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:169:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:170:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:171:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:173:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:174:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:175:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:176:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:177:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:178:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:179:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:180:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:181:> Could not resolve org.jetbrains.kotlin:kotlin-native-utils:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:183:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:184:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:185:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:186:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:187:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:188:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:189:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:190:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:191:> Could not resolve org.jetbrains.kotlin:kotlin-tooling-core:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:193:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:194:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:195:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:196:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:197:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:198:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:199:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:200:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:201:> Could not resolve org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:203:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v5.log:204:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:205:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:206:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:207:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:208:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v5.log:209:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/gradle.properties:6:android.builtInKotlin=true
+/home/sadeq/workspace/vetoapp/android/gradle.properties:7:android.builtInKotlin=true
+/home/sadeq/workspace/vetoapp/android/build-v2.log:18:Resolved plugin [id: 'org.jetbrains.kotlin.jvm', version: '2.2.20']
+/home/sadeq/workspace/vetoapp/android/build-v2.log:25:Resolved plugin [id: 'com.android.application', version: '9.1.0', apply: false]
+/home/sadeq/workspace/vetoapp/android/build-v2.log:83:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:85:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:86:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:87:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:88:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:89:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:90:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:91:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:92:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:94:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:95:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:96:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:97:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:98:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:99:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:100:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:101:> Could not resolve org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:103:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:104:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:105:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:106:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:107:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:108:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:109:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:110:> Could not resolve org.jetbrains.kotlin:kotlin-build-statistics:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:112:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:113:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:114:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:115:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:116:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:117:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:118:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:119:> Could not resolve org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:121:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:122:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:123:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:124:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:125:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:126:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:127:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:128:> Could not resolve org.jetbrains.kotlin:abi-tools-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:130:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:131:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:132:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:133:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:134:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:135:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:136:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:137:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:139:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:140:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:141:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:142:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:143:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:144:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:145:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:146:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:147:> Could not resolve org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:149:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:150:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:151:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:152:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:153:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:154:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:155:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:156:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:157:> Could not resolve org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:159:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:160:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:161:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:162:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:163:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:164:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:165:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:166:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:168:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:169:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:170:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:171:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:172:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:173:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:174:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:175:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:176:> Could not resolve org.jetbrains.kotlin:kotlin-native-utils:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:178:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:179:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:180:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:181:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:182:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:183:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:184:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:185:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:186:> Could not resolve org.jetbrains.kotlin:kotlin-tooling-core:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:188:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:189:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:190:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:191:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:192:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:193:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:194:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:195:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:196:> Could not resolve org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:198:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-v2.log:199:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:200:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:201:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:202:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:203:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-v2.log:204:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/gradle/wrapper/gradle-wrapper.properties:5:distributionUrl=https\://mirrors.cloud.tencent.com/gradle/gradle-9.3.1-all.zip
+/home/sadeq/workspace/vetoapp/android/build-offline.log:15:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:17:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:18:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:19:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:20:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:21:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:22:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:23:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:24:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:26:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:27:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:28:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:29:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:30:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:31:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:32:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:33:> Could not resolve org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:35:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:36:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:37:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:38:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:39:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:40:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:41:   > No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:42:> Could not resolve org.jetbrains.kotlin:kotlin-build-statistics:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:44:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:45:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:46:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:47:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:48:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:49:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:50:   > No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:51:> Could not resolve org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:53:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:54:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:55:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:56:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:57:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:58:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:59:   > No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:60:> Could not resolve org.jetbrains.kotlin:abi-tools-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:62:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:63:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:64:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:65:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:66:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:67:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:68:   > No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:69:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:71:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:72:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:73:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:74:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:75:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:76:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:77:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:78:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:79:> Could not resolve org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:81:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:82:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:83:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:84:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:85:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:86:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:87:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:88:   > No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:89:> Could not resolve org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:91:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:92:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:93:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:94:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:95:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:96:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:97:   > No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:98:> Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:100:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:101:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:102:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:103:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:104:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:105:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:106:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:107:   > No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:108:> Could not resolve org.jetbrains.kotlin:kotlin-native-utils:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:110:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:111:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:112:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:113:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:114:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:115:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:116:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:117:   > No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:118:> Could not resolve org.jetbrains.kotlin:kotlin-tooling-core:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:120:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:121:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:122:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:123:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:124:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:125:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:126:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:127:   > No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:128:> Could not resolve org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:130:      settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:131:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:132:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:133:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:134:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:135:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:136:   > No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:338:Cause 1: org.gradle.internal.resolve.ModuleVersionResolveException: Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:340:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:341:Cause 1: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:342:Cause 2: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:343:Cause 3: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:344:Cause 4: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:345:Cause 5: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:346:Cause 6: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:347:Cause 2: org.gradle.internal.resolve.ModuleVersionResolveException: Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:349:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:350:Cause 1: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:351:Cause 2: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:352:Cause 3: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:353:Cause 4: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:354:Cause 5: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:355:Cause 6: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:356:Cause 3: org.gradle.internal.resolve.ModuleVersionResolveException: Could not resolve org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:358:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:359:Cause 1: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:360:Cause 2: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:361:Cause 3: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:362:Cause 4: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:363:Cause 5: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:364:Cause 6: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-klib-commonizer-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:365:Cause 4: org.gradle.internal.resolve.ModuleVersionResolveException: Could not resolve org.jetbrains.kotlin:kotlin-build-statistics:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:367:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:368:Cause 1: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:369:Cause 2: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:370:Cause 3: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:371:Cause 4: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:372:Cause 5: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:373:Cause 6: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-build-statistics:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:374:Cause 5: org.gradle.internal.resolve.ModuleVersionResolveException: Could not resolve org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:376:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:377:Cause 1: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:378:Cause 2: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:379:Cause 3: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:380:Cause 4: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:381:Cause 5: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:382:Cause 6: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-util-klib-metadata:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:383:Cause 6: org.gradle.internal.resolve.ModuleVersionResolveException: Could not resolve org.jetbrains.kotlin:abi-tools-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:385:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:386:Cause 1: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:387:Cause 2: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:388:Cause 3: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:389:Cause 4: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:390:Cause 5: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:391:Cause 6: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:abi-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:392:Cause 7: org.gradle.internal.resolve.ModuleVersionResolveException: Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:394:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:395:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:396:Cause 1: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:397:Cause 2: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:398:Cause 3: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:399:Cause 4: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:400:Cause 5: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:401:Cause 6: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:402:Cause 8: org.gradle.internal.resolve.ModuleVersionResolveException: Could not resolve org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:404:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:405:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:406:Cause 1: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:407:Cause 2: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:408:Cause 3: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:409:Cause 4: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:410:Cause 5: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:411:Cause 6: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:fus-statistics-gradle-plugin:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:412:Cause 9: org.gradle.internal.resolve.ModuleVersionResolveException: Could not resolve org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:414:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:415:Cause 1: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:416:Cause 2: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:417:Cause 3: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:418:Cause 4: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:419:Cause 5: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:420:Cause 6: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-compiler-runner:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:421:Cause 10: org.gradle.internal.resolve.ModuleVersionResolveException: Could not resolve org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:423:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:424:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:425:Cause 1: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:426:Cause 2: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:427:Cause 3: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:428:Cause 4: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:429:Cause 5: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:430:Cause 6: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:431:Cause 11: org.gradle.internal.resolve.ModuleVersionResolveException: Could not resolve org.jetbrains.kotlin:kotlin-native-utils:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:433:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:434:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:435:Cause 1: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:436:Cause 2: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:437:Cause 3: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:438:Cause 4: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:439:Cause 5: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:440:Cause 6: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-native-utils:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:441:Cause 12: org.gradle.internal.resolve.ModuleVersionResolveException: Could not resolve org.jetbrains.kotlin:kotlin-tooling-core:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:443:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:444:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:445:Cause 1: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:446:Cause 2: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:447:Cause 3: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:448:Cause 4: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:449:Cause 5: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:450:Cause 6: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-tooling-core:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:451:Cause 13: org.gradle.internal.resolve.ModuleVersionResolveException: Could not resolve org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:453:    settings file 'settings.gradle.kts' > project :gradle > org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10 > org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.10
+/home/sadeq/workspace/vetoapp/android/build-offline.log:454:Cause 1: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:455:Cause 2: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:456:Cause 3: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:457:Cause 4: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:458:Cause 5: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/build-offline.log:459:Cause 6: org.gradle.internal.resolve.ModuleVersionResolveException: No cached version of org.jetbrains.kotlin:kotlin-build-tools-api:2.2.10 available for offline mode.
+/home/sadeq/workspace/vetoapp/android/settings.gradle.kts:5:                requested.id.id == "org.jetbrains.kotlin.android" ||
+/home/sadeq/workspace/vetoapp/android/settings.gradle.kts:6:                requested.id.id == "org.jetbrains.kotlin.gradle.plugin"
+/home/sadeq/workspace/vetoapp/android/settings.gradle.kts:8:                useVersion("2.4.0")
+/home/sadeq/workspace/vetoapp/android/settings.gradle.kts:41:    id("com.android.application") version "9.1.0" apply false
+
+
+============================================================
+10) pluginهای Flutter و وابستگی‌های Android آن‌ها
+============================================================
+
+--- Flutter plugins ---
+
+--- dependency_overrides و dependencies از pubspec.yaml ---
+21:environment:
+22:  sdk: ^3.13.0
+30:dependencies:
+31:  flutter:
+36:  cupertino_icons: ^1.0.8
+38:dev_dependencies:
+39:  flutter_test:
+47:  flutter_lints: ^6.0.0
+58:  uses-material-design: true
+
+
+============================================================
+11) نتیجه
+============================================================
+گزارش در این مسیر ذخیره شد:
+/home/sadeq/workspace/vetoapp/diagnostics/flutter_android_audit_2026-08-17_15-29-09.txt
