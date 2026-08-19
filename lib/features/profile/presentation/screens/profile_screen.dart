@@ -5,6 +5,6 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Profile Screen')));
+    return const Center(child: Text('پروفایل', style: TextStyle(fontSize: 24)));
   }
 }

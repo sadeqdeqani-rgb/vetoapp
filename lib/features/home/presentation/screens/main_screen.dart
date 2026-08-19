@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_background.dart';
+
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key, required this.child});
 
@@ -23,7 +26,25 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: child,
+      backgroundColor: Colors.transparent,
+      body: AppBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                child: Image.asset(
+                  AppTheme.appLogo,
+                  height: 76,
+                  fit: BoxFit.contain,
+                  semanticLabel: 'VetoApp',
+                ),
+              ),
+              Expanded(child: child),
+            ],
+          ),
+        ),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex(context),

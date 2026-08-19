@@ -5,6 +5,8 @@ class BallotScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Ballot Screen')));
+    return const Center(
+      child: Text('رأی‌گیری', style: TextStyle(fontSize: 24)),
+    );
   }
 }

@@ -5,6 +5,6 @@ class ParticipationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Participation Screen')));
+    return const Center(child: Text('مشارکت', style: TextStyle(fontSize: 24)));
   }
 }
