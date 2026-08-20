@@ -7,6 +7,7 @@ import '../../features/home/presentation/screens/main_screen.dart';
 import '../../features/participation/presentation/screens/participation_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
+import '../../features/auth/presentation/pages/login_credentials_page.dart';
 import '../../features/startup/presentation/pages/gateway_page.dart'
     as gateway_page;
 import '../../features/startup/presentation/pages/splash_page.dart';
@@ -33,9 +34,7 @@ GoRouter createAppRouter(AuthCubit authCubit) {
       ),
       GoRoute(
         path: '/login',
-        builder:
-            (context, state) =>
-                const Scaffold(body: Center(child: Text('Login placeholder'))),
+        builder: (context, state) => const LoginCredentialsPage(),
       ),
       ShellRoute(
         builder: (context, state, child) => MainScreen(child: child),
