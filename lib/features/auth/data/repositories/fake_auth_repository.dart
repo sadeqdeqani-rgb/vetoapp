@@ -9,7 +9,10 @@ import '../../domain/repositories/auth_repository.dart';
 /// بعداً می‌توان این repository را در DI با AuthRepositoryImpl جایگزین کرد،
 /// بدون اینکه LoginScreen یا AuthCubit تغییر اساسی کند.
 class FakeAuthRepository implements AuthRepository {
-  static const String validUsername = 'user';
+  /// شماره موبایل معتبر برای تست ورود.
+  static const String validUsername = '09123456789';
+
+  /// رمز عبور معتبر برای تست ورود.
   static const String validPassword = '12345678';
 
   const FakeAuthRepository();

@@ -4,87 +4,81 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 
-class OtpVerificationPage extends StatefulWidget {
-  const OtpVerificationPage({
-    super.key,
-    required this.phoneNumber,
-    this.isPasswordRecovery = false,
-  });
-
-  final String phoneNumber;
-  final bool isPasswordRecovery;
+/// مرحلهٔ اول بازیابی رمز عبور: دریافت شمارهٔ تلفن همراه.
+class ForgotPasswordPhonePage extends StatefulWidget {
+  const ForgotPasswordPhonePage({super.key});
 
   @override
-  State<OtpVerificationPage> createState() => _OtpVerificationPageState();
+  State<ForgotPasswordPhonePage> createState() =>
+      _ForgotPasswordPhonePageState();
 }
 
-class _OtpVerificationPageState extends State<OtpVerificationPage> {
+class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
   final _formKey = GlobalKey<FormState>();
-  final _otpController = TextEditingController();
+  final _phoneController = TextEditingController();
 
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _otpController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
-  String? _validateOtp(String? value) {
-    final otp = value?.trim() ?? '';
+  String _normalizePhoneNumber(String value) {
+    var phone = value.trim().replaceAll(RegExp(r'[\s-]'), '');
 
-    if (otp.isEmpty) {
-      return 'کد تأیید را وارد کنید.';
+    if (phone.startsWith('+98')) {
+      phone = '0${phone.substring(3)}';
+    } else if (phone.startsWith('98') && phone.length == 12) {
+      phone = '0${phone.substring(2)}';
     }
 
-    if (!RegExp(r'^\d{6}$').hasMatch(otp)) {
-      return 'کد تأیید باید ۶ رقم باشد.';
+    return phone;
+  }
+
+  String? _validatePhoneNumber(String? value) {
+    final phone = _normalizePhoneNumber(value ?? '');
+
+    if (phone.isEmpty) {
+      return 'شمارهٔ تلفن همراه را وارد کنید.';
+    }
+
+    if (!RegExp(r'^09\d{9}$').hasMatch(phone)) {
+      return 'شمارهٔ تلفن همراه معتبر نیست.';
     }
 
     return null;
   }
 
-  Future<void> _verifyOtp() async {
+  Future<void> _continueToOtp() async {
     final isValid = _formKey.currentState?.validate() ?? false;
 
     if (!isValid || _isLoading) {
       return;
     }
 
+    final phoneNumber = _normalizePhoneNumber(_phoneController.text);
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      await Future<void>.delayed(const Duration(milliseconds: 500));
+      /// TODO: در اتصال واقعی Backend، درخواست ارسال OTP بازیابی رمز
+      /// در اینجا فراخوانی می‌شود.
+      await Future<void>.delayed(const Duration(milliseconds: 350));
 
       if (!mounted) {
         return;
       }
 
-      if (widget.isPasswordRecovery) {
-        const verificationToken = 'temporary-token-for-ui-test';
-
-        context.push(
-          '/forgot-password/reset',
-          extra: <String, dynamic>{
-            'phoneNumber': widget.phoneNumber,
-            'verificationToken': verificationToken,
-          },
-        );
-        return;
-      }
-
-      context.go('/');
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('تأیید کد با خطا مواجه شد. دوباره تلاش کنید.'),
-        ),
+      context.push(
+        '/otp-verification',
+        extra: <String, dynamic>{
+          'phoneNumber': phoneNumber,
+          'isPasswordRecovery': true,
+        },
       );
     } finally {
       if (mounted) {
@@ -95,26 +89,8 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     }
   }
 
-  void _resendOtp() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'کد تأیید مجدداً به ${widget.phoneNumber} ارسال خواهد شد.',
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final title =
-        widget.isPasswordRecovery ? 'تأیید بازیابی رمز' : 'تأیید کد ورود';
-
-    final description =
-        widget.isPasswordRecovery
-            ? 'کد بازیابی ارسال‌شده به شمارهٔ زیر را وارد کنید.'
-            : 'کد تأیید ارسال‌شده به شمارهٔ زیر را وارد کنید.';
-
     return Scaffold(
       body: Container(
         decoration: AppTheme.pageBackground,
@@ -139,12 +115,13 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                       ),
                       const SizedBox(height: 4),
                       Image.asset(
-                        'assets/images/vetoapp.png',
-                        height: 120,
+                        AppTheme.appLogo,
+                        width: 112,
+                        height: 112,
                         fit: BoxFit.contain,
                         errorBuilder:
                             (_, __, ___) => Icon(
-                              Icons.how_to_vote_rounded,
+                              Icons.lock_reset_outlined,
                               size: 90,
                               color: AppTheme.primaryGreen,
                             ),
@@ -168,16 +145,14 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Icon(
-                                widget.isPasswordRecovery
-                                    ? Icons.lock_reset_outlined
-                                    : Icons.verified_user_outlined,
+                              const Icon(
+                                Icons.lock_reset_outlined,
                                 size: 56,
                                 color: AppTheme.primaryGreen,
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                title,
+                                'بازیابی رمز عبور',
                                 textAlign: TextAlign.center,
                                 style: Theme.of(
                                   context,
@@ -188,54 +163,60 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                description,
+                                'شمارهٔ تلفن همراه حساب خود را وارد کنید.',
                                 textAlign: TextAlign.center,
                                 style: Theme.of(context).textTheme.bodyLarge,
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 24),
                               Directionality(
                                 textDirection: TextDirection.ltr,
-                                child: Text(
-                                  widget.phoneNumber,
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.titleLarge?.copyWith(
-                                    color: AppTheme.primaryRed,
-                                    fontWeight: FontWeight.bold,
+                                child: TextFormField(
+                                  controller: _phoneController,
+                                  enabled: !_isLoading,
+                                  autofocus: true,
+                                  keyboardType: TextInputType.phone,
+                                  textInputAction: TextInputAction.done,
+                                  textAlign: TextAlign.left,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                    LengthLimitingTextInputFormatter(11),
+                                  ],
+                                  validator: _validatePhoneNumber,
+                                  onFieldSubmitted: (_) => _continueToOtp(),
+                                  decoration: InputDecoration(
+                                    labelText: 'شمارهٔ تلفن همراه',
+                                    hintText: '09123456789',
+                                    prefixIcon: const Icon(Icons.phone_outlined),
+                                    filled: true,
+                                    fillColor: Colors.white.withValues(
+                                      alpha: 0.94,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: const BorderSide(
+                                        color: AppTheme.primaryGreen,
+                                        width: 2,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 28),
-                              TextFormField(
-                                controller: _otpController,
-                                autofocus: true,
-                                keyboardType: TextInputType.number,
-                                textInputAction: TextInputAction.done,
-                                textAlign: TextAlign.center,
-                                maxLength: 6,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(6),
-                                ],
-                                validator: _validateOtp,
-                                onFieldSubmitted: (_) => _verifyOtp(),
-                                decoration: const InputDecoration(
-                                  labelText: 'کد تأیید ۶ رقمی',
-                                  hintText: '123456',
-                                  counterText: '',
-                                  prefixIcon: Icon(Icons.password_rounded),
-                                  border: OutlineInputBorder(),
                                 ),
                               ),
                               const SizedBox(height: 20),
                               FilledButton(
-                                onPressed: _isLoading ? null : _verifyOtp,
+                                onPressed:
+                                    _isLoading ? null : _continueToOtp,
                                 style: FilledButton.styleFrom(
                                   backgroundColor: AppTheme.primaryGreen,
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
                                 ),
                                 child:
@@ -248,29 +229,15 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                             color: Colors.white,
                                           ),
                                         )
-                                        : Text(
-                                          widget.isPasswordRecovery
-                                              ? 'تأیید و ادامه'
-                                              : 'تأیید و ورود',
-                                        ),
+                                        : const Text('ارسال کد تأیید'),
                               ),
                               const SizedBox(height: 8),
                               TextButton(
-                                onPressed: _isLoading ? null : _resendOtp,
-                                child: Text(
-                                  'ارسال مجدد کد',
-                                  style: TextStyle(
-                                    color: AppTheme.primaryGreen,
-                                  ),
-                                ),
-                              ),
-                              TextButton(
                                 onPressed:
-                                    _isLoading ? null : () => context.pop(),
-                                child: Text(
-                                  'ویرایش شمارهٔ تلفن همراه',
-                                  style: TextStyle(color: AppTheme.primaryRed),
-                                ),
+                                    _isLoading
+                                        ? null
+                                        : () => context.go('/login'),
+                                child: const Text('بازگشت به ورود'),
                               ),
                             ],
                           ),

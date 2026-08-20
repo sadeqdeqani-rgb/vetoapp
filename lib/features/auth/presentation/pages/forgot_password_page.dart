@@ -1,53 +1,78 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 
-class OtpVerificationPage extends StatefulWidget {
-  const OtpVerificationPage({
+class ForgotPasswordPage extends StatefulWidget {
+  const ForgotPasswordPage({
     super.key,
     required this.phoneNumber,
-    this.isPasswordRecovery = false,
+    required this.verificationToken,
   });
 
   final String phoneNumber;
-  final bool isPasswordRecovery;
+  final String verificationToken;
 
   @override
-  State<OtpVerificationPage> createState() => _OtpVerificationPageState();
+  State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
 }
 
-class _OtpVerificationPageState extends State<OtpVerificationPage> {
+class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final _formKey = GlobalKey<FormState>();
-  final _otpController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmationController = TextEditingController();
 
+  bool _obscurePassword = true;
+  bool _obscureConfirmation = true;
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _otpController.dispose();
+    _passwordController.dispose();
+    _confirmationController.dispose();
     super.dispose();
   }
 
-  String? _validateOtp(String? value) {
-    final otp = value?.trim() ?? '';
+  String? _validatePassword(String? value) {
+    final password = value ?? '';
 
-    if (otp.isEmpty) {
-      return 'کد تأیید را وارد کنید.';
+    if (password.isEmpty) {
+      return 'رمز عبور جدید را وارد کنید.';
     }
 
-    if (!RegExp(r'^\d{6}$').hasMatch(otp)) {
-      return 'کد تأیید باید ۶ رقم باشد.';
+    if (password.length < 8) {
+      return 'رمز عبور باید حداقل ۸ کاراکتر باشد.';
     }
 
     return null;
   }
 
-  Future<void> _verifyOtp() async {
+  String? _validateConfirmation(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'تکرار رمز عبور را وارد کنید.';
+    }
+
+    if (value != _passwordController.text) {
+      return 'تکرار رمز عبور با رمز جدید یکسان نیست.';
+    }
+
+    return null;
+  }
+
+  Future<void> _submit() async {
     final isValid = _formKey.currentState?.validate() ?? false;
 
     if (!isValid || _isLoading) {
+      return;
+    }
+
+    if (widget.verificationToken.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('نشست بازیابی رمز معتبر نیست. دوباره تلاش کنید.'),
+        ),
+      );
+      context.go('/forgot-password');
       return;
     }
 
@@ -56,36 +81,25 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     });
 
     try {
-      await Future<void>.delayed(const Duration(milliseconds: 500));
+      /// TODO: در اتصال به Backend:
+      /// AuthCubit.resetPassword(
+      ///   phoneNumber: widget.phoneNumber,
+      ///   verificationToken: widget.verificationToken,
+      ///   newPassword: _passwordController.text,
+      /// );
+      await Future<void>.delayed(const Duration(milliseconds: 600));
 
-      if (!mounted) {
-        return;
-      }
-
-      if (widget.isPasswordRecovery) {
-        const verificationToken = 'temporary-token-for-ui-test';
-
-        context.push(
-          '/forgot-password/reset',
-          extra: <String, dynamic>{
-            'phoneNumber': widget.phoneNumber,
-            'verificationToken': verificationToken,
-          },
-        );
-        return;
-      }
-
-      context.go('/');
-    } catch (_) {
       if (!mounted) {
         return;
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('تأیید کد با خطا مواجه شد. دوباره تلاش کنید.'),
+          content: Text('رمز عبور با موفقیت تغییر کرد. اکنون وارد شوید.'),
         ),
       );
+
+      context.go('/login');
     } finally {
       if (mounted) {
         setState(() {
@@ -95,26 +109,8 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     }
   }
 
-  void _resendOtp() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'کد تأیید مجدداً به ${widget.phoneNumber} ارسال خواهد شد.',
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final title =
-        widget.isPasswordRecovery ? 'تأیید بازیابی رمز' : 'تأیید کد ورود';
-
-    final description =
-        widget.isPasswordRecovery
-            ? 'کد بازیابی ارسال‌شده به شمارهٔ زیر را وارد کنید.'
-            : 'کد تأیید ارسال‌شده به شمارهٔ زیر را وارد کنید.';
-
     return Scaffold(
       body: Container(
         decoration: AppTheme.pageBackground,
@@ -169,15 +165,13 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Icon(
-                                widget.isPasswordRecovery
-                                    ? Icons.lock_reset_outlined
-                                    : Icons.verified_user_outlined,
+                                Icons.lock_reset_outlined,
                                 size: 56,
                                 color: AppTheme.primaryGreen,
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                title,
+                                'تعیین رمز عبور جدید',
                                 textAlign: TextAlign.center,
                                 style: Theme.of(
                                   context,
@@ -188,49 +182,71 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                description,
+                                'برای شمارهٔ ${widget.phoneNumber} یک رمز عبور جدید تعیین کنید.',
                                 textAlign: TextAlign.center,
                                 style: Theme.of(context).textTheme.bodyLarge,
                               ),
-                              const SizedBox(height: 12),
-                              Directionality(
-                                textDirection: TextDirection.ltr,
-                                child: Text(
-                                  widget.phoneNumber,
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.titleLarge?.copyWith(
-                                    color: AppTheme.primaryRed,
-                                    fontWeight: FontWeight.bold,
+                              const SizedBox(height: 28),
+                              TextFormField(
+                                controller: _passwordController,
+                                obscureText: _obscurePassword,
+                                textInputAction: TextInputAction.next,
+                                validator: _validatePassword,
+                                decoration: InputDecoration(
+                                  labelText: 'رمز عبور جدید',
+                                  prefixIcon: const Icon(Icons.lock_outline),
+                                  border: const OutlineInputBorder(),
+                                  suffixIcon: IconButton(
+                                    tooltip:
+                                        _obscurePassword
+                                            ? 'نمایش رمز'
+                                            : 'پنهان کردن رمز',
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                    ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 28),
+                              const SizedBox(height: 16),
                               TextFormField(
-                                controller: _otpController,
-                                autofocus: true,
-                                keyboardType: TextInputType.number,
+                                controller: _confirmationController,
+                                obscureText: _obscureConfirmation,
                                 textInputAction: TextInputAction.done,
-                                textAlign: TextAlign.center,
-                                maxLength: 6,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(6),
-                                ],
-                                validator: _validateOtp,
-                                onFieldSubmitted: (_) => _verifyOtp(),
-                                decoration: const InputDecoration(
-                                  labelText: 'کد تأیید ۶ رقمی',
-                                  hintText: '123456',
-                                  counterText: '',
-                                  prefixIcon: Icon(Icons.password_rounded),
-                                  border: OutlineInputBorder(),
+                                validator: _validateConfirmation,
+                                onFieldSubmitted: (_) => _submit(),
+                                decoration: InputDecoration(
+                                  labelText: 'تکرار رمز عبور جدید',
+                                  prefixIcon: const Icon(Icons.lock_reset),
+                                  border: const OutlineInputBorder(),
+                                  suffixIcon: IconButton(
+                                    tooltip:
+                                        _obscureConfirmation
+                                            ? 'نمایش رمز'
+                                            : 'پنهان کردن رمز',
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscureConfirmation =
+                                            !_obscureConfirmation;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      _obscureConfirmation
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                    ),
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 20),
                               FilledButton(
-                                onPressed: _isLoading ? null : _verifyOtp,
+                                onPressed: _isLoading ? null : _submit,
                                 style: FilledButton.styleFrom(
                                   backgroundColor: AppTheme.primaryGreen,
                                   foregroundColor: Colors.white,
@@ -248,29 +264,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                             color: Colors.white,
                                           ),
                                         )
-                                        : Text(
-                                          widget.isPasswordRecovery
-                                              ? 'تأیید و ادامه'
-                                              : 'تأیید و ورود',
-                                        ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextButton(
-                                onPressed: _isLoading ? null : _resendOtp,
-                                child: Text(
-                                  'ارسال مجدد کد',
-                                  style: TextStyle(
-                                    color: AppTheme.primaryGreen,
-                                  ),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed:
-                                    _isLoading ? null : () => context.pop(),
-                                child: Text(
-                                  'ویرایش شمارهٔ تلفن همراه',
-                                  style: TextStyle(color: AppTheme.primaryRed),
-                                ),
+                                        : const Text('ثبت رمز جدید'),
                               ),
                             ],
                           ),
