@@ -45,12 +45,6 @@ class _GatewayPageState extends State<GatewayPage> {
     );
   }
 
-  void _showRegistrationMessage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('بخش ثبت‌نام هنوز در حال توسعه است.')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,7 +82,7 @@ class _GatewayPageState extends State<GatewayPage> {
                       onTap:
                           _isContinuingAsGuest
                               ? null
-                              : _showRegistrationMessage,
+                              : () => context.pushNamed('register-terms'),
                     ),
                     const SizedBox(height: 18),
                     GatewayActionButton(

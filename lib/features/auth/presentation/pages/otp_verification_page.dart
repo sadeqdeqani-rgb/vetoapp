@@ -9,10 +9,12 @@ class OtpVerificationPage extends StatefulWidget {
     super.key,
     required this.phoneNumber,
     this.isPasswordRecovery = false,
+    this.isRegistration = false,
   });
 
   final String phoneNumber;
   final bool isPasswordRecovery;
+  final bool isRegistration;
 
   @override
   State<OtpVerificationPage> createState() => _OtpVerificationPageState();
@@ -21,6 +23,8 @@ class OtpVerificationPage extends StatefulWidget {
 class _OtpVerificationPageState extends State<OtpVerificationPage> {
   final _formKey = GlobalKey<FormState>();
   final _otpController = TextEditingController();
+
+  static const _testRegistrationOtp = '123456';
 
   bool _isLoading = false;
 
@@ -39,6 +43,10 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
     if (!RegExp(r'^\d{6}$').hasMatch(otp)) {
       return 'کد تأیید باید ۶ رقم باشد.';
+    }
+
+    if (widget.isRegistration && otp != _testRegistrationOtp) {
+      return 'برای تست ثبت‌نام فقط کد ۱۲۳۴۵۶ قابل استفاده است.';
     }
 
     return null;
@@ -71,6 +79,14 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             'phoneNumber': widget.phoneNumber,
             'verificationToken': verificationToken,
           },
+        );
+        return;
+      }
+
+      if (widget.isRegistration) {
+        context.push(
+          '/register/national-code',
+          extra: <String, dynamic>{'phoneNumber': widget.phoneNumber},
         );
         return;
       }
@@ -108,11 +124,17 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   @override
   Widget build(BuildContext context) {
     final title =
-        widget.isPasswordRecovery ? 'تأیید بازیابی رمز' : 'تأیید کد ورود';
+        widget.isPasswordRecovery
+            ? 'تأیید بازیابی رمز'
+            : widget.isRegistration
+            ? 'تأیید شمارهٔ ثبت‌نام'
+            : 'تأیید کد ورود';
 
     final description =
         widget.isPasswordRecovery
             ? 'کد بازیابی ارسال‌شده به شمارهٔ زیر را وارد کنید.'
+            : widget.isRegistration
+            ? 'کد تأیید ارسال‌شده به شمارهٔ زیر را وارد کنید.'
             : 'کد تأیید ارسال‌شده به شمارهٔ زیر را وارد کنید.';
 
     return Scaffold(
@@ -251,6 +273,8 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                         : Text(
                                           widget.isPasswordRecovery
                                               ? 'تأیید و ادامه'
+                                              : widget.isRegistration
+                                              ? 'تأیید و ادامه ثبت‌نام'
                                               : 'تأیید و ورود',
                                         ),
                               ),

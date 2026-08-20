@@ -263,6 +263,29 @@ class _LoginCredentialsPageState extends State<LoginCredentialsPage> {
                                 ),
                               ),
                               const SizedBox(height: 24),
+                              Center(
+                                child: TextButton(
+                                  onPressed:
+                                      isLoading
+                                          ? null
+                                          : () {
+                                            context.pushNamed('register-terms');
+                                          },
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: AppTheme.primaryRed,
+                                    padding: EdgeInsets.zero,
+                                  ),
+                                  child: const Text(
+                                    'ثبت نام در وتو اپ',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
                               SizedBox(
                                 height: 52,
                                 child: ElevatedButton(

@@ -4,9 +4,15 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 
-/// مرحلهٔ اول بازیابی رمز عبور: دریافت شمارهٔ تلفن همراه.
+/// مرحلهٔ دریافت شمارهٔ تلفن همراه برای بازیابی رمز یا ثبت‌نام.
 class ForgotPasswordPhonePage extends StatefulWidget {
-  const ForgotPasswordPhonePage({super.key});
+  const ForgotPasswordPhonePage({
+    super.key,
+    this.isRegistration = false,
+  });
+
+  /// اگر true باشد، صفحه در فلو ثبت‌نام استفاده می‌شود.
+  final bool isRegistration;
 
   @override
   State<ForgotPasswordPhonePage> createState() =>
@@ -16,6 +22,8 @@ class ForgotPasswordPhonePage extends StatefulWidget {
 class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
+
+  static const _testRegistrationPhone = '09123456789';
 
   bool _isLoading = false;
 
@@ -48,6 +56,10 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
       return 'شمارهٔ تلفن همراه معتبر نیست.';
     }
 
+    if (widget.isRegistration && phone != _testRegistrationPhone) {
+      return 'برای تست ثبت‌نام فقط شمارهٔ ۰۹۱۲۳۴۵۶۷۸۹ قابل استفاده است.';
+    }
+
     return null;
   }
 
@@ -65,8 +77,8 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
     });
 
     try {
-      /// TODO: در اتصال واقعی Backend، درخواست ارسال OTP بازیابی رمز
-      /// در اینجا فراخوانی می‌شود.
+      /// TODO: در اتصال واقعی Backend، درخواست ارسال OTP متناسب با فلو
+      /// (ثبت‌نام یا بازیابی رمز) در اینجا فراخوانی می‌شود.
       await Future<void>.delayed(const Duration(milliseconds: 350));
 
       if (!mounted) {
@@ -77,7 +89,8 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
         '/otp-verification',
         extra: <String, dynamic>{
           'phoneNumber': phoneNumber,
-          'isPasswordRecovery': true,
+          'isPasswordRecovery': !widget.isRegistration,
+          'isRegistration': widget.isRegistration,
         },
       );
     } finally {
@@ -146,13 +159,15 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               const Icon(
-                                Icons.lock_reset_outlined,
+                                Icons.phone_android_outlined,
                                 size: 56,
                                 color: AppTheme.primaryGreen,
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'بازیابی رمز عبور',
+                                widget.isRegistration
+                                    ? 'ثبت نام در وتو اپ'
+                                    : 'بازیابی رمز عبور',
                                 textAlign: TextAlign.center,
                                 style: Theme.of(
                                   context,
@@ -163,7 +178,9 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                'شمارهٔ تلفن همراه حساب خود را وارد کنید.',
+                                widget.isRegistration
+                                    ? 'برای شروع ثبت‌نام، شمارهٔ تلفن همراه خود را وارد کنید.'
+                                    : 'شمارهٔ تلفن همراه حساب خود را وارد کنید.',
                                 textAlign: TextAlign.center,
                                 style: Theme.of(context).textTheme.bodyLarge,
                               ),
@@ -236,8 +253,16 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                                 onPressed:
                                     _isLoading
                                         ? null
-                                        : () => context.go('/login'),
-                                child: const Text('بازگشت به ورود'),
+                                        : () => context.go(
+                                          widget.isRegistration
+                                              ? '/register/terms'
+                                              : '/login',
+                                        ),
+                                child: Text(
+                                  widget.isRegistration
+                                      ? 'بازگشت به قوانین و مقررات'
+                                      : 'بازگشت به ورود',
+                                ),
                               ),
                             ],
                           ),

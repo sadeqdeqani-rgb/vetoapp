@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
@@ -6,6 +5,11 @@ import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_phone_page.dart';
 import '../../features/auth/presentation/pages/login_credentials_page.dart';
 import '../../features/auth/presentation/pages/otp_verification_page.dart';
+import '../../features/auth/presentation/pages/registration_page.dart';
+import '../../features/auth/presentation/pages/registration_national_code_page.dart';
+import '../../features/auth/presentation/pages/registration_geography_page.dart';
+import '../../features/auth/presentation/pages/registration_password_page.dart';
+import '../../features/auth/presentation/pages/registration_terms_page.dart';
 import '../../features/ballot/presentation/screens/ballot_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/home/presentation/screens/main_screen.dart';
@@ -28,6 +32,12 @@ GoRouter createAppRouter(AuthCubit authCubit) {
       if (location == '/splash' ||
           location == '/gateway' ||
           location == '/login' ||
+          location == '/register/terms' ||
+          location == '/register/phone' ||
+          location == '/register/national-code' ||
+          location == '/register/geography' ||
+          location == '/register/password' ||
+          location == '/register' ||
           location == '/forgot-password' ||
           location == '/otp-verification' ||
           location == '/forgot-password/reset') {
@@ -52,6 +62,104 @@ GoRouter createAppRouter(AuthCubit authCubit) {
         name: 'login',
         builder: (context, state) => const LoginCredentialsPage(),
       ),
+      GoRoute(
+        path: '/register/terms',
+        name: 'register-terms',
+        builder: (context, state) => const RegistrationTermsPage(),
+      ),
+      GoRoute(
+        path: '/register/phone',
+        name: 'register-phone',
+        builder:
+            (context, state) =>
+                const ForgotPasswordPhonePage(isRegistration: true),
+      ),
+      GoRoute(
+        path: '/register',
+        name: 'register',
+        builder: (context, state) => const RegistrationPage(),
+      ),
+      GoRoute(
+        path: '/register/national-code',
+        name: 'register-national-code',
+        builder: (context, state) {
+          final args = state.extra;
+          final phoneNumber =
+              args is Map<String, dynamic>
+                  ? args['phoneNumber'] as String?
+                  : null;
+
+          if (phoneNumber == null || phoneNumber.trim().isEmpty) {
+            return const ForgotPasswordPhonePage(isRegistration: true);
+          }
+
+          return RegistrationNationalCodePage(phoneNumber: phoneNumber.trim());
+        },
+      ),
+      GoRoute(
+        path: '/register/geography',
+        name: 'register-geography',
+        builder: (context, state) {
+          final args = state.extra;
+          final phoneNumber =
+              args is Map<String, dynamic>
+                  ? args['phoneNumber'] as String?
+                  : null;
+          final nationalCode =
+              args is Map<String, dynamic>
+                  ? args['nationalCode'] as String?
+                  : null;
+
+          if (phoneNumber == null ||
+              phoneNumber.trim().isEmpty ||
+              nationalCode == null ||
+              nationalCode.trim().isEmpty) {
+            return const ForgotPasswordPhonePage(isRegistration: true);
+          }
+
+          return RegistrationGeographyPage(
+            phoneNumber: phoneNumber.trim(),
+            nationalCode: nationalCode.trim(),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/register/password',
+        name: 'register-password',
+        builder: (context, state) {
+          final args = state.extra;
+          if (args is! Map<String, dynamic>) {
+            return const ForgotPasswordPhonePage(isRegistration: true);
+          }
+
+          final phoneNumber = args['phoneNumber'] as String?;
+          final nationalCode = args['nationalCode'] as String?;
+          final countryId = args['countryId'] as int?;
+          final provinceId = args['provinceId'] as int?;
+          final countyId = args['countyId'] as int?;
+          final localityId = args['localityId'] as int?;
+
+          if (phoneNumber == null ||
+              phoneNumber.trim().isEmpty ||
+              nationalCode == null ||
+              nationalCode.trim().isEmpty ||
+              countryId == null ||
+              provinceId == null ||
+              countyId == null ||
+              localityId == null) {
+            return const ForgotPasswordPhonePage(isRegistration: true);
+          }
+
+          return RegistrationPasswordPage(
+            phoneNumber: phoneNumber.trim(),
+            nationalCode: nationalCode.trim(),
+            countryId: countryId,
+            provinceId: provinceId,
+            countyId: countyId,
+            localityId: localityId,
+          );
+        },
+      ),
 
       /// مرحلهٔ اول بازیابی رمز: دریافت شمارهٔ موبایل.
       GoRoute(
@@ -74,6 +182,7 @@ GoRouter createAppRouter(AuthCubit authCubit) {
           final phoneNumber = args['phoneNumber'] as String?;
           final isPasswordRecovery =
               args['isPasswordRecovery'] as bool? ?? false;
+          final isRegistration = args['isRegistration'] as bool? ?? false;
 
           if (phoneNumber == null || phoneNumber.trim().isEmpty) {
             return const ForgotPasswordPhonePage();
@@ -82,6 +191,7 @@ GoRouter createAppRouter(AuthCubit authCubit) {
           return OtpVerificationPage(
             phoneNumber: phoneNumber.trim(),
             isPasswordRecovery: isPasswordRecovery,
+            isRegistration: isRegistration,
           );
         },
       ),

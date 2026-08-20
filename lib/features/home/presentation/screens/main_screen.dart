@@ -10,10 +10,10 @@ class MainScreen extends StatelessWidget {
   final Widget child;
 
   static const _locations = <String>[
-    '/',
-    '/participation',
-    '/ballot',
     '/profile',
+    '/ballot',
+    '/participation',
+    '/',
   ];
 
   int _selectedIndex(BuildContext context) {
@@ -49,13 +49,13 @@ class MainScreen extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex(context),
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'خانه'),
-          BottomNavigationBarItem(icon: Icon(Icons.poll), label: 'مشارکت'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'کاربری'),
           BottomNavigationBarItem(
             icon: Icon(Icons.how_to_vote),
-            label: 'رأی‌گیری',
+            label: 'صندوق',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'پروفایل'),
+          BottomNavigationBarItem(icon: Icon(Icons.poll), label: 'مشارکت'),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'خانه'),
         ],
         onTap: (index) => context.go(_locations[index]),
       ),
