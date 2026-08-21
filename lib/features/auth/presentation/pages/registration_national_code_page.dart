@@ -7,10 +7,7 @@ import '../../../../core/validation/iranian_national_code_validator.dart';
 
 /// مرحلهٔ دریافت کد ملی در فلو ثبت‌نام.
 class RegistrationNationalCodePage extends StatefulWidget {
-  const RegistrationNationalCodePage({
-    super.key,
-    required this.phoneNumber,
-  });
+  const RegistrationNationalCodePage({super.key, required this.phoneNumber});
 
   final String phoneNumber;
 
@@ -135,8 +132,8 @@ class _RegistrationNationalCodePageState
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
                                     colors: [
-                                      Color(0xFFFF3D3D),
-                                      Color(0xFFFF1478),
+                                      AppTheme.primary,
+                                      AppTheme.primaryDark,
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(28),
@@ -154,11 +151,12 @@ class _RegistrationNationalCodePageState
                               Text(
                                 'کد ملی خود را وارد کنید',
                                 textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.headlineSmall
-                                    ?.copyWith(
-                                      color: AppTheme.primaryDark,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.headlineSmall?.copyWith(
+                                  color: AppTheme.primaryDark,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               const SizedBox(height: 24),
                               Directionality(
@@ -183,7 +181,7 @@ class _RegistrationNationalCodePageState
                                     hintText: '۱۱۱۱۱۱۱۱۱۱',
                                     counterText: '',
                                     filled: true,
-                                    fillColor: Colors.grey.shade50,
+                                    fillColor: AppTheme.background,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(28),
                                       borderSide: BorderSide.none,

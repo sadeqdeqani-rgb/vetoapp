@@ -96,8 +96,8 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                   decoration: BoxDecoration(
                                     gradient: const LinearGradient(
                                       colors: [
-                                        Color(0xFFFF3D3D),
-                                        Color(0xFFFF1478),
+                                        AppTheme.primary,
+                                        AppTheme.primaryDark,
                                       ],
                                     ),
                                     borderRadius: BorderRadius.circular(28),
@@ -116,11 +116,12 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                   'لطفاً پیش از ادامه، قوانین و مقررات استفاده '
                                   'از وتو اپ را مطالعه کنید.',
                                   textAlign: TextAlign.center,
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(
-                                        color: AppTheme.primaryDark,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium?.copyWith(
+                                    color: AppTheme.primaryDark,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                                 const SizedBox(height: 16),
                                 Container(
@@ -129,11 +130,9 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                   ),
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Colors.grey.shade50,
+                                    color: AppTheme.background,
                                     borderRadius: BorderRadius.circular(18),
-                                    border: Border.all(
-                                      color: Colors.grey.shade200,
-                                    ),
+                                    border: Border.all(color: AppTheme.divider),
                                   ),
                                   child: const Text(
                                     'با ثبت‌نام در وتو اپ، می‌پذیرید که اطلاعات '
@@ -152,7 +151,7 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                     style: TextStyle(
                                       fontSize: 16,
                                       height: 1.9,
-                                      color: Colors.black87,
+                                      color: AppTheme.textPrimary,
                                     ),
                                   ),
                                 ),
@@ -186,7 +185,7 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppTheme.primaryColor,
                                       disabledBackgroundColor:
-                                          Colors.grey.shade400,
+                                          AppTheme.textSecondary,
                                       foregroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(28),

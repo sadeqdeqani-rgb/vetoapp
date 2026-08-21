@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_theme.dart';
+
 class GatewayPage extends StatelessWidget {
   const GatewayPage({super.key});
 
@@ -28,7 +30,7 @@ class GatewayPage extends StatelessWidget {
                 'پلتفرم توزیع‌شده تصمیم‌گیری و همه‌پرسی امن',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
+                  color: AppTheme.textSecondary,
                 ),
               ),
               const Spacer(),

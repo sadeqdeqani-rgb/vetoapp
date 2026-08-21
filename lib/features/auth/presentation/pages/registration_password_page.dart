@@ -105,7 +105,7 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                       padding: const EdgeInsets.symmetric(vertical: 20),
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Color(0xFFFF3D3D), Color(0xFFFF1478)],
+                          colors: [AppTheme.primary, AppTheme.primaryDark],
                         ),
                       ),
                       child: const Text(

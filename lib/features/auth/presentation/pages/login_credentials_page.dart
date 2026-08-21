@@ -149,8 +149,8 @@ class _LoginCredentialsPageState extends State<LoginCredentialsPage> {
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
                                     colors: [
-                                      Color(0xFFFF3D3D),
-                                      Color(0xFFFF1478),
+                                      AppTheme.primary,
+                                      AppTheme.primaryDark,
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(28),

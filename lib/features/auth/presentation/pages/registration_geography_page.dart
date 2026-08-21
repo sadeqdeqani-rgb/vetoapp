@@ -169,7 +169,7 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
       decoration: InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.grey.shade50,
+        fillColor: AppTheme.background,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(28),
           borderSide: BorderSide.none,
@@ -226,7 +226,7 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFFFF3D3D), Color(0xFFFF1478)],
+                              colors: [AppTheme.primary, AppTheme.primaryDark],
                             ),
                             borderRadius: BorderRadius.circular(28),
                           ),

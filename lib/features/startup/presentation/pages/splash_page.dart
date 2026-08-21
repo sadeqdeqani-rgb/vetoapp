@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_theme.dart';
+
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
@@ -55,19 +57,7 @@ class _SplashPageState extends State<SplashPage> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1B5E20),
-              Colors.white,
-              Colors.white,
-              Color(0xFFB71C1C),
-            ],
-            stops: [0.0, 0.12, 0.88, 1.0],
-          ),
-        ),
+        decoration: AppTheme.pageBackground,
         child: SafeArea(
           child: SingleChildScrollView(
             child: ConstrainedBox(
