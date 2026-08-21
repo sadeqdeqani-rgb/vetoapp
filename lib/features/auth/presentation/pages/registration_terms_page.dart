@@ -59,7 +59,7 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                 (_, __, ___) => const Icon(
                                   Icons.how_to_vote_rounded,
                                   size: 96,
-                                  color: AppTheme.primaryGreen,
+                                  color: AppTheme.primary,
                                 ),
                           ),
                           const SizedBox(height: 16),
@@ -77,11 +77,13 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                           Container(
                             padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.96),
+                              color: AppTheme.surface.withValues(alpha: 0.96),
                               borderRadius: BorderRadius.circular(28),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.14),
+                                  color: AppTheme.shadow.withValues(
+                                    alpha: 0.14,
+                                  ),
                                   blurRadius: 24,
                                   offset: const Offset(0, 10),
                                 ),
@@ -105,7 +107,7 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                   child: const Text(
                                     'ثبت نام در وتو اپ',
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: AppTheme.surface,
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -130,7 +132,9 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                   ),
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.background,
+                                    color: Theme.of(
+                                      context,
+                                    ).scaffoldBackgroundColor,
                                     borderRadius: BorderRadius.circular(18),
                                     border: Border.all(color: AppTheme.divider),
                                   ),
@@ -156,23 +160,27 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                   ),
                                 ),
                                 const SizedBox(height: 18),
-                                CheckboxListTile(
-                                  value: _hasAcceptedTerms,
-                                  activeColor: AppTheme.primaryGreen,
-                                  contentPadding: EdgeInsets.zero,
-                                  controlAffinity:
-                                      ListTileControlAffinity.leading,
-                                  onChanged:
-                                      (value) => setState(
-                                        () =>
-                                            _hasAcceptedTerms = value ?? false,
+                                Material(
+                                  type: MaterialType.transparency,
+                                  child: CheckboxListTile(
+                                    value: _hasAcceptedTerms,
+                                    activeColor: AppTheme.primary,
+                                    contentPadding: EdgeInsets.zero,
+                                    controlAffinity:
+                                        ListTileControlAffinity.leading,
+                                    onChanged:
+                                        (value) => setState(
+                                          () =>
+                                              _hasAcceptedTerms =
+                                                  value ?? false,
+                                        ),
+                                    title: const Text(
+                                      'متن شرایط و قوانین را مطالعه کردم '
+                                      'و موافقم.',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
                                       ),
-                                  title: const Text(
-                                    'متن شرایط و قوانین را مطالعه کردم '
-                                    'و موافقم.',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
@@ -183,10 +191,10 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                     onPressed:
                                         _hasAcceptedTerms ? _continue : null,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppTheme.primaryColor,
+                                      backgroundColor: AppTheme.primary,
                                       disabledBackgroundColor:
                                           AppTheme.textSecondary,
-                                      foregroundColor: Colors.white,
+                                      foregroundColor: AppTheme.surface,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(28),
                                       ),

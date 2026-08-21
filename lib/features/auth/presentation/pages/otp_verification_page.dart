@@ -168,18 +168,18 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                             (_, __, ___) => Icon(
                               Icons.how_to_vote_rounded,
                               size: 90,
-                              color: AppTheme.primaryGreen,
+                              color: AppTheme.primary,
                             ),
                       ),
                       const SizedBox(height: 24),
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.94),
+                          color: AppTheme.surface.withValues(alpha: 0.94),
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.14),
+                              color: AppTheme.shadow.withValues(alpha: 0.14),
                               blurRadius: 24,
                               offset: const Offset(0, 10),
                             ),
@@ -195,7 +195,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                     ? Icons.lock_reset_outlined
                                     : Icons.verified_user_outlined,
                                 size: 56,
-                                color: AppTheme.primaryGreen,
+                                color: AppTheme.primary,
                               ),
                               const SizedBox(height: 16),
                               Text(
@@ -204,7 +204,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                 style: Theme.of(
                                   context,
                                 ).textTheme.headlineSmall?.copyWith(
-                                  color: AppTheme.primaryGreen,
+                                  color: AppTheme.primary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -223,7 +223,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                   style: Theme.of(
                                     context,
                                   ).textTheme.titleLarge?.copyWith(
-                                    color: AppTheme.primaryRed,
+                                    color: AppTheme.primary,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -254,8 +254,8 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                               FilledButton(
                                 onPressed: _isLoading ? null : _verifyOtp,
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: AppTheme.primaryGreen,
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: AppTheme.primary,
+                                  foregroundColor: AppTheme.surface,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 14,
                                   ),
@@ -267,7 +267,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                           height: 22,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
-                                            color: Colors.white,
+                                            color: AppTheme.surface,
                                           ),
                                         )
                                         : Text(
@@ -283,9 +283,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                 onPressed: _isLoading ? null : _resendOtp,
                                 child: Text(
                                   'ارسال مجدد کد',
-                                  style: TextStyle(
-                                    color: AppTheme.primaryGreen,
-                                  ),
+                                  style: TextStyle(color: AppTheme.primary),
                                 ),
                               ),
                               TextButton(
@@ -293,7 +291,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                     _isLoading ? null : () => context.pop(),
                                 child: Text(
                                   'ویرایش شمارهٔ تلفن همراه',
-                                  style: TextStyle(color: AppTheme.primaryRed),
+                                  style: TextStyle(
+                                    color: AppTheme.textSecondary,
+                                  ),
                                 ),
                               ),
                             ],

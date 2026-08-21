@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -26,9 +28,10 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = _selectedIndex(context);
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: colors.surface,
       body: AppBackground(
         child: SafeArea(
           child: Column(
@@ -48,52 +51,62 @@ class MainScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-        child: Container(
-          height: 76,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          decoration: BoxDecoration(
-            color: AppTheme.surface,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppTheme.divider),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x1A263238),
-                blurRadius: 16,
-                offset: Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Row(
-            children: List.generate(_locations.length, (index) {
-              final isSelected = index == selectedIndex;
-              final icon = switch (index) {
-                0 => Icons.person_outline,
-                1 => Icons.account_balance_wallet_outlined,
-                2 => Icons.how_to_vote_outlined,
-                _ => Icons.home_outlined,
-              };
-              final label = switch (index) {
-                0 => 'کاربری',
-                1 => 'صندوق',
-                2 => 'مشارکت',
-                _ => 'خانه',
-              };
-
-              return Expanded(
-                child: Semantics(
-                  button: true,
-                  selected: isSelected,
-                  label: label,
-                  child: _NavigationTab(
-                    icon: icon,
-                    label: label,
-                    selected: isSelected,
-                    onTap: () => context.go(_locations[index]),
-                  ),
+        minimum: const EdgeInsets.fromLTRB(18, 0, 18, 16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(36),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+            child: Container(
+              height: 72,
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 7),
+              decoration: BoxDecoration(
+                color: colors.surface.withValues(alpha: 0.42),
+                borderRadius: BorderRadius.circular(36),
+                border: Border.all(
+                  color: colors.surface.withValues(alpha: 0.82),
+                  width: 1.2,
                 ),
-              );
-            }),
+                boxShadow: [
+                  BoxShadow(
+                    color: colors.shadow.withValues(alpha: 0.14),
+                    blurRadius: 24,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: List.generate(_locations.length, (index) {
+                  final isSelected = index == selectedIndex;
+                  final icon = switch (index) {
+                    0 => Icons.person_outline,
+                    1 => Icons.account_balance_wallet_outlined,
+                    2 => Icons.how_to_vote_outlined,
+                    _ => Icons.home_outlined,
+                  };
+                  final label = switch (index) {
+                    0 => 'کاربری',
+                    1 => 'صندوق',
+                    2 => 'مشارکت',
+                    _ => 'خانه',
+                  };
+
+                  return Expanded(
+                    child: Semantics(
+                      button: true,
+                      selected: isSelected,
+                      label: label,
+                      child: _NavigationTab(
+                        icon: icon,
+                        label: label,
+                        selected: isSelected,
+                        onTap: () => context.go(_locations[index]),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
           ),
         ),
       ),
@@ -123,14 +136,17 @@ class _NavigationTabState extends State<_NavigationTab> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final foreground =
         widget.selected
-            ? (_pressed ? AppTheme.primaryDark : AppTheme.primary)
-            : AppTheme.textSecondary;
+            ? (_pressed ? colors.onPrimaryContainer : colors.primary)
+            : colors.onSurfaceVariant;
     final background =
         widget.selected
-            ? (_pressed ? AppTheme.pressedTab : AppTheme.primaryLight)
-            : (_pressed ? AppTheme.pressedTab : Colors.transparent);
+            ? (_pressed
+                ? colors.primaryContainer.withValues(alpha: 0.76)
+                : colors.primaryContainer)
+            : (_pressed ? colors.primaryContainer : Colors.transparent);
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -143,28 +159,44 @@ class _NavigationTabState extends State<_NavigationTab> {
         padding: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
           color: background,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(28),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(widget.icon, size: 25, color: foreground),
-            const SizedBox(height: 2),
-            Text(
-              widget.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontFamily: 'B Mitra',
-                fontSize: 17,
-                fontWeight:
-                    widget.selected || _pressed
-                        ? FontWeight.w700
-                        : FontWeight.w400,
-                color: foreground,
+        child: AnimatedScale(
+          scale: _pressed ? 0.96 : 1,
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOut,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 180),
+                transitionBuilder: (child, animation) {
+                  return ScaleTransition(scale: animation, child: child);
+                },
+                child: Icon(
+                  widget.icon,
+                  key: ValueKey('${widget.label}-${widget.selected}'),
+                  size: widget.selected ? 24 : 23,
+                  color: foreground,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 1),
+              Text(
+                widget.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  fontSize: 16,
+                  fontWeight:
+                      widget.selected || _pressed
+                          ? FontWeight.w700
+                          : FontWeight.w400,
+                  color: foreground,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

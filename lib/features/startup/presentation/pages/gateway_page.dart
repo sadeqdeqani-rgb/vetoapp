@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_background.dart';
+import '../../../../core/widgets/auth_card.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 
@@ -77,25 +78,48 @@ class _GatewayPageState extends State<GatewayPage> {
                       ),
                     ),
                     const SizedBox(height: 28),
-                    GatewayActionButton(
-                      title: 'ثبت نام',
-                      onTap:
-                          _isContinuingAsGuest
-                              ? null
-                              : () => context.pushNamed('register-terms'),
-                    ),
-                    const SizedBox(height: 18),
-                    GatewayActionButton(
-                      title: 'ورود کاربر',
-                      onTap:
-                          _isContinuingAsGuest
-                              ? null
-                              : () => context.go('/login'),
-                    ),
-                    const SizedBox(height: 18),
-                    GatewayActionButton(
-                      title: _isContinuingAsGuest ? 'در حال ورود...' : 'مهمان',
-                      onTap: _isContinuingAsGuest ? null : _continueAsGuest,
+                    AuthCard(
+                      title: 'ورود به وتو اپ',
+                      padding: const EdgeInsets.fromLTRB(22, 18, 22, 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text(
+                            'برای ادامه، روش ورود خود را انتخاب کنید',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppTheme.textPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 22),
+                          GatewayActionButton(
+                            title: 'ثبت نام',
+                            onTap:
+                                _isContinuingAsGuest
+                                    ? null
+                                    : () => context.pushNamed('register-terms'),
+                          ),
+                          const SizedBox(height: 14),
+                          GatewayActionButton(
+                            title: 'ورود کاربر',
+                            onTap:
+                                _isContinuingAsGuest
+                                    ? null
+                                    : () => context.go('/login'),
+                          ),
+                          const SizedBox(height: 14),
+                          GatewayActionButton(
+                            title:
+                                _isContinuingAsGuest
+                                    ? 'در حال ورود...'
+                                    : 'ورود مهمان',
+                            onTap:
+                                _isContinuingAsGuest ? null : _continueAsGuest,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -132,10 +156,10 @@ class _GatewayActionButtonState extends State<GatewayActionButton> {
 
     final Color buttonColor =
         !isEnabled
-            ? AppTheme.primaryRed.withValues(alpha: 0.45)
+            ? AppTheme.divider
             : _isHovered
-            ? AppTheme.primaryGreen
-            : AppTheme.primaryRed;
+            ? AppTheme.primaryDark
+            : AppTheme.primary;
 
     return MouseRegion(
       cursor: isEnabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
@@ -167,7 +191,7 @@ class _GatewayActionButtonState extends State<GatewayActionButton> {
               child: Text(
                 widget.title,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppTheme.surface,
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.5,

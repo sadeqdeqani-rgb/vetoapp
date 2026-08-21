@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 
 class AppBackground extends StatelessWidget {
   final Widget child;
@@ -11,7 +10,9 @@ class AppBackground extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      decoration: AppTheme.pageBackground,
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+      ),
       child: child,
     );
   }

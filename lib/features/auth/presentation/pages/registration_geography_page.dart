@@ -169,7 +169,7 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
       decoration: InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: AppTheme.background,
+        fillColor: Theme.of(context).scaffoldBackgroundColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(28),
           borderSide: BorderSide.none,
@@ -201,11 +201,11 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.94),
+                      color: AppTheme.surface.withValues(alpha: 0.94),
                       borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.14),
+                          color: AppTheme.shadow.withValues(alpha: 0.14),
                           blurRadius: 24,
                           offset: const Offset(0, 10),
                         ),
@@ -233,7 +233,7 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
                           child: const Text(
                             'ثبت نام در وتو اپ',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppTheme.surface,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
@@ -281,8 +281,8 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
                           child: ElevatedButton(
                             onPressed: _continue,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.primaryRed,
-                              foregroundColor: Colors.white,
+                              backgroundColor: AppTheme.primary,
+                              foregroundColor: AppTheme.surface,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(28),
                               ),

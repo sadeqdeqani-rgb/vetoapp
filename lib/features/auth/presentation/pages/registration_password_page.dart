@@ -86,11 +86,11 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
               textDirection: TextDirection.rtl,
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppTheme.surface,
                   borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.28),
+                      color: AppTheme.shadow.withValues(alpha: 0.28),
                       blurRadius: 28,
                       offset: const Offset(0, 12),
                     ),
@@ -112,7 +112,7 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                         'خوش آمدید',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppTheme.surface,
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                         ),
@@ -150,8 +150,8 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                               onPressed:
                                   () => Navigator.of(dialogContext).pop(),
                               style: FilledButton.styleFrom(
-                                backgroundColor: AppTheme.primaryRed,
-                                foregroundColor: Colors.white,
+                                backgroundColor: AppTheme.primary,
+                                foregroundColor: AppTheme.surface,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 16,
                                 ),
@@ -252,18 +252,18 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                             (_, __, ___) => const Icon(
                               Icons.how_to_vote_rounded,
                               size: 90,
-                              color: AppTheme.primaryGreen,
+                              color: AppTheme.primary,
                             ),
                       ),
                       const SizedBox(height: 24),
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.94),
+                          color: AppTheme.surface.withValues(alpha: 0.94),
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.14),
+                              color: AppTheme.shadow.withValues(alpha: 0.14),
                               blurRadius: 24,
                               offset: const Offset(0, 10),
                             ),
@@ -277,7 +277,7 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                               Icon(
                                 Icons.lock_outline,
                                 size: 56,
-                                color: AppTheme.primaryGreen,
+                                color: AppTheme.primary,
                               ),
                               const SizedBox(height: 16),
                               Text(
@@ -286,12 +286,12 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                                 style: Theme.of(
                                   context,
                                 ).textTheme.headlineSmall?.copyWith(
-                                  color: AppTheme.primaryGreen,
+                                  color: AppTheme.primary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              const Text(
+                              Text(
                                 'برای حساب کاربری خود یک رمز عبور حداقل ۸ کاراکتری تعیین کنید.',
                                 textAlign: TextAlign.center,
                               ),
@@ -359,11 +359,13 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              const Text(
+                              Text(
                                 'راهنما: رمز عبور باید حداقل ۸ رقم باشد.',
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
-                                  color: Colors.black54,
+                                  color: AppTheme.textPrimary.withValues(
+                                    alpha: 0.54,
+                                  ),
                                   fontSize: 13,
                                 ),
                               ),
@@ -371,8 +373,8 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                               FilledButton(
                                 onPressed: _isLoading ? null : _continue,
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: AppTheme.primaryGreen,
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: AppTheme.primary,
+                                  foregroundColor: AppTheme.surface,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 14,
                                   ),
@@ -384,7 +386,7 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                                           height: 22,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
-                                            color: Colors.white,
+                                            color: AppTheme.surface,
                                           ),
                                         )
                                         : const Text('ثبت رمز و ادامه'),

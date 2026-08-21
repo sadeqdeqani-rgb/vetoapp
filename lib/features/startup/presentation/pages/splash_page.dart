@@ -141,7 +141,7 @@ class _OutlinedText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final baseStyle = TextStyle(
-      fontFamily: 'B Mitra',
+      fontFamily: AppTheme.fontFamily,
       fontSize: fontSize,
       fontWeight: FontWeight.bold,
       letterSpacing: letterSpacing,
@@ -158,17 +158,17 @@ class _OutlinedText extends StatelessWidget {
                 Paint()
                   ..style = PaintingStyle.stroke
                   ..strokeWidth = 2.2
-                  ..color = Colors.white,
+                  ..color = AppTheme.surface,
           ),
         ),
         Text(
           text,
           textAlign: TextAlign.center,
           style: baseStyle.copyWith(
-            color: Colors.black,
+            color: AppTheme.textPrimary,
             shadows: const [
               Shadow(
-                color: Color(0x66000000),
+                color: AppTheme.shadow,
                 offset: Offset(1.5, 2.0),
                 blurRadius: 3.5,
               ),

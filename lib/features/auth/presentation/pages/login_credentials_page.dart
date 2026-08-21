@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/auth_card.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
 
@@ -110,216 +111,179 @@ class _LoginCredentialsPageState extends State<LoginCredentialsPage> {
                       final isLoading = state is Loading;
                       final textColor = Theme.of(context).colorScheme.onSurface;
 
-                      return Form(
-                        key: _formKey,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 420),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Center(
-                                child: Image.asset(
-                                  'assets/images/vetoapp.png',
-                                  height: 120,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const Icon(
-                                      Icons.verified_user_outlined,
-                                      size: 96,
-                                    );
-                                  },
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              Text(
-                                'به وتو آپ خوش آمدید',
-                                textAlign: TextAlign.center,
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineSmall?.copyWith(
-                                  color: textColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 28),
-                              Container(
-                                height: 56,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      AppTheme.primary,
-                                      AppTheme.primaryDark,
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const AuthBrandHeader(),
+                          const SizedBox(height: 18),
+                          AuthCard(
+                            title: 'ورود به وتو اپ',
+                            maxWidth: 520,
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Text(
+                                    'شماره همراه و رمز عبور خود را وارد کنید',
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(color: textColor),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  TextFormField(
+                                    controller: _phoneController,
+                                    enabled: !isLoading,
+                                    keyboardType: TextInputType.phone,
+                                    textInputAction: TextInputAction.next,
+                                    textAlign: TextAlign.right,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                      LengthLimitingTextInputFormatter(11),
                                     ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(28),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Colors.black26,
-                                      blurRadius: 6,
-                                      offset: Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                child: const Text(
-                                  'ورود به وتو اپ',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 32),
-                              TextFormField(
-                                controller: _phoneController,
-                                enabled: !isLoading,
-                                keyboardType: TextInputType.phone,
-                                textInputAction: TextInputAction.next,
-                                textAlign: TextAlign.right,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(11),
-                                ],
-                                validator: _validatePhone,
-                                decoration: InputDecoration(
-                                  labelText: 'شماره موبایل خود را وارد کنید:',
-                                  hintText: '09xxxxxxxxx',
-                                  filled: true,
-                                  fillColor: const Color.fromRGBO(
-                                    255,
-                                    255,
-                                    255,
-                                    0.85,
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(18),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(18),
-                                    borderSide: const BorderSide(
-                                      color: AppTheme.primaryColor,
-                                      width: 2,
+                                    validator: _validatePhone,
+                                    decoration: InputDecoration(
+                                      labelText:
+                                          'شماره موبایل خود را وارد کنید:',
+                                      hintText: '09xxxxxxxxx',
+                                      filled: true,
+                                      fillColor: AppTheme.surface.withValues(
+                                        alpha: 0.85,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(18),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(18),
+                                        borderSide: const BorderSide(
+                                          color: AppTheme.primary,
+                                          width: 2,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 18),
-                              TextFormField(
-                                controller: _passwordController,
-                                enabled: !isLoading,
-                                obscureText: true,
-                                textInputAction: TextInputAction.done,
-                                textAlign: TextAlign.right,
-                                onFieldSubmitted: (_) => _submit(),
-                                validator: _validatePassword,
-                                decoration: InputDecoration(
-                                  labelText: 'رمز عبور خود را وارد کنید',
-                                  filled: true,
-                                  fillColor: const Color.fromRGBO(
-                                    255,
-                                    255,
-                                    255,
-                                    0.85,
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(18),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(18),
-                                    borderSide: const BorderSide(
-                                      color: AppTheme.primaryColor,
-                                      width: 2,
+                                  const SizedBox(height: 18),
+                                  TextFormField(
+                                    controller: _passwordController,
+                                    enabled: !isLoading,
+                                    obscureText: true,
+                                    textInputAction: TextInputAction.done,
+                                    textAlign: TextAlign.right,
+                                    onFieldSubmitted: (_) => _submit(),
+                                    validator: _validatePassword,
+                                    decoration: InputDecoration(
+                                      labelText: 'رمز عبور خود را وارد کنید',
+                                      filled: true,
+                                      fillColor: AppTheme.surface.withValues(
+                                        alpha: 0.85,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(18),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(18),
+                                        borderSide: const BorderSide(
+                                          color: AppTheme.primary,
+                                          width: 2,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 14),
-                              Center(
-                                child: TextButton(
-                                  onPressed:
-                                      isLoading
-                                          ? null
-                                          : () {
-                                            context.pushNamed(
-                                              'forgot-password',
-                                            );
-                                          },
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: textColor,
-                                    padding: EdgeInsets.zero,
-                                  ),
-                                  child: const Text(
-                                    'فراموشی رمز عبور',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      decoration: TextDecoration.underline,
-                                      decorationThickness: 1.2,
+                                  const SizedBox(height: 14),
+                                  Center(
+                                    child: TextButton(
+                                      onPressed:
+                                          isLoading
+                                              ? null
+                                              : () {
+                                                context.pushNamed(
+                                                  'forgot-password',
+                                                );
+                                              },
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: textColor,
+                                        padding: EdgeInsets.zero,
+                                      ),
+                                      child: const Text(
+                                        'فراموشی رمز عبور',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          decoration: TextDecoration.underline,
+                                          decorationThickness: 1.2,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              Center(
-                                child: TextButton(
-                                  onPressed:
-                                      isLoading
-                                          ? null
-                                          : () {
-                                            context.pushNamed('register-terms');
-                                          },
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: AppTheme.primaryRed,
-                                    padding: EdgeInsets.zero,
-                                  ),
-                                  child: const Text(
-                                    'ثبت نام در وتو اپ',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      decoration: TextDecoration.underline,
+                                  const SizedBox(height: 24),
+                                  Center(
+                                    child: TextButton(
+                                      onPressed:
+                                          isLoading
+                                              ? null
+                                              : () {
+                                                context.pushNamed(
+                                                  'register-terms',
+                                                );
+                                              },
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: AppTheme.primary,
+                                        padding: EdgeInsets.zero,
+                                      ),
+                                      child: const Text(
+                                        'ثبت نام در وتو اپ',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              SizedBox(
-                                height: 52,
-                                child: ElevatedButton(
-                                  onPressed: isLoading ? null : _submit,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.primaryColor,
-                                    foregroundColor: Colors.white,
-                                    elevation: 4,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(26),
-                                    ),
-                                  ),
-                                  child:
-                                      isLoading
-                                          ? const SizedBox(
-                                            height: 24,
-                                            width: 24,
-                                            child: CircularProgressIndicator(
-                                              color: Colors.white,
-                                              strokeWidth: 2.5,
-                                            ),
-                                          )
-                                          : const Text(
-                                            'ثبت',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                  const SizedBox(height: 12),
+                                  SizedBox(
+                                    height: 52,
+                                    child: ElevatedButton(
+                                      onPressed: isLoading ? null : _submit,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppTheme.primary,
+                                        foregroundColor: AppTheme.surface,
+                                        elevation: 4,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            26,
                                           ),
-                                ),
+                                        ),
+                                      ),
+                                      child:
+                                          isLoading
+                                              ? const SizedBox(
+                                                height: 24,
+                                                width: 24,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      color: AppTheme.surface,
+                                                      strokeWidth: 2.5,
+                                                    ),
+                                              )
+                                              : const Text(
+                                                'ثبت',
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                        ],
                       );
                     },
                   ),

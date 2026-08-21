@@ -104,18 +104,18 @@ class _RegistrationNationalCodePageState
                             (_, __, ___) => const Icon(
                               Icons.how_to_vote_rounded,
                               size: 90,
-                              color: AppTheme.primaryGreen,
+                              color: AppTheme.primary,
                             ),
                       ),
                       const SizedBox(height: 24),
                       Container(
                         padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.94),
+                          color: AppTheme.surface.withValues(alpha: 0.94),
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.14),
+                              color: AppTheme.shadow.withValues(alpha: 0.14),
                               blurRadius: 24,
                               offset: const Offset(0, 10),
                             ),
@@ -141,7 +141,7 @@ class _RegistrationNationalCodePageState
                                 child: const Text(
                                   'ثبت نام در وتو اپ',
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: AppTheme.surface,
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -181,7 +181,9 @@ class _RegistrationNationalCodePageState
                                     hintText: '۱۱۱۱۱۱۱۱۱۱',
                                     counterText: '',
                                     filled: true,
-                                    fillColor: AppTheme.background,
+                                    fillColor: Theme.of(
+                                      context,
+                                    ).scaffoldBackgroundColor,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(28),
                                       borderSide: BorderSide.none,
@@ -189,7 +191,7 @@ class _RegistrationNationalCodePageState
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(28),
                                       borderSide: const BorderSide(
-                                        color: AppTheme.primaryGreen,
+                                        color: AppTheme.primary,
                                         width: 2,
                                       ),
                                     ),
@@ -202,8 +204,8 @@ class _RegistrationNationalCodePageState
                                 child: ElevatedButton(
                                   onPressed: _isLoading ? null : _continue,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.primaryRed,
-                                    foregroundColor: Colors.white,
+                                    backgroundColor: AppTheme.primary,
+                                    foregroundColor: AppTheme.surface,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(28),
                                     ),
@@ -215,7 +217,7 @@ class _RegistrationNationalCodePageState
                                             height: 22,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
-                                              color: Colors.white,
+                                              color: AppTheme.surface,
                                             ),
                                           )
                                           : const Text(

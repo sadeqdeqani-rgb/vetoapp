@@ -6,10 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 
 /// مرحلهٔ دریافت شمارهٔ تلفن همراه برای بازیابی رمز یا ثبت‌نام.
 class ForgotPasswordPhonePage extends StatefulWidget {
-  const ForgotPasswordPhonePage({
-    super.key,
-    this.isRegistration = false,
-  });
+  const ForgotPasswordPhonePage({super.key, this.isRegistration = false});
 
   /// اگر true باشد، صفحه در فلو ثبت‌نام استفاده می‌شود.
   final bool isRegistration;
@@ -136,18 +133,18 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                             (_, __, ___) => Icon(
                               Icons.lock_reset_outlined,
                               size: 90,
-                              color: AppTheme.primaryGreen,
+                              color: AppTheme.primary,
                             ),
                       ),
                       const SizedBox(height: 24),
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.94),
+                          color: AppTheme.surface.withValues(alpha: 0.94),
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.14),
+                              color: AppTheme.shadow.withValues(alpha: 0.14),
                               blurRadius: 24,
                               offset: const Offset(0, 10),
                             ),
@@ -161,7 +158,7 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                               const Icon(
                                 Icons.phone_android_outlined,
                                 size: 56,
-                                color: AppTheme.primaryGreen,
+                                color: AppTheme.primary,
                               ),
                               const SizedBox(height: 16),
                               Text(
@@ -172,7 +169,7 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                                 style: Theme.of(
                                   context,
                                 ).textTheme.headlineSmall?.copyWith(
-                                  color: AppTheme.primaryGreen,
+                                  color: AppTheme.primary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -203,9 +200,11 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                                   decoration: InputDecoration(
                                     labelText: 'شمارهٔ تلفن همراه',
                                     hintText: '09123456789',
-                                    prefixIcon: const Icon(Icons.phone_outlined),
+                                    prefixIcon: const Icon(
+                                      Icons.phone_outlined,
+                                    ),
                                     filled: true,
-                                    fillColor: Colors.white.withValues(
+                                    fillColor: AppTheme.surface.withValues(
                                       alpha: 0.94,
                                     ),
                                     border: OutlineInputBorder(
@@ -215,7 +214,7 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
                                       borderSide: const BorderSide(
-                                        color: AppTheme.primaryGreen,
+                                        color: AppTheme.primary,
                                         width: 2,
                                       ),
                                     ),
@@ -224,11 +223,10 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                               ),
                               const SizedBox(height: 20),
                               FilledButton(
-                                onPressed:
-                                    _isLoading ? null : _continueToOtp,
+                                onPressed: _isLoading ? null : _continueToOtp,
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: AppTheme.primaryGreen,
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: AppTheme.primary,
+                                  foregroundColor: AppTheme.surface,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 14,
                                   ),
@@ -243,7 +241,7 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                                           height: 22,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
-                                            color: Colors.white,
+                                            color: AppTheme.surface,
                                           ),
                                         )
                                         : const Text('ارسال کد تأیید'),
