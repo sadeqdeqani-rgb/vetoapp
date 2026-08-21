@@ -1,0 +1,11 @@
+def mirrorRepositories = [
+    'https://maven.aliyun.com/repository/google',
+    'https://maven.aliyun.com/repository/gradle-plugin',
+    'https://maven.aliyun.com/repository/public'
+]
+
+gradle.beforeProject { project ->
+    mirrorRepositories.each { repositoryUrl ->
+        project.buildscript.repositories.maven { url = uri(repositoryUrl) }
+    }
+}

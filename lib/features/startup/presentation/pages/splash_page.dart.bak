@@ -1,0 +1,126 @@
+import 'dart:io';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+
+class SplashPage extends StatefulWidget {
+  const SplashPage({super.key});
+
+  @override
+  State<SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends State<SplashPage> {
+  @override
+  void initState() {
+    super.initState();
+    _checkConnectionAndNavigate();
+  }
+
+  Future<bool> _hasReachableBackend() async {
+    try {
+      final result = await InternetAddress.lookup('api.vetoapp.ir');
+      return result.isNotEmpty && result.first.rawAddress.isNotEmpty;
+    } on SocketException {
+      return false;
+    }
+  }
+
+  Future<void> _checkConnectionAndNavigate() async {
+    final connectivityResults = await Connectivity().checkConnectivity();
+
+    if (connectivityResults.contains(ConnectivityResult.none)) {
+      _showNoConnectionDialog();
+      return;
+    }
+
+    final backendReachable = await _hasReachableBackend();
+
+    if (!backendReachable) {
+      _showNoConnectionDialog();
+      return;
+    }
+
+    if (mounted) {
+      context.go('/gateway');
+    }
+  }
+
+  void _showNoConnectionDialog() {
+    if (!mounted) return;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('عدم دسترسی به اینترنت'),
+          content: const Text('لطفاً اتصال اینترنت خود را بررسی کنید.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _checkConnectionAndNavigate();
+              },
+              child: const Text('تلاش مجدد'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF239F40), Colors.white, Color(0xFFDA0000)],
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+                            SvgPicture.asset(
+                'assets/images/iran_map.svg',
+                width: 180,
+                placeholderBuilder: (_) => const SizedBox(
+                  width: 180,
+                  height: 180,
+                  child: Icon(Icons.map_outlined, size: 100, color: Color(0xFF1A1A1A)),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'درگاه ملی وِتواَپ',
+                textDirection: TextDirection.rtl,
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const Text(
+                'همه‌پرسی · انتخابات · استیضاح',
+                textDirection: TextDirection.rtl,
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'VetoApp National Portal',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const Text(
+                'Referendum · Election · Impeachment',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

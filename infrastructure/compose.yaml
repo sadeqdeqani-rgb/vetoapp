@@ -1,0 +1,61 @@
+name: vetoapp-local
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: vetoapp-mysql
+    restart: unless-stopped
+    env_file:
+      - .envsddocker
+    command:
+      - --default-authentication-plugin=caching_sha2_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --skip-name-resolve
+    ports:
+     - "127.0.0.1:${MYSQL_PORT:-3306}:3306" 
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    networks:
+      - vetoapp_network
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    container_name: vetoapp-valkey
+    restart: unless-stopped
+    command:
+      - valkey-server
+      - --appendonly
+      - "yes"
+    ports:
+      - "127.0.0.1:${VALKEY_PORT:-6379}:6379"
+    volumes:
+      - valkey_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks:
+      - vetoapp_network
+
+volumes:
+  mysql_data:
+    name: vetoapp_mysql_data
+  valkey_data:
+    name: vetoapp_valkey_data
+
+networks:
+  vetoapp_network:
+    name: vetoapp_network
+    driver: bridge
