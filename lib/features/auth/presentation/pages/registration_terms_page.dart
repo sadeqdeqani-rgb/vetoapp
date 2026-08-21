@@ -64,7 +64,7 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'به وتو اپ خوش آمدید',
+                            'به وِتواَپ خوش آمدید',
                             textAlign: TextAlign.center,
                             style: Theme.of(
                               context,
@@ -105,7 +105,7 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                     borderRadius: BorderRadius.circular(28),
                                   ),
                                   child: const Text(
-                                    'ثبت نام در وتو اپ',
+                                    'ثبت نام در وِتواَپ',
                                     style: TextStyle(
                                       color: AppTheme.surface,
                                       fontSize: 20,
@@ -116,7 +116,7 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                 const SizedBox(height: 24),
                                 Text(
                                   'لطفاً پیش از ادامه، قوانین و مقررات استفاده '
-                                  'از وتو اپ را مطالعه کنید.',
+                                  'از وِتواَپ را مطالعه کنید.',
                                   textAlign: TextAlign.center,
                                   style: Theme.of(
                                     context,
@@ -132,14 +132,15 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                   ),
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(
-                                      context,
-                                    ).scaffoldBackgroundColor,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).scaffoldBackgroundColor,
                                     borderRadius: BorderRadius.circular(18),
                                     border: Border.all(color: AppTheme.divider),
                                   ),
                                   child: const Text(
-                                    'با ثبت‌نام در وتو اپ، می‌پذیرید که اطلاعات '
+                                    'با ثبت‌نام در وِتواَپ، می‌پذیرید که اطلاعات '
                                     'واردشده را صحیح و متعلق به خودتان ارائه '
                                     'کنید.\n\n'
                                     'استفاده از برنامه باید مطابق قوانین جاری '
@@ -147,7 +148,7 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                     'شود. مسئولیت حفظ اطلاعات ورود و هرگونه '
                                     'فعالیت انجام‌شده با حساب کاربری بر عهدهٔ '
                                     'کاربر است.\n\n'
-                                    'وتو اپ می‌تواند برای بهبود خدمات، رفع خطا '
+                                    'وِتواَپ می‌تواند برای بهبود خدمات، رفع خطا '
                                     'و ارائهٔ قابلیت‌های جدید، برنامه و شرایط '
                                     'استفاده را به‌روزرسانی کند. نسخهٔ جدید '
                                     'قوانین از طریق برنامه اطلاع‌رسانی خواهد شد.',

@@ -19,7 +19,7 @@ class GatewayPage extends StatelessWidget {
             children: [
               const Spacer(),
               Text(
-                'سامانه وتو اپ',
+                'سامانه وِتواَپ',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,

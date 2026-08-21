@@ -1,0 +1,234 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1320" viewBox="0 0 1800 1320">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F4F7FF"/>
+      <stop offset="1" stop-color="#EEF8F3"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1A237E"/>
+      <stop offset="1" stop-color="#3949AB"/>
+    </linearGradient>
+    <linearGradient id="mint" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#DCEFE6"/>
+      <stop offset="1" stop-color="#EFF8F3"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#263238" flood-opacity=".14"/>
+    </filter>
+    <filter id="smallShadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#263238" flood-opacity=".12"/>
+    </filter>
+    <style>
+      .fa { font-family: 'B Mitra', 'Noto Naskh Arabic', serif; }
+      .title { font-size: 32px; font-weight: 700; fill: #263238; }
+      .subtitle { font-size: 19px; fill: #607D8B; }
+      .phoneTitle { font-size: 19px; font-weight: 700; fill: #263238; }
+      .cardTitle { font-size: 16px; font-weight: 700; fill: #263238; }
+      .body { font-size: 13px; fill: #607D8B; }
+      .chip { font-size: 12px; font-weight: 700; fill: #1A237E; }
+      .nav { font-size: 13px; font-weight: 700; fill: #607D8B; }
+      .navActive { font-size: 13px; font-weight: 700; fill: #1A237E; }
+      .tiny { font-size: 11px; fill: #78909C; }
+    </style>
+  </defs>
+
+  <rect width="1800" height="1320" fill="url(#bg)"/>
+  <text x="90" y="72" class="fa title">وِتواَپ — پیشنهاد نویگیشن و معماری اسکرین‌ها</text>
+  <text x="90" y="108" class="fa subtitle">نسخه‌ی خام اولیه / پنج تب اصلی / مسیرهای داخلی درون هر تب</text>
+
+  <!-- Navigation bar concept -->
+  <g transform="translate(90 145)" filter="url(#shadow)">
+    <rect width="1620" height="112" rx="38" fill="#FFFFFF" fill-opacity=".94" stroke="#FFFFFF" stroke-width="3"/>
+    <g transform="translate(42 16)">
+      <rect x="0" y="0" width="288" height="80" rx="28" fill="#E8EAF6"/>
+      <circle cx="48" cy="32" r="19" fill="#1A237E"/>
+      <path d="M40 35h16M43 29h10" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      <text x="144" y="38" text-anchor="middle" class="fa navActive">خانه</text>
+      <text x="144" y="60" text-anchor="middle" class="fa tiny">نمای کلی سامانه</text>
+    </g>
+    <g transform="translate(360 16)">
+      <circle cx="48" cy="32" r="19" fill="#DCEFE6"/>
+      <path d="M39 32c9-17 18 17 27 0" fill="none" stroke="#2E7D32" stroke-width="3"/>
+      <text x="108" y="38" class="fa nav">همه‌پرسی</text>
+    </g>
+    <g transform="translate(665 16)">
+      <circle cx="48" cy="32" r="19" fill="#FFF1D6"/>
+      <path d="M39 26h18v14H39zM43 22h10" fill="none" stroke="#C77C00" stroke-width="3"/>
+      <text x="108" y="38" class="fa nav">انتخابات</text>
+    </g>
+    <g transform="translate(970 16)">
+      <circle cx="48" cy="32" r="19" fill="#FFE4E2"/>
+      <path d="M39 24h18v16H39zM43 29h10M43 34h7" fill="none" stroke="#C62828" stroke-width="3"/>
+      <text x="108" y="38" class="fa nav">استیضاح</text>
+    </g>
+    <g transform="translate(1275 16)">
+      <circle cx="48" cy="32" r="19" fill="#E8EAF6"/>
+      <circle cx="48" cy="28" r="7" fill="none" stroke="#1A237E" stroke-width="3"/>
+      <path d="M35 47c3-10 23-10 26 0" fill="none" stroke="#1A237E" stroke-width="3" stroke-linecap="round"/>
+      <text x="108" y="38" class="fa nav">حساب کاربری</text>
+    </g>
+  </g>
+
+  <text x="90" y="312" class="fa title" font-size="24">پنج اسکرین پایه</text>
+  <text x="1710" y="312" text-anchor="end" class="fa subtitle">هر کارت داخلی می‌تواند به صفحه‌ی فهرست / جزئیات / اقدام هدایت شود</text>
+
+  <!-- Phone 1: Home -->
+  <g transform="translate(90 350)">
+    <rect width="300" height="820" rx="34" fill="#FFFFFF" filter="url(#shadow)"/>
+    <rect x="16" y="16" width="268" height="788" rx="25" fill="#F8FAFC"/>
+    <circle cx="150" cy="51" r="19" fill="#E8EAF6"/>
+    <path d="M142 54h16M145 48h10" stroke="#1A237E" stroke-width="3" stroke-linecap="round"/>
+    <text x="264" y="57" text-anchor="end" class="fa phoneTitle">خانه</text>
+    <text x="264" y="84" text-anchor="end" class="fa body">خلاصه‌ای از فعالیت سامانه</text>
+    <rect x="32" y="108" width="236" height="116" rx="22" fill="url(#brand)"/>
+    <text x="250" y="143" text-anchor="end" class="fa" font-size="16" font-weight="700" fill="#fff">کاربران فعال سامانه</text>
+    <text x="250" y="190" text-anchor="end" class="fa" font-size="34" font-weight="700" fill="#fff">۱۲٬۴۸۰</text>
+    <text x="50" y="207" class="fa" font-size="12" fill="#DDE3EA">همین حالا آنلاین</text>
+    <rect x="32" y="242" width="236" height="52" rx="17" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="250" y="274" text-anchor="end" class="fa body">کشور / استان / شهرستان / شهر / روستا</text>
+    <path d="M52 264l7 7 7-7" fill="none" stroke="#1A237E" stroke-width="2"/>
+    <rect x="32" y="314" width="236" height="150" rx="22" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <circle cx="220" cy="352" r="25" fill="#DCEFE6"/>
+    <path d="M208 352h24M220 340v24" stroke="#2E7D32" stroke-width="3"/>
+    <text x="250" y="348" text-anchor="end" class="fa cardTitle">معرفی وِتواَپ</text>
+    <text x="250" y="376" text-anchor="end" class="fa body">این سامانه برای مشارکت امن و</text>
+    <text x="250" y="398" text-anchor="end" class="fa body">شفاف شهروندان طراحی شده است.</text>
+    <rect x="50" y="419" width="94" height="25" rx="12" fill="#E8EAF6"/>
+    <text x="97" y="436" text-anchor="middle" class="fa chip">مشاهده ویدیو</text>
+    <rect x="32" y="484" width="236" height="148" rx="22" fill="#263238"/>
+    <circle cx="150" cy="551" r="25" fill="#FFFFFF" fill-opacity=".92"/>
+    <path d="M143 538l20 13-20 13z" fill="#1A237E"/>
+    <text x="250" y="611" text-anchor="end" class="fa" font-size="13" fill="#fff">ویدیوی معرفی کوتاه سامانه</text>
+    <rect x="32" y="676" width="236" height="94" rx="22" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="250" y="710" text-anchor="end" class="fa cardTitle">آخرین فعالیت‌ها</text>
+    <text x="250" y="739" text-anchor="end" class="fa body">۳ همه‌پرسی در حال مشارکت</text>
+    <text x="250" y="761" text-anchor="end" class="fa body">۲ انتخابات در حال رأی‌گیری</text>
+  </g>
+
+  <!-- Phone 2: Referendum -->
+  <g transform="translate(420 350)">
+    <rect width="300" height="820" rx="34" fill="#FFFFFF" filter="url(#shadow)"/>
+    <rect x="16" y="16" width="268" height="788" rx="25" fill="#F8FAFC"/>
+    <circle cx="150" cy="51" r="19" fill="#DCEFE6"/>
+    <path d="M141 51c9-16 18 16 27 0" fill="none" stroke="#2E7D32" stroke-width="3"/>
+    <text x="264" y="57" text-anchor="end" class="fa phoneTitle">همه‌پرسی</text>
+    <text x="264" y="84" text-anchor="end" class="fa body">چهار مسیر اصلی مشارکت</text>
+    <rect x="32" y="106" width="236" height="58" rx="18" fill="#DCEFE6"/>
+    <text x="250" y="141" text-anchor="end" class="fa cardTitle">پیشنهاد موضوع جدید</text>
+    <circle cx="57" cy="135" r="16" fill="#2E7D32"/><path d="M50 135h14M57 128v14" stroke="#fff" stroke-width="3"/>
+    <rect x="32" y="180" width="236" height="58" rx="18" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="250" y="215" text-anchor="end" class="fa cardTitle">مشاهده و حمایت از موضوعات</text>
+    <rect x="32" y="254" width="236" height="58" rx="18" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="250" y="289" text-anchor="end" class="fa cardTitle">شرکت در همه‌پرسی</text>
+    <rect x="32" y="328" width="236" height="58" rx="18" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="250" y="363" text-anchor="end" class="fa cardTitle">نتایج همه‌پرسی‌های پایان‌یافته</text>
+    <rect x="32" y="410" width="236" height="210" rx="22" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="250" y="447" text-anchor="end" class="fa cardTitle">در حال مشارکت</text>
+    <rect x="50" y="469" width="200" height="38" rx="12" fill="#F4F7FF"/>
+    <text x="236" y="493" text-anchor="end" class="fa body">آلودگی هوای شهری</text>
+    <rect x="50" y="517" width="200" height="38" rx="12" fill="#F4F7FF"/>
+    <text x="236" y="541" text-anchor="end" class="fa body">طرح توسعه محله</text>
+    <text x="250" y="592" text-anchor="end" class="fa tiny">مشاهده همه موارد ←</text>
+    <rect x="32" y="646" width="236" height="124" rx="22" fill="#F4F7FF"/>
+    <text x="250" y="681" text-anchor="end" class="fa cardTitle">راهنمای همه‌پرسی</text>
+    <text x="250" y="711" text-anchor="end" class="fa body">از پیشنهاد موضوع تا مشاهده نتایج</text>
+    <text x="250" y="738" text-anchor="end" class="fa body">همه‌چیز در چهار گام ساده</text>
+  </g>
+
+  <!-- Phone 3: Election -->
+  <g transform="translate(750 350)">
+    <rect width="300" height="820" rx="34" fill="#FFFFFF" filter="url(#shadow)"/>
+    <rect x="16" y="16" width="268" height="788" rx="25" fill="#F8FAFC"/>
+    <circle cx="150" cy="51" r="19" fill="#FFF1D6"/>
+    <path d="M141 45h18v14h-18zM145 41h10" fill="none" stroke="#C77C00" stroke-width="3"/>
+    <text x="264" y="57" text-anchor="end" class="fa phoneTitle">انتخابات</text>
+    <text x="264" y="84" text-anchor="end" class="fa body">مشارکت و پیگیری نتایج</text>
+    <rect x="32" y="106" width="236" height="70" rx="20" fill="#FFF1D6"/>
+    <text x="250" y="137" text-anchor="end" class="fa cardTitle">شرکت در انتخابات</text>
+    <text x="250" y="160" text-anchor="end" class="fa body">۳ انتخابات در حال رأی‌گیری</text>
+    <circle cx="57" cy="141" r="16" fill="#C77C00"/><path d="M50 141h14M57 134v14" stroke="#fff" stroke-width="3"/>
+    <rect x="32" y="192" width="236" height="70" rx="20" fill="#FFF8EB" stroke="#F0D9AC"/>
+    <circle cx="57" cy="227" r="16" fill="#C77C00"/>
+    <path d="M49 227h16M57 219v16" stroke="#fff" stroke-width="3"/>
+    <text x="250" y="223" text-anchor="end" class="fa cardTitle">نتایج زنده</text>
+    <text x="250" y="247" text-anchor="end" class="fa body">آمار رأی‌ها به‌صورت لحظه‌ای</text>
+    <rect x="32" y="278" width="236" height="70" rx="20" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="250" y="309" text-anchor="end" class="fa cardTitle">انتخابات پایان‌یافته</text>
+    <text x="250" y="333" text-anchor="end" class="fa body">جست‌وجو و مقایسه نتایج</text>
+    <rect x="32" y="374" width="236" height="260" rx="22" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="250" y="411" text-anchor="end" class="fa cardTitle">انتخابات در حال رأی‌گیری</text>
+    <text x="250" y="451" text-anchor="end" class="fa body">شورای محله مرکزی</text>
+    <rect x="50" y="466" width="200" height="8" rx="4" fill="#E8EAF6"/><rect x="50" y="466" width="138" height="8" rx="4" fill="#1A237E"/>
+    <text x="250" y="505" text-anchor="end" class="fa tiny">تا پایان: ۲ روز و ۴ ساعت</text>
+    <text x="250" y="548" text-anchor="end" class="fa body">نماینده منتخب حوزه شهری</text>
+    <rect x="50" y="563" width="200" height="8" rx="4" fill="#E8EAF6"/><rect x="50" y="563" width="94" height="8" rx="4" fill="#1A237E"/>
+    <text x="250" y="601" text-anchor="end" class="fa tiny">تا پایان: ۵ روز و ۱ ساعت</text>
+    <rect x="32" y="662" width="236" height="108" rx="22" fill="#263238"/>
+    <text x="250" y="703" text-anchor="end" class="fa" font-size="14" fill="#fff">نتایج را شفاف و زنده ببینید</text>
+    <text x="250" y="730" text-anchor="end" class="fa" font-size="12" fill="#DDE3EA">بدون خروج از مسیر انتخابات</text>
+  </g>
+
+  <!-- Phone 4: Impeachment -->
+  <g transform="translate(1080 350)">
+    <rect width="300" height="820" rx="34" fill="#FFFFFF" filter="url(#shadow)"/>
+    <rect x="16" y="16" width="268" height="788" rx="25" fill="#F8FAFC"/>
+    <circle cx="150" cy="51" r="19" fill="#FFE4E2"/>
+    <path d="M141 43h18v17h-18zM145 48h10M145 53h8" fill="none" stroke="#C62828" stroke-width="2.5"/>
+    <text x="264" y="57" text-anchor="end" class="fa phoneTitle">استیضاح</text>
+    <text x="264" y="84" text-anchor="end" class="fa body">پاسخ‌گویی و نظارت شهروندی</text>
+    <rect x="32" y="106" width="236" height="70" rx="20" fill="#FFE4E2"/>
+    <text x="250" y="137" text-anchor="end" class="fa cardTitle">درخواست استیضاح</text>
+    <text x="250" y="160" text-anchor="end" class="fa body">ثبت موضوع با مستندات</text>
+    <rect x="32" y="192" width="236" height="70" rx="20" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="250" y="223" text-anchor="end" class="fa cardTitle">مشاهده و شرکت</text>
+    <text x="250" y="247" text-anchor="end" class="fa body">بررسی موضوعات فعال</text>
+    <rect x="32" y="278" width="236" height="70" rx="20" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="250" y="309" text-anchor="end" class="fa cardTitle">استیضاح‌های پایان‌یافته</text>
+    <text x="250" y="333" text-anchor="end" class="fa body">نتایج و سوابق پاسخ‌گویی</text>
+    <rect x="32" y="374" width="236" height="260" rx="22" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="250" y="411" text-anchor="end" class="fa cardTitle">موضوعات فعال</text>
+    <rect x="50" y="433" width="200" height="62" rx="15" fill="#FFF6F5"/>
+    <text x="236" y="458" text-anchor="end" class="fa body">عملکرد مدیریت شهری</text>
+    <text x="236" y="481" text-anchor="end" class="fa tiny">۱۲٬۴۸۰ مشارکت</text>
+    <rect x="50" y="511" width="200" height="62" rx="15" fill="#FFF6F5"/>
+    <text x="236" y="536" text-anchor="end" class="fa body">طرح توسعه منابع آب</text>
+    <text x="236" y="559" text-anchor="end" class="fa tiny">۸٬۲۱۴ مشارکت</text>
+    <text x="250" y="610" text-anchor="end" class="fa tiny">مشاهده همه موارد ←</text>
+    <rect x="32" y="662" width="236" height="108" rx="22" fill="#FFF6F5"/>
+    <text x="250" y="703" text-anchor="end" class="fa cardTitle">اصل پاسخ‌گویی</text>
+    <text x="250" y="730" text-anchor="end" class="fa body">مستند، مرحله‌به‌مرحله و شفاف</text>
+  </g>
+
+  <!-- Phone 5: Profile -->
+  <g transform="translate(1410 350)">
+    <rect width="300" height="820" rx="34" fill="#FFFFFF" filter="url(#shadow)"/>
+    <rect x="16" y="16" width="268" height="788" rx="25" fill="#F8FAFC"/>
+    <circle cx="150" cy="67" r="34" fill="#E8EAF6"/>
+    <circle cx="150" cy="59" r="10" fill="none" stroke="#1A237E" stroke-width="3"/>
+    <path d="M132 85c5-16 31-16 36 0" fill="none" stroke="#1A237E" stroke-width="3" stroke-linecap="round"/>
+    <text x="264" y="128" text-anchor="end" class="fa phoneTitle">حساب کاربری</text>
+    <text x="264" y="154" text-anchor="end" class="fa body">مدیریت اطلاعات و تنظیمات شما</text>
+    <rect x="32" y="180" width="236" height="70" rx="20" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="250" y="211" text-anchor="end" class="fa cardTitle">اطلاعات حساب</text>
+    <text x="250" y="235" text-anchor="end" class="fa body">نام، شماره همراه و وضعیت حساب</text>
+    <rect x="32" y="266" width="236" height="70" rx="20" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="250" y="297" text-anchor="end" class="fa cardTitle">تغییر رمز عبور</text>
+    <text x="250" y="321" text-anchor="end" class="fa body">امنیت ورود به سامانه</text>
+    <rect x="32" y="352" width="236" height="70" rx="20" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="250" y="383" text-anchor="end" class="fa cardTitle">موقعیت جغرافیایی</text>
+    <text x="250" y="407" text-anchor="end" class="fa body">کشور / استان / شهرستان / شهر / روستا</text>
+    <rect x="32" y="438" width="236" height="70" rx="20" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="250" y="469" text-anchor="end" class="fa cardTitle">مدیریت حساب</text>
+    <text x="250" y="493" text-anchor="end" class="fa body">خروج، حذف یا دریافت اطلاعات</text>
+    <rect x="32" y="540" width="236" height="150" rx="22" fill="url(#mint)"/>
+    <text x="250" y="578" text-anchor="end" class="fa cardTitle">مرکز شفافیت</text>
+    <text x="250" y="610" text-anchor="end" class="fa body">فعالیت‌های شما در همه‌پرسی،</text>
+    <text x="250" y="632" text-anchor="end" class="fa body">انتخابات و استیضاح</text>
+    <rect x="50" y="650" width="108" height="24" rx="12" fill="#FFFFFF"/>
+    <text x="104" y="666" text-anchor="middle" class="fa chip">مشاهده سوابق</text>
+    <rect x="32" y="712" width="236" height="58" rx="18" fill="#FFF6F5"/>
+    <text x="250" y="747" text-anchor="end" class="fa" font-size="14" font-weight="700" fill="#C62828">خروج از حساب</text>
+  </g>
+
+  <text x="90" y="1248" class="fa subtitle">یادداشت طراحی: کارت‌های داخلی باید از «مسیر اصلی» جدا باشند؛ کاربر ابتدا بخش را انتخاب می‌کند و سپس یکی از عملیات آن بخش را انجام می‌دهد.</text>
+</svg>

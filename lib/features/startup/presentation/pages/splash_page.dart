@@ -85,7 +85,7 @@ class _SplashPageState extends State<SplashPage> {
                           fit: BoxFit.contain,
                         ),
                         SizedBox(height: 12),
-                        _OutlinedText(text: 'درگاه ملی وتواپ', fontSize: 26),
+                        _OutlinedText(text: 'درگاه ملی وِتواَپ', fontSize: 26),
                         SizedBox(height: 6),
                         _OutlinedText(
                           text: 'همه پرسی . انتخابات . استیضاح',

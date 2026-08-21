@@ -139,7 +139,7 @@ class _RegistrationNationalCodePageState
                                   borderRadius: BorderRadius.circular(28),
                                 ),
                                 child: const Text(
-                                  'ثبت نام در وتو اپ',
+                                  'ثبت نام در وِتواَپ',
                                   style: TextStyle(
                                     color: AppTheme.surface,
                                     fontSize: 20,
@@ -181,9 +181,10 @@ class _RegistrationNationalCodePageState
                                     hintText: '۱۱۱۱۱۱۱۱۱۱',
                                     counterText: '',
                                     filled: true,
-                                    fillColor: Theme.of(
-                                      context,
-                                    ).scaffoldBackgroundColor,
+                                    fillColor:
+                                        Theme.of(
+                                          context,
+                                        ).scaffoldBackgroundColor,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(28),
                                       borderSide: BorderSide.none,

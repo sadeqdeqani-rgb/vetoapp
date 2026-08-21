@@ -123,7 +123,7 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                       child: Column(
                         children: [
                           const Text(
-                            'به وتو اپ خوش آمدید',
+                            'به وِتواَپ خوش آمدید',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: AppTheme.primaryDark,
@@ -134,7 +134,7 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                           const SizedBox(height: 24),
                           const Text(
                             'پس از این‌که اکثریت مردم ایران درخواست فعال‌سازی '
-                            'وتو اپ را خواستند، شما می‌توانید از حق وتو و رأی '
+                            'وِتواَپ را خواستند، شما می‌توانید از حق وتو و رأی '
                             'خود استفاده کنید.',
                             textAlign: TextAlign.center,
                             style: TextStyle(

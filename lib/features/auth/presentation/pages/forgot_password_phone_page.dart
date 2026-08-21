@@ -163,7 +163,7 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                               const SizedBox(height: 16),
                               Text(
                                 widget.isRegistration
-                                    ? 'ثبت نام در وتو اپ'
+                                    ? 'ثبت نام در وِتواَپ'
                                     : 'بازیابی رمز عبور',
                                 textAlign: TextAlign.center,
                                 style: Theme.of(

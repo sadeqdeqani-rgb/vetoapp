@@ -117,7 +117,7 @@ class _LoginCredentialsPageState extends State<LoginCredentialsPage> {
                           const AuthBrandHeader(),
                           const SizedBox(height: 18),
                           AuthCard(
-                            title: 'ورود به وتو اپ',
+                            title: 'ورود به وِتواَپ',
                             maxWidth: 520,
                             child: Form(
                               key: _formKey,
@@ -235,7 +235,7 @@ class _LoginCredentialsPageState extends State<LoginCredentialsPage> {
                                         padding: EdgeInsets.zero,
                                       ),
                                       child: const Text(
-                                        'ثبت نام در وتو اپ',
+                                        'ثبت نام در وِتواَپ',
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,

@@ -13,6 +13,9 @@ import '../../features/auth/presentation/pages/registration_terms_page.dart';
 import '../../features/ballot/presentation/screens/ballot_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/home/presentation/screens/main_screen.dart';
+import '../../features/home/presentation/screens/referendum_screen.dart';
+import '../../features/home/presentation/screens/election_screen.dart';
+import '../../features/home/presentation/screens/impeachment_screen.dart';
 import '../../features/participation/presentation/screens/participation_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/startup/presentation/pages/gateway_page.dart'
@@ -248,6 +251,21 @@ GoRouter createAppRouter(AuthCubit authCubit) {
             path: '/profile',
             name: 'profile',
             builder: (context, state) => const ProfileScreen(),
+          ),
+          GoRoute(
+            path: '/referendum',
+            name: 'referendum',
+            builder: (context, state) => const ReferendumScreen(),
+          ),
+          GoRoute(
+            path: '/elections',
+            name: 'elections',
+            builder: (context, state) => const ElectionScreen(),
+          ),
+          GoRoute(
+            path: '/impeachment',
+            name: 'impeachment',
+            builder: (context, state) => const ImpeachmentScreen(),
           ),
         ],
       ),

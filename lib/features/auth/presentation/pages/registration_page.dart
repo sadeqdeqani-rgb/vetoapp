@@ -29,7 +29,7 @@ class RegistrationPage extends StatelessWidget {
                       const AuthBrandHeader(size: 112),
                       const SizedBox(height: 18),
                       AuthCard(
-                        title: 'ثبت نام در وتو اپ',
+                        title: 'ثبت نام در وِتواَپ',
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [

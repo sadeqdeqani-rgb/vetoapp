@@ -231,7 +231,7 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
                             borderRadius: BorderRadius.circular(28),
                           ),
                           child: const Text(
-                            'ثبت نام در وتو اپ',
+                            'ثبت نام در وِتواَپ',
                             style: TextStyle(
                               color: AppTheme.surface,
                               fontSize: 20,

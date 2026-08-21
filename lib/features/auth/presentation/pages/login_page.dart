@@ -85,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
                   title:
                       isPasswordRecovery
                           ? 'بازیابی رمز عبور'
-                          : 'ورود به وتو اپ',
+                          : 'ورود به وِتواَپ',
                   child: Form(
                     key: _formKey,
                     child: Column(

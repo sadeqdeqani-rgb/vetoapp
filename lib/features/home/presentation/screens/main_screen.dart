@@ -12,10 +12,11 @@ class MainScreen extends StatelessWidget {
   final Widget child;
 
   static const _locations = <String>[
-    '/profile',
-    '/ballot',
-    '/participation',
     '/',
+    '/referendum',
+    '/elections',
+    '/impeachment',
+    '/profile',
   ];
 
   int _selectedIndex(BuildContext context) {
@@ -42,7 +43,7 @@ class MainScreen extends StatelessWidget {
                   AppTheme.appLogo,
                   height: 76,
                   fit: BoxFit.contain,
-                  semanticLabel: 'VetoApp',
+                  semanticLabel: 'وِتواَپ',
                 ),
               ),
               Expanded(child: child),
@@ -75,36 +76,41 @@ class MainScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Row(
-                children: List.generate(_locations.length, (index) {
-                  final isSelected = index == selectedIndex;
-                  final icon = switch (index) {
-                    0 => Icons.person_outline,
-                    1 => Icons.account_balance_wallet_outlined,
-                    2 => Icons.how_to_vote_outlined,
-                    _ => Icons.home_outlined,
-                  };
-                  final label = switch (index) {
-                    0 => 'کاربری',
-                    1 => 'صندوق',
-                    2 => 'مشارکت',
-                    _ => 'خانه',
-                  };
+              child: Directionality(
+                textDirection: TextDirection.rtl,
+                child: Row(
+                  children: List.generate(_locations.length, (index) {
+                    final isSelected = index == selectedIndex;
+                    final icon = switch (index) {
+                      0 => Icons.home_outlined,
+                      1 => Icons.how_to_vote_outlined,
+                      2 => Icons.how_to_vote_rounded,
+                      3 => Icons.gavel_outlined,
+                      _ => Icons.person_outline,
+                    };
+                    final label = switch (index) {
+                      0 => 'خانه',
+                      1 => 'همه‌پرسی',
+                      2 => 'انتخابات',
+                      3 => 'استیضاح',
+                      _ => 'کاربری',
+                    };
 
-                  return Expanded(
-                    child: Semantics(
-                      button: true,
-                      selected: isSelected,
-                      label: label,
-                      child: _NavigationTab(
-                        icon: icon,
-                        label: label,
+                    return Expanded(
+                      child: Semantics(
+                        button: true,
                         selected: isSelected,
-                        onTap: () => context.go(_locations[index]),
+                        label: label,
+                        child: _NavigationTab(
+                          icon: icon,
+                          label: label,
+                          selected: isSelected,
+                          onTap: () => context.go(_locations[index]),
+                        ),
                       ),
-                    ),
-                  );
-                }),
+                    );
+                  }),
+                ),
               ),
             ),
           ),

@@ -79,7 +79,7 @@ class _GatewayPageState extends State<GatewayPage> {
                     ),
                     const SizedBox(height: 28),
                     AuthCard(
-                      title: 'ورود به وتو اپ',
+                      title: 'ورود به وِتواَپ',
                       padding: const EdgeInsets.fromLTRB(22, 18, 22, 24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
