@@ -227,11 +227,13 @@ return new class extends Migration
             $table->index(['is_active', 'effective_from', 'effective_to'], 'idx_closure_policy_active_effective');
         });
 
-        DB::statement("ALTER TABLE national_id_area_eligibilities
-            ADD CONSTRAINT chk_national_first_range CHECK (first_range_from <= first_range_to),
-            ADD CONSTRAINT chk_national_second_range CHECK (second_range_from <= second_range_to),
-            ADD CONSTRAINT chk_national_first_max CHECK (first_range_to <= 999),
-            ADD CONSTRAINT chk_national_second_max CHECK (second_range_to <= 999)");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE national_id_area_eligibilities
+                ADD CONSTRAINT chk_national_first_range CHECK (first_range_from <= first_range_to),
+                ADD CONSTRAINT chk_national_second_range CHECK (second_range_from <= second_range_to),
+                ADD CONSTRAINT chk_national_first_max CHECK (first_range_to <= 999),
+                ADD CONSTRAINT chk_national_second_max CHECK (second_range_to <= 999)");
+        }
     }
 
     public function down(): void

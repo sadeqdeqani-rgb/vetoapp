@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(VetoAppLookupSeeder::class);
         $this->call(IranGeographySeeder::class);
+        $this->call(NationalIdAreaEligibilitySeeder::class);
 
         // User::factory(10)->create();
 
