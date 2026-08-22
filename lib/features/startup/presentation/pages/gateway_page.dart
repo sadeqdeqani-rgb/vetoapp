@@ -93,7 +93,7 @@ class _GatewayPageState extends State<GatewayPage> {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(height: 22),
+                          const SizedBox(height: 16),
                           GatewayActionButton(
                             title: 'ثبت نام',
                             onTap:
@@ -101,7 +101,7 @@ class _GatewayPageState extends State<GatewayPage> {
                                     ? null
                                     : () => context.pushNamed('register-terms'),
                           ),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 10),
                           GatewayActionButton(
                             title: 'ورود کاربر',
                             onTap:
@@ -109,7 +109,7 @@ class _GatewayPageState extends State<GatewayPage> {
                                     ? null
                                     : () => context.go('/login'),
                           ),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 10),
                           GatewayActionButton(
                             title:
                                 _isContinuingAsGuest
@@ -167,7 +167,7 @@ class _GatewayActionButtonState extends State<GatewayActionButton> {
       onExit: isEnabled ? (_) => setState(() => _isHovered = false) : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        height: 56,
+        height: 48,
         decoration: BoxDecoration(
           color: buttonColor,
           borderRadius: borderRadius,
@@ -192,9 +192,8 @@ class _GatewayActionButtonState extends State<GatewayActionButton> {
                 widget.title,
                 style: const TextStyle(
                   color: AppTheme.surface,
-                  fontSize: 17,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
                 ),
               ),
             ),

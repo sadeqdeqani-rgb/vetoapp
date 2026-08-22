@@ -26,8 +26,8 @@ class RegistrationPage extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const AuthBrandHeader(size: 112),
-                      const SizedBox(height: 18),
+                      const AuthBrandHeader(),
+                      const SizedBox(height: AppTheme.authLogoGap),
                       AuthCard(
                         title: 'ثبت نام در وِتواَپ',
                         child: Column(

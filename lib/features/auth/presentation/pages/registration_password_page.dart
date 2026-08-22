@@ -1,10 +1,11 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/auth_card.dart';
+import '../../domain/entities/registration_draft.dart';
+import '../cubit/registration_cubit.dart';
 
 class RegistrationPasswordPage extends StatefulWidget {
   const RegistrationPasswordPage({
@@ -30,16 +31,17 @@ class RegistrationPasswordPage extends StatefulWidget {
 }
 
 class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
-  static const _registrationDraftKey = 'registration_draft';
-
   final _formKey = GlobalKey<FormState>();
   final _passwordController = TextEditingController();
   final _confirmationController = TextEditingController();
-  final _secureStorage = const FlutterSecureStorage();
 
   bool _obscurePassword = true;
   bool _obscureConfirmation = true;
   bool _isLoading = false;
+
+  bool get _passwordReady =>
+      _passwordController.text.length >= 8 &&
+      _confirmationController.text == _passwordController.text;
 
   @override
   void dispose() {
@@ -81,7 +83,10 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
       builder:
           (dialogContext) => Dialog(
             backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 36,
+              vertical: 36,
+            ),
             child: Directionality(
               textDirection: TextDirection.rtl,
               child: Container(
@@ -96,30 +101,12 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                     ),
                   ],
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                clipBehavior: Clip.none,
+                child: Stack(
+                  clipBehavior: Clip.none,
                   children: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [AppTheme.primary, AppTheme.primaryDark],
-                        ),
-                      ),
-                      child: const Text(
-                        'خوش آمدید',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: AppTheme.surface,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                      padding: const EdgeInsets.fromLTRB(24, 36, 24, 14),
                       child: Column(
                         children: [
                           const Text(
@@ -131,7 +118,7 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 10),
                           const Text(
                             'پس از این‌که اکثریت مردم ایران درخواست فعال‌سازی '
                             'وِتواَپ را خواستند، شما می‌توانید از حق وتو و رأی '
@@ -139,37 +126,24 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: AppTheme.primaryDark,
-                              fontSize: 18,
-                              height: 1.9,
+                              fontSize: 16,
+                              height: 1.7,
                             ),
                           ),
-                          const SizedBox(height: 28),
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton(
-                              onPressed:
-                                  () => Navigator.of(dialogContext).pop(),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: AppTheme.primary,
-                                foregroundColor: AppTheme.surface,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(28),
-                                ),
-                              ),
-                              child: const Text(
-                                'تأیید و ورود به خانه',
-                                style: TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+                          const SizedBox(height: 12),
+                          AuthActionButton(
+                            label: 'تأیید و ورود به خانه',
+                            onPressed:
+                                () => Navigator.of(dialogContext).pop(),
                           ),
                         ],
                       ),
+                    ),
+                    const Positioned(
+                      top: -29,
+                      left: 24,
+                      right: 24,
+                      child: FloatingAuthTitle(title: 'خوش آمدید'),
                     ),
                   ],
                 ),
@@ -186,37 +160,17 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
 
     setState(() => _isLoading = true);
 
-    try {
-      final draft = <String, dynamic>{
-        'phoneNumber': widget.phoneNumber,
-        'nationalCode': widget.nationalCode,
-        'countryId': widget.countryId,
-        'provinceId': widget.provinceId,
-        'countyId': widget.countyId,
-        'localityId': widget.localityId,
-        'password': _passwordController.text,
-      };
-
-      await _secureStorage.write(
-        key: _registrationDraftKey,
-        value: jsonEncode(draft),
-      );
-
-      if (!mounted) return;
-
-      await _showWelcomeDialog();
-
-      if (!mounted) return;
-      context.go('/');
-    } catch (_) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ذخیرهٔ موقت اطلاعات ثبت‌نام انجام نشد.')),
-      );
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    await context.read<RegistrationCubit>().save(
+      RegistrationDraft(
+        phoneNumber: widget.phoneNumber,
+        nationalCode: widget.nationalCode,
+        countryId: widget.countryId,
+        provinceId: widget.provinceId,
+        countyId: widget.countyId,
+        localityId: widget.localityId,
+        password: _passwordController.text,
+      ),
+    );
   }
 
   @override
@@ -232,7 +186,20 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Directionality(
                   textDirection: TextDirection.rtl,
-                  child: Column(
+                  child: BlocListener<RegistrationCubit, RegistrationState>(
+                    listener: (context, state) async {
+                      if (state is RegistrationSaved && mounted) {
+                        setState(() => _isLoading = false);
+                        await _showWelcomeDialog();
+                        if (context.mounted) context.go('/');
+                      } else if (state is RegistrationError && mounted) {
+                        setState(() => _isLoading = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(state.message)),
+                        );
+                      }
+                    },
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Align(
@@ -244,158 +211,152 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Image.asset(
-                        AppTheme.appLogo,
-                        height: 120,
-                        fit: BoxFit.contain,
-                        errorBuilder:
-                            (_, __, ___) => const Icon(
-                              Icons.how_to_vote_rounded,
-                              size: 90,
-                              color: AppTheme.primary,
-                            ),
-                      ),
-                      const SizedBox(height: 24),
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: AppTheme.surface.withValues(alpha: 0.94),
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.shadow.withValues(alpha: 0.14),
-                              blurRadius: 24,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Icon(
-                                Icons.lock_outline,
-                                size: 56,
-                                color: AppTheme.primary,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'تعیین رمز عبور',
-                                textAlign: TextAlign.center,
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineSmall?.copyWith(
-                                  color: AppTheme.primary,
-                                  fontWeight: FontWeight.bold,
+                      const AuthBrandHeader(),
+                      const SizedBox(height: AppTheme.authLogoGap),
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.fromLTRB(24, 52, 24, 24),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surface.withValues(alpha: 0.94),
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.shadow.withValues(
+                                    alpha: 0.14,
+                                  ),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 10),
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                'برای حساب کاربری خود یک رمز عبور حداقل ۸ کاراکتری تعیین کنید.',
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 28),
-                              TextFormField(
-                                controller: _passwordController,
-                                enabled: !_isLoading,
-                                obscureText: _obscurePassword,
-                                textInputAction: TextInputAction.next,
-                                validator: _validatePassword,
-                                decoration: InputDecoration(
-                                  labelText: 'رمز عبور',
-                                  prefixIcon: const Icon(Icons.lock_outline),
-                                  border: const OutlineInputBorder(),
-                                  suffixIcon: IconButton(
-                                    tooltip:
-                                        _obscurePassword
-                                            ? 'نمایش رمز'
-                                            : 'پنهان کردن رمز',
-                                    onPressed: () {
-                                      setState(
-                                        () =>
-                                            _obscurePassword =
-                                                !_obscurePassword,
-                                      );
-                                    },
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility_outlined
-                                          : Icons.visibility_off_outlined,
+                              ],
+                            ),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Icon(
+                                    Icons.lock_outline,
+                                    size: 56,
+                                    color: AppTheme.primary,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'تعیین رمز عبور',
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.headlineSmall?.copyWith(
+                                      color: AppTheme.primary,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _confirmationController,
-                                enabled: !_isLoading,
-                                obscureText: _obscureConfirmation,
-                                textInputAction: TextInputAction.done,
-                                validator: _validateConfirmation,
-                                onFieldSubmitted: (_) => _continue(),
-                                decoration: InputDecoration(
-                                  labelText: 'تکرار رمز عبور',
-                                  prefixIcon: const Icon(Icons.lock_reset),
-                                  border: const OutlineInputBorder(),
-                                  suffixIcon: IconButton(
-                                    tooltip:
-                                        _obscureConfirmation
-                                            ? 'نمایش رمز'
-                                            : 'پنهان کردن رمز',
-                                    onPressed: () {
-                                      setState(
-                                        () =>
-                                            _obscureConfirmation =
-                                                !_obscureConfirmation,
-                                      );
-                                    },
-                                    icon: Icon(
-                                      _obscureConfirmation
-                                          ? Icons.visibility_outlined
-                                          : Icons.visibility_off_outlined,
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    'برای حساب کاربری خود یک رمز عبور حداقل ۸ کاراکتری تعیین کنید.',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 28),
+                                  TextFormField(
+                                    controller: _passwordController,
+                                    enabled: !_isLoading,
+                                    obscureText: _obscurePassword,
+                                    textInputAction: TextInputAction.next,
+                                    validator: _validatePassword,
+                                    onChanged: (_) => setState(() {}),
+                                    decoration: InputDecoration(
+                                      labelText: 'رمز عبور',
+                                      prefixIcon: const Icon(
+                                        Icons.lock_outline,
+                                      ),
+                                      border: const OutlineInputBorder(),
+                                      suffixIcon: IconButton(
+                                        tooltip:
+                                            _obscurePassword
+                                                ? 'نمایش رمز'
+                                                : 'پنهان کردن رمز',
+                                        onPressed: () {
+                                          setState(
+                                            () =>
+                                                _obscurePassword =
+                                                    !_obscurePassword,
+                                          );
+                                        },
+                                        icon: Icon(
+                                          _obscurePassword
+                                              ? Icons.visibility_outlined
+                                              : Icons.visibility_off_outlined,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'راهنما: رمز عبور باید حداقل ۸ رقم باشد.',
-                                textAlign: TextAlign.right,
-                                style: TextStyle(
-                                  color: AppTheme.textPrimary.withValues(
-                                    alpha: 0.54,
+                                  const SizedBox(height: 16),
+                                  TextFormField(
+                                    controller: _confirmationController,
+                                    enabled: !_isLoading,
+                                    obscureText: _obscureConfirmation,
+                                    textInputAction: TextInputAction.done,
+                                    validator: _validateConfirmation,
+                                    onChanged: (_) => setState(() {}),
+                                    onFieldSubmitted: (_) => _continue(),
+                                    decoration: InputDecoration(
+                                      labelText: 'تکرار رمز عبور',
+                                      prefixIcon: const Icon(Icons.lock_reset),
+                                      border: const OutlineInputBorder(),
+                                      suffixIcon: IconButton(
+                                        tooltip:
+                                            _obscureConfirmation
+                                                ? 'نمایش رمز'
+                                                : 'پنهان کردن رمز',
+                                        onPressed: () {
+                                          setState(
+                                            () =>
+                                                _obscureConfirmation =
+                                                    !_obscureConfirmation,
+                                          );
+                                        },
+                                        icon: Icon(
+                                          _obscureConfirmation
+                                              ? Icons.visibility_outlined
+                                              : Icons.visibility_off_outlined,
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                  fontSize: 13,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              FilledButton(
-                                onPressed: _isLoading ? null : _continue,
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: AppTheme.primary,
-                                  foregroundColor: AppTheme.surface,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'راهنما: رمز عبور باید حداقل ۸ رقم باشد.',
+                                    textAlign: TextAlign.right,
+                                    style: TextStyle(
+                                      color: AppTheme.textPrimary.withValues(
+                                        alpha: 0.54,
+                                      ),
+                                      fontSize: 13,
+                                    ),
                                   ),
-                                ),
-                                child:
-                                    _isLoading
-                                        ? const SizedBox(
-                                          width: 22,
-                                          height: 22,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: AppTheme.surface,
-                                          ),
-                                        )
-                                        : const Text('ثبت رمز و ادامه'),
+                                  const SizedBox(height: 20),
+                                  AuthActionButton(
+                                    label: 'ثبت رمز و ادامه',
+                                    onPressed: _passwordReady ? _continue : null,
+                                    loading: _isLoading,
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                          const Positioned(
+                            top: -29,
+                            left: 24,
+                            right: 24,
+                            child: FloatingAuthTitle(
+                              title: 'ثبت نام در وِتواَپ',
+                            ),
+                          ),
+                        ],
                       ),
                     ],
+                    ),
                   ),
                 ),
               ),

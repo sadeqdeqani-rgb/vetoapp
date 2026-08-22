@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/auth_card.dart';
 
 class LoginPage extends StatefulWidget {
@@ -81,16 +82,20 @@ class _LoginPageState extends State<LoginPage> {
               constraints: const BoxConstraints(maxWidth: 420),
               child: Directionality(
                 textDirection: TextDirection.rtl,
-                child: AuthCard(
-                  title:
-                      isPasswordRecovery
-                          ? 'بازیابی رمز عبور'
-                          : 'ورود به وِتواَپ',
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
+                child: Column(
+                  children: [
+                    const AuthBrandHeader(),
+                    const SizedBox(height: AppTheme.authLogoGap),
+                    AuthCard(
+                      title:
+                          isPasswordRecovery
+                              ? 'بازیابی رمز عبور'
+                              : 'ورود به وِتواَپ',
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
                         Icon(
                           isPasswordRecovery
                               ? Icons.lock_reset_outlined
@@ -161,9 +166,11 @@ class _LoginPageState extends State<LoginPage> {
                             child: const Text('بازگشت به صفحهٔ ورود'),
                           ),
                         ],
-                      ],
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),

@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
@@ -22,8 +23,35 @@ class MainScreen extends StatelessWidget {
   int _selectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
     final index = _locations.indexOf(location);
-
     return index == -1 ? 0 : index;
+  }
+
+  Color _tabColor(int index) {
+    return switch (index) {
+      1 => AppTheme.success,
+      2 => AppTheme.election,
+      3 => AppTheme.danger,
+      4 => AppTheme.profile,
+      _ => AppTheme.primary,
+    };
+  }
+
+  Future<void> _handleBack(BuildContext context) async {
+    final location = GoRouterState.of(context).uri.path;
+    if (location == '/') {
+      await SystemNavigator.pop(animated: true);
+      return;
+    }
+
+    if (location.startsWith('/referendum')) {
+      context.go('/referendum');
+    } else if (location.startsWith('/elections')) {
+      context.go('/elections');
+    } else if (location.startsWith('/impeachment')) {
+      context.go('/impeachment');
+    } else {
+      context.go('/');
+    }
   }
 
   @override
@@ -31,85 +59,112 @@ class MainScreen extends StatelessWidget {
     final selectedIndex = _selectedIndex(context);
     final colors = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      backgroundColor: colors.surface,
-      body: AppBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-                child: Image.asset(
-                  AppTheme.appLogo,
-                  height: 76,
-                  fit: BoxFit.contain,
-                  semanticLabel: 'وِتواَپ',
+    return PopScope<void>(
+      canPop: false,
+      onPopInvokedWithResult: (_, __) => _handleBack(context),
+      child: Scaffold(
+        backgroundColor: colors.surface,
+        body: AppBackground(
+          child: SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                  child: Image.asset(
+                    AppTheme.appLogo,
+                    height: 76,
+                    fit: BoxFit.contain,
+                    semanticLabel: 'وِتواَپ',
+                  ),
                 ),
-              ),
-              Expanded(child: child),
-            ],
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                    padding: const EdgeInsets.only(top: 4),
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      color: colors.surface.withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: AppTheme.primary.withValues(alpha: 0.24),
+                        width: 1.6,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colors.shadow.withValues(alpha: 0.10),
+                          blurRadius: 18,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: child,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(18, 0, 18, 16),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(36),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-            child: Container(
-              height: 72,
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 7),
-              decoration: BoxDecoration(
-                color: colors.surface.withValues(alpha: 0.42),
-                borderRadius: BorderRadius.circular(36),
-                border: Border.all(
-                  color: colors.surface.withValues(alpha: 0.82),
-                  width: 1.2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: colors.shadow.withValues(alpha: 0.14),
-                    blurRadius: 24,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 8),
+        bottomNavigationBar: SafeArea(
+          minimum: const EdgeInsets.fromLTRB(18, 0, 18, 16),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(36),
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+              child: Container(
+                height: 72,
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 7),
+                decoration: BoxDecoration(
+                  color: colors.surface.withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(36),
+                  border: Border.all(
+                    color: AppTheme.primary.withValues(alpha: 0.46),
+                    width: 2.2,
                   ),
-                ],
-              ),
-              child: Directionality(
-                textDirection: TextDirection.rtl,
-                child: Row(
-                  children: List.generate(_locations.length, (index) {
-                    final isSelected = index == selectedIndex;
-                    final icon = switch (index) {
-                      0 => Icons.home_outlined,
-                      1 => Icons.how_to_vote_outlined,
-                      2 => Icons.how_to_vote_rounded,
-                      3 => Icons.gavel_outlined,
-                      _ => Icons.person_outline,
-                    };
-                    final label = switch (index) {
-                      0 => 'خانه',
-                      1 => 'همه‌پرسی',
-                      2 => 'انتخابات',
-                      3 => 'استیضاح',
-                      _ => 'کاربری',
-                    };
+                  boxShadow: [
+                    BoxShadow(
+                      color: colors.shadow.withValues(alpha: 0.14),
+                      blurRadius: 24,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: Row(
+                    children: List.generate(_locations.length, (index) {
+                      final isSelected = index == selectedIndex;
+                      final icon = switch (index) {
+                        0 => Icons.home_outlined,
+                        1 => Icons.how_to_vote_outlined,
+                        2 => Icons.how_to_vote_rounded,
+                        3 => Icons.gavel_outlined,
+                        _ => Icons.person_outline,
+                      };
+                      final label = switch (index) {
+                        0 => 'خانه',
+                        1 => 'همه‌پرسی',
+                        2 => 'انتخابات',
+                        3 => 'استیضاح',
+                        _ => 'کاربری',
+                      };
 
-                    return Expanded(
-                      child: Semantics(
-                        button: true,
-                        selected: isSelected,
-                        label: label,
-                        child: _NavigationTab(
-                          icon: icon,
-                          label: label,
+                      return Expanded(
+                        child: Semantics(
+                          button: true,
                           selected: isSelected,
-                          onTap: () => context.go(_locations[index]),
+                          label: label,
+                          child: _NavigationTab(
+                            icon: icon,
+                            label: label,
+                            selected: isSelected,
+                            color: _tabColor(index),
+                            onTap: () => context.go(_locations[index]),
+                          ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+                  ),
                 ),
               ),
             ),
@@ -125,12 +180,14 @@ class _NavigationTab extends StatefulWidget {
     required this.icon,
     required this.label,
     required this.selected,
+    required this.color,
     required this.onTap,
   });
 
   final IconData icon;
   final String label;
   final bool selected;
+  final Color color;
   final VoidCallback onTap;
 
   @override
@@ -145,14 +202,14 @@ class _NavigationTabState extends State<_NavigationTab> {
     final colors = Theme.of(context).colorScheme;
     final foreground =
         widget.selected
-            ? (_pressed ? colors.onPrimaryContainer : colors.primary)
+            ? (_pressed ? colors.onPrimaryContainer : widget.color)
             : colors.onSurfaceVariant;
     final background =
         widget.selected
             ? (_pressed
-                ? colors.primaryContainer.withValues(alpha: 0.76)
-                : colors.primaryContainer)
-            : (_pressed ? colors.primaryContainer : Colors.transparent);
+                ? widget.color.withValues(alpha: 0.18)
+                : widget.color.withValues(alpha: 0.12))
+            : (_pressed ? AppTheme.pressedTab : Colors.transparent);
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -174,17 +231,10 @@ class _NavigationTabState extends State<_NavigationTab> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 180),
-                transitionBuilder: (child, animation) {
-                  return ScaleTransition(scale: animation, child: child);
-                },
-                child: Icon(
-                  widget.icon,
-                  key: ValueKey('${widget.label}-${widget.selected}'),
-                  size: widget.selected ? 24 : 23,
-                  color: foreground,
-                ),
+              Icon(
+                widget.icon,
+                size: widget.selected ? 25 : 23,
+                color: foreground,
               ),
               const SizedBox(height: 1),
               Text(
@@ -193,7 +243,7 @@ class _NavigationTabState extends State<_NavigationTab> {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontFamily: AppTheme.fontFamily,
-                  fontSize: 16,
+                  fontSize: 17,
                   fontWeight:
                       widget.selected || _pressed
                           ? FontWeight.w700

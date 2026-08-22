@@ -115,7 +115,7 @@ class _LoginCredentialsPageState extends State<LoginCredentialsPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const AuthBrandHeader(),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: AppTheme.authLogoGap),
                           AuthCard(
                             title: 'ورود به وِتواَپ',
                             maxWidth: 520,
@@ -237,7 +237,7 @@ class _LoginCredentialsPageState extends State<LoginCredentialsPage> {
                                       child: const Text(
                                         'ثبت نام در وِتواَپ',
                                         style: TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.bold,
                                           decoration: TextDecoration.underline,
                                         ),

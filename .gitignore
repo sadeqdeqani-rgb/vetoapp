@@ -31,7 +31,6 @@ migrate_working_dir/
 /build/
 
 # Web related
-lib/generated_plugin_registrant.dart
 
 # Symbol processing related
 undecorated_layout.bin
@@ -45,3 +44,7 @@ app.*.symbols
 # Local backups and editor temporary files
 .backup/
 *.tmp
+
+# Local Android release signing credentials
+android/key.properties
+android/*.jks

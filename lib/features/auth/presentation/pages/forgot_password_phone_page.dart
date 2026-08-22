@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/auth_card.dart';
+import '../../domain/entities/otp_challenge.dart';
+import '../cubit/otp_cubit.dart';
 
 /// مرحلهٔ دریافت شمارهٔ تلفن همراه برای بازیابی رمز یا ثبت‌نام.
 class ForgotPasswordPhonePage extends StatefulWidget {
@@ -74,21 +78,12 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
     });
 
     try {
-      /// TODO: در اتصال واقعی Backend، درخواست ارسال OTP متناسب با فلو
-      /// (ثبت‌نام یا بازیابی رمز) در اینجا فراخوانی می‌شود.
-      await Future<void>.delayed(const Duration(milliseconds: 350));
-
-      if (!mounted) {
-        return;
-      }
-
-      context.push(
-        '/otp-verification',
-        extra: <String, dynamic>{
-          'phoneNumber': phoneNumber,
-          'isPasswordRecovery': !widget.isRegistration,
-          'isRegistration': widget.isRegistration,
-        },
+      await context.read<OtpCubit>().request(
+        phoneNumber: phoneNumber,
+        purpose:
+            widget.isRegistration
+                ? OtpPurpose.registration
+                : OtpPurpose.passwordRecovery,
       );
     } finally {
       if (mounted) {
@@ -112,7 +107,25 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Directionality(
                   textDirection: TextDirection.rtl,
-                  child: Column(
+                  child: BlocListener<OtpCubit, OtpState>(
+                    listener: (context, state) {
+                      if (state is OtpRequested) {
+                        context.push(
+                          '/otp-verification',
+                          extra: <String, dynamic>{
+                            'phoneNumber': state.challenge.phoneNumber,
+                            'isPasswordRecovery': !widget.isRegistration,
+                            'isRegistration': widget.isRegistration,
+                          },
+                        );
+                      } else if (state is OtpError && mounted) {
+                        setState(() => _isLoading = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(state.message)),
+                        );
+                      }
+                    },
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Align(
@@ -124,149 +137,130 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Image.asset(
-                        AppTheme.appLogo,
-                        width: 112,
-                        height: 112,
-                        fit: BoxFit.contain,
-                        errorBuilder:
-                            (_, __, ___) => Icon(
-                              Icons.lock_reset_outlined,
-                              size: 90,
-                              color: AppTheme.primary,
-                            ),
-                      ),
-                      const SizedBox(height: 24),
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: AppTheme.surface.withValues(alpha: 0.94),
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.shadow.withValues(alpha: 0.14),
-                              blurRadius: 24,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              const Icon(
-                                Icons.phone_android_outlined,
-                                size: 56,
-                                color: AppTheme.primary,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                widget.isRegistration
-                                    ? 'ثبت نام در وِتواَپ'
-                                    : 'بازیابی رمز عبور',
-                                textAlign: TextAlign.center,
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineSmall?.copyWith(
-                                  color: AppTheme.primary,
-                                  fontWeight: FontWeight.bold,
+                      const AuthBrandHeader(),
+                      const SizedBox(height: AppTheme.authLogoGap),
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.fromLTRB(24, 52, 24, 24),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surface.withValues(alpha: 0.94),
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.shadow.withValues(
+                                    alpha: 0.14,
+                                  ),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 10),
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                widget.isRegistration
-                                    ? 'برای شروع ثبت‌نام، شمارهٔ تلفن همراه خود را وارد کنید.'
-                                    : 'شمارهٔ تلفن همراه حساب خود را وارد کنید.',
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodyLarge,
-                              ),
-                              const SizedBox(height: 24),
-                              Directionality(
-                                textDirection: TextDirection.ltr,
-                                child: TextFormField(
-                                  controller: _phoneController,
-                                  enabled: !_isLoading,
-                                  autofocus: true,
-                                  keyboardType: TextInputType.phone,
-                                  textInputAction: TextInputAction.done,
-                                  textAlign: TextAlign.left,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                    LengthLimitingTextInputFormatter(11),
-                                  ],
-                                  validator: _validatePhoneNumber,
-                                  onFieldSubmitted: (_) => _continueToOtp(),
-                                  decoration: InputDecoration(
-                                    labelText: 'شمارهٔ تلفن همراه',
-                                    hintText: '09123456789',
-                                    prefixIcon: const Icon(
-                                      Icons.phone_outlined,
-                                    ),
-                                    filled: true,
-                                    fillColor: AppTheme.surface.withValues(
-                                      alpha: 0.94,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                      borderSide: const BorderSide(
-                                        color: AppTheme.primary,
-                                        width: 2,
+                              ],
+                            ),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const Icon(
+                                    Icons.phone_android_outlined,
+                                    size: 56,
+                                    color: AppTheme.primary,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    widget.isRegistration
+                                        ? 'برای شروع ثبت‌نام، شمارهٔ تلفن همراه خود را وارد کنید.'
+                                        : 'شمارهٔ تلفن همراه حساب خود را وارد کنید.',
+                                    textAlign: TextAlign.center,
+                                    style:
+                                        Theme.of(context).textTheme.bodyLarge,
+                                  ),
+                                  const SizedBox(height: 24),
+                                  Directionality(
+                                    textDirection: TextDirection.ltr,
+                                    child: TextFormField(
+                                      controller: _phoneController,
+                                      enabled: !_isLoading,
+                                      autofocus: true,
+                                      keyboardType: TextInputType.phone,
+                                      textInputAction: TextInputAction.done,
+                                      textAlign: TextAlign.left,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly,
+                                        LengthLimitingTextInputFormatter(11),
+                                      ],
+                                      validator: _validatePhoneNumber,
+                                      onFieldSubmitted: (_) => _continueToOtp(),
+                                      decoration: InputDecoration(
+                                        labelText: 'شمارهٔ تلفن همراه',
+                                        hintText: '09123456789',
+                                        prefixIcon: const Icon(
+                                          Icons.phone_outlined,
+                                        ),
+                                        filled: true,
+                                        fillColor: AppTheme.surface.withValues(
+                                          alpha: 0.94,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: AppTheme.primary,
+                                            width: 2,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              FilledButton(
-                                onPressed: _isLoading ? null : _continueToOtp,
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: AppTheme.primary,
-                                  foregroundColor: AppTheme.surface,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
+                                  const SizedBox(height: 20),
+                                  AuthActionButton(
+                                    label: 'ارسال کد تأیید',
+                                    onPressed: _continueToOtp,
+                                    loading: _isLoading,
                                   ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                                  const SizedBox(height: 8),
+                                  TextButton(
+                                    onPressed:
+                                        _isLoading
+                                            ? null
+                                            : () => context.go(
+                                              widget.isRegistration
+                                                  ? '/register/terms'
+                                                  : '/login',
+                                            ),
+                                    child: Text(
+                                      widget.isRegistration
+                                          ? 'بازگشت به قوانین و مقررات'
+                                          : 'بازگشت به ورود',
+                                    ),
                                   ),
-                                ),
-                                child:
-                                    _isLoading
-                                        ? const SizedBox(
-                                          width: 22,
-                                          height: 22,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: AppTheme.surface,
-                                          ),
-                                        )
-                                        : const Text('ارسال کد تأیید'),
+                                ],
                               ),
-                              const SizedBox(height: 8),
-                              TextButton(
-                                onPressed:
-                                    _isLoading
-                                        ? null
-                                        : () => context.go(
-                                          widget.isRegistration
-                                              ? '/register/terms'
-                                              : '/login',
-                                        ),
-                                child: Text(
-                                  widget.isRegistration
-                                      ? 'بازگشت به قوانین و مقررات'
-                                      : 'بازگشت به ورود',
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
+                          Positioned(
+                            top: -29,
+                            left: 24,
+                            right: 24,
+                            child: FloatingAuthTitle(
+                              title:
+                                  widget.isRegistration
+                                      ? 'ثبت نام در وِتواَپ'
+                                      : 'بازیابی رمز عبور',
+                            ),
+                          ),
+                        ],
                       ),
                     ],
+                    ),
                   ),
                 ),
               ),

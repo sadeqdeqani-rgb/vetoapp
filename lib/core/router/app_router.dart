@@ -12,6 +12,7 @@ import '../../features/auth/presentation/pages/registration_password_page.dart';
 import '../../features/auth/presentation/pages/registration_terms_page.dart';
 import '../../features/ballot/presentation/screens/ballot_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/home/presentation/screens/about_screen.dart';
 import '../../features/home/presentation/screens/main_screen.dart';
 import '../../features/home/presentation/screens/referendum_screen.dart';
 import '../../features/home/presentation/screens/election_screen.dart';
@@ -236,6 +237,11 @@ GoRouter createAppRouter(AuthCubit authCubit) {
             path: '/',
             name: 'home',
             builder: (context, state) => const HomeScreen(),
+          ),
+          GoRoute(
+            path: '/about',
+            name: 'about',
+            builder: (context, state) => const AboutScreen(),
           ),
           GoRoute(
             path: '/participation',

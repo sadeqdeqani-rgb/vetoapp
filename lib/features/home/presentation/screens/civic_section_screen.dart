@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 
@@ -8,6 +9,7 @@ class CivicSectionAction {
     required this.subtitle,
     required this.icon,
     required this.color,
+    required this.route,
     this.emphasized = false,
   });
 
@@ -15,6 +17,7 @@ class CivicSectionAction {
   final String subtitle;
   final IconData icon;
   final Color color;
+  final String route;
   final bool emphasized;
 }
 
@@ -52,7 +55,12 @@ class CivicSectionScreen extends StatelessWidget {
               accent: accent,
             ),
             const SizedBox(height: 18),
-            Text('مسیرهای اصلی', style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'مسیرهای اصلی',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontSize: 22,
+              ),
+            ),
             const SizedBox(height: 10),
             ...actions.map(
               (action) => Padding(
@@ -121,7 +129,7 @@ class _SectionHero extends StatelessWidget {
                   title,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 24,
+                    fontSize: 26,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -130,7 +138,7 @@ class _SectionHero extends StatelessWidget {
                   description,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 15,
+                    fontSize: 17,
                     height: 1.5,
                   ),
                 ),
@@ -160,7 +168,7 @@ class _ActionCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(22),
       child: InkWell(
         borderRadius: BorderRadius.circular(22),
-        onTap: () {},
+        onTap: () => context.go(action.route),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -185,12 +193,16 @@ class _ActionCard extends StatelessWidget {
                   children: [
                     Text(
                       action.title,
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontSize: 19,
+                      ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       action.subtitle,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: 16,
+                      ),
                     ),
                   ],
                 ),

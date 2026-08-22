@@ -6,6 +6,9 @@ import 'core/di/injection.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
+import 'features/auth/presentation/cubit/otp_cubit.dart';
+import 'features/auth/presentation/cubit/registration_cubit.dart';
+import 'features/profile/presentation/cubit/profile_cubit.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,13 +31,20 @@ class VetoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AuthCubit>.value(
-      value: authCubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthCubit>.value(value: authCubit),
+        BlocProvider<OtpCubit>(create: (_) => getIt<OtpCubit>()),
+        BlocProvider<RegistrationCubit>(
+          create: (_) => getIt<RegistrationCubit>(),
+        ),
+        BlocProvider<ProfileCubit>(create: (_) => getIt<ProfileCubit>()),
+      ],
       child: MaterialApp.router(
-        title: 'VetoApp',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        routerConfig: appRouter,
+          title: 'VetoApp',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          routerConfig: appRouter,
       ),
     );
   }

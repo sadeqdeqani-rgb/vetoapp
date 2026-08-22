@@ -5,6 +5,10 @@ def mirrorRepositories = [
 ]
 
 gradle.beforeProject { project ->
+    // Prefer the canonical repositories. The Aliyun mirrors remain as
+    // fallbacks for environments where Google's Maven endpoints are blocked.
+    project.buildscript.repositories.google()
+    project.buildscript.repositories.mavenCentral()
     mirrorRepositories.each { repositoryUrl ->
         project.buildscript.repositories.maven { url = uri(repositoryUrl) }
     }

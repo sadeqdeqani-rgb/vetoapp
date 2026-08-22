@@ -19,11 +19,11 @@ pluginManagement {
 
     repositories {
         maven(url = "file:///home/sadeq/development/flutter_local_maven")
+        google()
+        mavenCentral()
         maven(url = "https://maven.aliyun.com/repository/google")
         maven(url = "https://maven.aliyun.com/repository/gradle-plugin")
         maven(url = "https://maven.aliyun.com/repository/public")
-        google()
-        mavenCentral()
     }
 }
 
@@ -31,10 +31,10 @@ pluginManagement {
 dependencyResolutionManagement {
     repositories {
         maven(url = "file:///home/sadeq/development/flutter_local_maven")
-        maven(url = "https://maven.aliyun.com/repository/google")
-        maven(url = "https://maven.aliyun.com/repository/public")
         google()
         mavenCentral()
+        maven(url = "https://maven.aliyun.com/repository/google")
+        maven(url = "https://maven.aliyun.com/repository/public")
     }
     versionCatalogs {
         create("libs") {

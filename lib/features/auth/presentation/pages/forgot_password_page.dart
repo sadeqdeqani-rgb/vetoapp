@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/auth_card.dart';
+import '../cubit/otp_cubit.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({
@@ -80,33 +83,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       _isLoading = true;
     });
 
-    try {
-      /// TODO: در اتصال به Backend:
-      /// AuthCubit.resetPassword(
-      ///   phoneNumber: widget.phoneNumber,
-      ///   verificationToken: widget.verificationToken,
-      ///   newPassword: _passwordController.text,
-      /// );
-      await Future<void>.delayed(const Duration(milliseconds: 600));
-
-      if (!mounted) {
-        return;
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('رمز عبور با موفقیت تغییر کرد. اکنون وارد شوید.'),
-        ),
-      );
-
-      context.go('/login');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
+    await context.read<OtpCubit>().resetPassword(
+      phoneNumber: widget.phoneNumber,
+      verificationToken: widget.verificationToken,
+      newPassword: _passwordController.text,
+    );
   }
 
   @override
@@ -122,9 +103,28 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Directionality(
                   textDirection: TextDirection.rtl,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
+                  child: BlocListener<OtpCubit, OtpState>(
+                    listener: (context, state) {
+                      if (state is OtpPasswordReset && mounted) {
+                        setState(() => _isLoading = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'رمز عبور با موفقیت تغییر کرد. اکنون وارد شوید.',
+                            ),
+                          ),
+                        );
+                        context.go('/login');
+                      } else if (state is OtpError && mounted) {
+                        setState(() => _isLoading = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(state.message)),
+                        );
+                      }
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
                       Align(
                         alignment: Alignment.centerRight,
                         child: IconButton(
@@ -134,18 +134,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Image.asset(
-                        'assets/images/vetoapp.png',
-                        height: 120,
-                        fit: BoxFit.contain,
-                        errorBuilder:
-                            (_, __, ___) => Icon(
-                              Icons.how_to_vote_rounded,
-                              size: 90,
-                              color: AppTheme.primary,
-                            ),
-                      ),
-                      const SizedBox(height: 24),
+                      const AuthBrandHeader(),
+                      const SizedBox(height: AppTheme.authLogoGap),
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
@@ -245,32 +235,17 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              FilledButton(
-                                onPressed: _isLoading ? null : _submit,
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: AppTheme.primary,
-                                  foregroundColor: AppTheme.surface,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                  ),
-                                ),
-                                child:
-                                    _isLoading
-                                        ? const SizedBox(
-                                          width: 22,
-                                          height: 22,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: AppTheme.surface,
-                                          ),
-                                        )
-                                        : const Text('ثبت رمز جدید'),
+                              AuthActionButton(
+                                label: 'ثبت رمز جدید',
+                                onPressed: _submit,
+                                loading: _isLoading,
                               ),
                             ],
                           ),
                         ),
                       ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -1,15 +1,12 @@
-class GeographicalAreaModel {
-  const GeographicalAreaModel({
-    required this.id,
-    required this.name,
-    required this.type,
-    this.parentId,
-  });
+import '../../domain/entities/geographical_area.dart';
 
-  final int id;
-  final int? parentId;
-  final String name;
-  final String type;
+class GeographicalAreaModel extends GeographicalArea {
+  const GeographicalAreaModel({
+    required super.id,
+    required super.name,
+    required super.type,
+    super.parentId,
+  });
 
   factory GeographicalAreaModel.fromJson(Map<String, dynamic> json) {
     return GeographicalAreaModel(

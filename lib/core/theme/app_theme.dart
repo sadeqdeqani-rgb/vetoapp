@@ -8,6 +8,8 @@ abstract final class AppTheme {
   static const Color primary = Color(0xFF1A237E);
   static const Color primaryLight = Color(0xFFE8EAF6);
   static const Color primaryDark = Color(0xFF101552);
+  static const Color election = Color(0xFF008C95);
+  static const Color profile = Color(0xFFC77C00);
   static const Color success = Color(0xFF2E7D32);
   static const Color successLight = Color(0xFFE8F5E9);
   static const Color danger = Color(0xFFC62828);
@@ -22,6 +24,8 @@ abstract final class AppTheme {
   static const Color authCardSurface = Color(0xF7FFFFFF);
   static const double authCardRadius = 30;
   static const double authHeaderHeight = 58;
+  static const double authLogoSize = 96;
+  static const double authLogoGap = 28;
 
   static const String appLogo = 'assets/images/vetoapp.png';
   static const String iranMap = 'assets/images/persianmap.png';
@@ -42,11 +46,7 @@ abstract final class AppTheme {
   );
 
   static BoxDecoration get authHeaderDecoration => BoxDecoration(
-    gradient: const LinearGradient(
-      begin: Alignment.centerLeft,
-      end: Alignment.centerRight,
-      colors: [primary, primaryDark],
-    ),
+    color: primary,
     borderRadius: BorderRadius.circular(29),
     boxShadow: [
       BoxShadow(

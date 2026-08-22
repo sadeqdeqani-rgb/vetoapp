@@ -4,10 +4,13 @@ import '../../../../core/errors/failures.dart';
 import '../../domain/entities/auth_result.dart';
 import '../../domain/repositories/auth_repository.dart';
 
-/// Repository موقت برای تست جریان ورود.
+/// پیاده‌سازی موقت و فقط برای تست جریان ورود.
 ///
-/// بعداً می‌توان این repository را در DI با AuthRepositoryImpl جایگزین کرد،
-/// بدون اینکه LoginScreen یا AuthCubit تغییر اساسی کند.
+/// این کلاس عمداً فقط به قرارداد Domain یعنی [AuthRepository] وابسته است.
+/// برای اتصال API، آن را حذف نکنید؛ کافی است ثبت [AuthRepository] در فایل DI
+/// با [AuthRepositoryImpl] انجام شود. در آن حالت هیچ صفحه یا Cubit تغییری
+/// نخواهد کرد.
+@Deprecated('فقط برای تست فرانت؛ در محیط API از AuthRepositoryImpl استفاده شود.')
 class FakeAuthRepository implements AuthRepository {
   /// شماره موبایل معتبر برای تست ورود.
   static const String validUsername = '09123456789';

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../data/models/geographical_area_model.dart';
+import '../../../../core/widgets/auth_card.dart';
+import '../../domain/entities/geographical_area.dart';
+import '../cubit/registration_cubit.dart';
 
 class RegistrationGeographyPage extends StatefulWidget {
   const RegistrationGeographyPage({
@@ -20,83 +23,53 @@ class RegistrationGeographyPage extends StatefulWidget {
 }
 
 class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
-  static const _iran = GeographicalAreaModel(
-    id: 1,
-    name: 'ایران',
-    type: 'country',
-  );
-  static const _fars = GeographicalAreaModel(
-    id: 11,
-    parentId: 1,
-    name: 'فارس',
-    type: 'province',
-  );
-  static const _isfahan = GeographicalAreaModel(
-    id: 12,
-    parentId: 1,
-    name: 'اصفهان',
-    type: 'province',
-  );
-  static const _yazd = GeographicalAreaModel(
-    id: 13,
-    parentId: 1,
-    name: 'یزد',
-    type: 'province',
-  );
-  static const _noorabadMamsani = GeographicalAreaModel(
-    id: 111,
-    parentId: 11,
-    name: 'نورآباد ممسنی',
-    type: 'county',
-  );
-  static const _shahreza = GeographicalAreaModel(
-    id: 121,
-    parentId: 12,
-    name: 'شهرضا',
-    type: 'county',
-  );
-  static const _naeimAbad = GeographicalAreaModel(
-    id: 131,
-    parentId: 13,
-    name: 'نعیم آباد',
-    type: 'county',
-  );
-  static const _dehgahMahmoudi = GeographicalAreaModel(
-    id: 1111,
-    parentId: 111,
-    name: 'دهگپ محمودی',
-    type: 'locality',
-  );
-  static const _doulghari = GeographicalAreaModel(
-    id: 1211,
-    parentId: 121,
-    name: 'دولقری',
-    type: 'locality',
-  );
-  static const _takhtDoTabaghe = GeographicalAreaModel(
-    id: 1311,
-    parentId: 131,
-    name: 'تخت دو طبقه',
-    type: 'locality',
-  );
+  List<GeographicalArea> _countries = const [];
+  List<GeographicalArea> _provinces = const [];
+  List<GeographicalArea> _counties = const [];
+  List<GeographicalArea> _localities = const [];
 
-  final List<GeographicalAreaModel> _countries = const [_iran];
-  final List<GeographicalAreaModel> _provinces = const [_fars, _isfahan, _yazd];
-  List<GeographicalAreaModel> _counties = const [];
-  List<GeographicalAreaModel> _localities = const [];
+  GeographicalArea? _country;
+  GeographicalArea? _province;
+  GeographicalArea? _county;
+  GeographicalArea? _locality;
 
-  GeographicalAreaModel? _country;
-  GeographicalAreaModel? _province;
-  GeographicalAreaModel? _county;
-  GeographicalAreaModel? _locality;
+  bool get _canContinue =>
+      _country != null &&
+      _province != null &&
+      _county != null &&
+      _locality != null;
 
   @override
   void initState() {
     super.initState();
-    _country = _iran;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<RegistrationCubit>().loadChildren(
+          level: RegistrationLevel.country,
+        );
+      }
+    });
   }
 
-  void _selectProvince(GeographicalAreaModel? value) {
+  void _onGeographyLoaded(RegistrationGeographyLoaded state) {
+    final shouldLoadProvinces =
+        _country == null && state.countries.isNotEmpty && state.provinces.isEmpty;
+    setState(() {
+      _countries = state.countries;
+      _provinces = state.provinces;
+      _counties = state.counties;
+      _localities = state.localities;
+      _country ??= _countries.isEmpty ? null : _countries.first;
+    });
+    if (shouldLoadProvinces && _country != null) {
+      context.read<RegistrationCubit>().loadChildren(
+        parentId: _country!.id,
+        level: RegistrationLevel.province,
+      );
+    }
+  }
+
+  void _selectProvince(GeographicalArea? value) {
     setState(() {
       _province = value;
       _county = null;
@@ -105,31 +78,23 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
       _localities = [];
     });
     if (value == null) return;
-    setState(() {
-      _counties = switch (value.id) {
-        11 => const [_noorabadMamsani],
-        12 => const [_shahreza],
-        13 => const [_naeimAbad],
-        _ => const [],
-      };
-    });
+    context.read<RegistrationCubit>().loadChildren(
+      parentId: value.id,
+      level: RegistrationLevel.county,
+    );
   }
 
-  void _selectCounty(GeographicalAreaModel? value) {
+  void _selectCounty(GeographicalArea? value) {
     setState(() {
       _county = value;
       _locality = null;
       _localities = [];
     });
     if (value == null) return;
-    setState(() {
-      _localities = switch (value.id) {
-        111 => const [_dehgahMahmoudi],
-        121 => const [_doulghari],
-        131 => const [_takhtDoTabaghe],
-        _ => const [],
-      };
-    });
+    context.read<RegistrationCubit>().loadChildren(
+      parentId: value.id,
+      level: RegistrationLevel.locality,
+    );
   }
 
   void _continue() {
@@ -158,12 +123,12 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
 
   Widget _dropdown({
     required String label,
-    required GeographicalAreaModel? value,
-    required List<GeographicalAreaModel> items,
-    required ValueChanged<GeographicalAreaModel?> onChanged,
+    required GeographicalArea? value,
+    required List<GeographicalArea> items,
+    required ValueChanged<GeographicalArea?> onChanged,
     bool enabled = true,
   }) {
-    return DropdownButtonFormField<GeographicalAreaModel>(
+    return DropdownButtonFormField<GeographicalArea>(
       initialValue: value,
       isExpanded: true,
       decoration: InputDecoration(
@@ -198,104 +163,97 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
                 constraints: const BoxConstraints(maxWidth: 520),
                 child: Directionality(
                   textDirection: TextDirection.rtl,
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-                    decoration: BoxDecoration(
-                      color: AppTheme.surface.withValues(alpha: 0.94),
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.shadow.withValues(alpha: 0.14),
-                          blurRadius: 24,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
+                  child: BlocListener<RegistrationCubit, RegistrationState>(
+                    listener: (context, state) {
+                      if (state is RegistrationGeographyLoaded) {
+                        _onGeographyLoaded(state);
+                      } else if (state is RegistrationError) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(state.message)),
+                        );
+                      }
+                    },
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Image.asset(
-                          AppTheme.appLogo,
-                          width: 112,
-                          height: 112,
-                          fit: BoxFit.contain,
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          height: 56,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [AppTheme.primary, AppTheme.primaryDark],
+                      const AuthBrandHeader(),
+                      const SizedBox(height: AppTheme.authLogoGap),
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.fromLTRB(20, 52, 20, 24),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surface.withValues(alpha: 0.94),
+                              borderRadius: BorderRadius.circular(28),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.shadow.withValues(
+                                    alpha: 0.14,
+                                  ),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
                             ),
-                            borderRadius: BorderRadius.circular(28),
-                          ),
-                          child: const Text(
-                            'ثبت نام در وِتواَپ',
-                            style: TextStyle(
-                              color: AppTheme.surface,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        const Text(
-                          'حوزهٔ جغرافیایی کاربری خود را با دقت انتخاب کنید.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 17, height: 1.8),
-                        ),
-                        const SizedBox(height: 20),
-                        _dropdown(
-                          label: 'انتخاب کشور',
-                          value: _country,
-                          items: _countries,
-                          onChanged: (_) {},
-                          enabled: false,
-                        ),
-                        const SizedBox(height: 18),
-                        _dropdown(
-                          label: 'انتخاب استان',
-                          value: _province,
-                          items: _provinces,
-                          onChanged: _selectProvince,
-                        ),
-                        const SizedBox(height: 18),
-                        _dropdown(
-                          label: 'انتخاب شهرستان',
-                          value: _county,
-                          items: _counties,
-                          onChanged: _selectCounty,
-                        ),
-                        const SizedBox(height: 18),
-                        _dropdown(
-                          label: 'انتخاب شهر / روستا',
-                          value: _locality,
-                          items: _localities,
-                          onChanged:
-                              (value) => setState(() => _locality = value),
-                        ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          height: 54,
-                          child: ElevatedButton(
-                            onPressed: _continue,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.primary,
-                              foregroundColor: AppTheme.surface,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(28),
-                              ),
-                            ),
-                            child: const Text(
-                              'بعدی',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'حوزهٔ جغرافیایی کاربری خود را با دقت انتخاب کنید.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 17, height: 1.8),
+                                ),
+                                const SizedBox(height: 20),
+                                _dropdown(
+                                  label: 'انتخاب کشور',
+                                  value: _country,
+                                  items: _countries,
+                                  onChanged: (_) {},
+                                  enabled: false,
+                                ),
+                                const SizedBox(height: 18),
+                                _dropdown(
+                                  label: 'انتخاب استان',
+                                  value: _province,
+                                  items: _provinces,
+                                  onChanged: _selectProvince,
+                                ),
+                                const SizedBox(height: 18),
+                                _dropdown(
+                                  label: 'انتخاب شهرستان',
+                                  value: _county,
+                                  items: _counties,
+                                  onChanged: _selectCounty,
+                                ),
+                                const SizedBox(height: 18),
+                                _dropdown(
+                                  label: 'انتخاب شهر / روستا',
+                                  value: _locality,
+                                  items: _localities,
+                                  onChanged:
+                                      (value) =>
+                                          setState(() => _locality = value),
+                                ),
+                                const SizedBox(height: 24),
+                                AuthActionButton(
+                                  label: 'بعدی',
+                                  onPressed: _canContinue ? _continue : null,
+                                ),
+                              ],
                             ),
                           ),
-                        ),
+                          const Positioned(
+                            top: -29,
+                            left: 20,
+                            right: 20,
+                            child: FloatingAuthTitle(
+                              title: 'ثبت نام در وِتواَپ',
+                            ),
+                          ),
+                        ],
+                      ),
                       ],
                     ),
                   ),

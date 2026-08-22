@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1080" viewBox="0 0 1600 1080">
+  <title>VetoApp Frontend Design Board</title>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F5F7FA"/>
+      <stop offset="1" stop-color="#E8EAF6"/>
+    </linearGradient>
+    <linearGradient id="primary" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1A237E"/>
+      <stop offset="1" stop-color="#101552"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#263238" flood-opacity=".16"/>
+    </filter>
+    <style>
+      .fa { font-family:"B Mitra","Vazirmatn",Tahoma,sans-serif; }
+      .title { fill:#263238; font-size:34px; font-weight:700; }
+      .section { fill:#263238; font-size:23px; font-weight:700; }
+      .body { fill:#607D8B; font-size:17px; }
+      .phone { font-family:"B Mitra","Vazirmatn",Tahoma,sans-serif; fill:#263238; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1080" fill="url(#background)"/>
+  <circle cx="1500" cy="70" r="220" fill="#D1D5F0" opacity=".45"/>
+  <circle cx="80" cy="1010" r="180" fill="#E8F5E9" opacity=".7"/>
+
+  <!-- Brand header -->
+  <g transform="translate(90 56)">
+    <circle cx="34" cy="34" r="34" fill="url(#primary)"/>
+    <path d="M21 18h26v13c0 13-8 22-13 25-5-3-13-12-13-25z" fill="#fff"/>
+    <path d="M27 29h14M27 35h14" stroke="#1A237E" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <text x="1510" y="90" text-anchor="end" class="fa title">برد طراحی فرانت‌اند وِتواَپ</text>
+  <text x="1510" y="126" text-anchor="end" class="fa body">هویت بصری، توکن‌های طراحی و پیش‌نمایش مسیرهای کلیدی کاربر</text>
+
+  <!-- Design tokens -->
+  <g transform="translate(90 170)">
+    <rect width="1420" height="168" rx="26" fill="#fff" filter="url(#shadow)"/>
+    <text x="1360" y="45" text-anchor="end" class="fa section">توکن‌های طراحی</text>
+    <text x="1360" y="76" text-anchor="end" class="fa body">RTL First · کارت‌های گرد · سایهٔ نرم · تمرکز بر خوانایی</text>
+    <g transform="translate(60 120)">
+      <circle cx="25" cy="0" r="25" fill="#1A237E"/><text x="65" y="7" class="fa body">Primary</text>
+      <circle cx="220" cy="0" r="25" fill="#008C95"/><text x="260" y="7" class="fa body">Election</text>
+      <circle cx="420" cy="0" r="25" fill="#2E7D32"/><text x="460" y="7" class="fa body">Success</text>
+      <circle cx="620" cy="0" r="25" fill="#C77C00"/><text x="660" y="7" class="fa body">Profile</text>
+      <circle cx="820" cy="0" r="25" fill="#C62828"/><text x="860" y="7" class="fa body">Danger</text>
+      <circle cx="1020" cy="0" r="25" fill="#F5F7FA" stroke="#DDE3EA"/><text x="1060" y="7" class="fa body">Background</text>
+    </g>
+  </g>
+
+  <!-- Reusable phone frame -->
+  <g id="phone">
+    <rect width="245" height="470" rx="32" fill="#263238"/>
+    <rect x="9" y="9" width="227" height="452" rx="26" fill="#F5F7FA"/>
+    <rect x="78" y="18" width="76" height="14" rx="7" fill="#263238"/>
+  </g>
+
+  <!-- Login -->
+  <g transform="translate(90 395)" filter="url(#shadow)">
+    <use href="#phone"/>
+    <circle cx="122" cy="88" r="33" fill="#1A237E"/>
+    <path d="M110 74h24v12c0 12-7 21-12 24-5-3-12-12-12-24z" fill="#fff"/>
+    <rect x="28" y="142" width="189" height="224" rx="22" fill="#fff"/>
+    <text x="122" y="178" text-anchor="middle" class="phone" font-size="19" font-weight="700">ورود به وِتواَپ</text>
+    <rect x="47" y="202" width="151" height="37" rx="18" fill="#F5F7FA" stroke="#DDE3EA"/>
+    <text x="184" y="226" text-anchor="end" class="phone" font-size="12" fill="#607D8B">شماره همراه</text>
+    <rect x="47" y="250" width="151" height="37" rx="18" fill="#F5F7FA" stroke="#DDE3EA"/>
+    <text x="184" y="274" text-anchor="end" class="phone" font-size="12" fill="#607D8B">رمز عبور</text>
+    <rect x="47" y="310" width="151" height="38" rx="19" fill="#1A237E"/>
+    <text x="122" y="334" text-anchor="middle" class="phone" font-size="14" fill="#fff">ورود</text>
+  </g>
+  <text x="212" y="900" text-anchor="middle" class="fa section">ورود</text>
+
+  <!-- OTP -->
+  <g transform="translate(385 395)" filter="url(#shadow)">
+    <use href="#phone"/>
+    <circle cx="122" cy="88" r="33" fill="#1A237E"/>
+    <path d="M110 74h24v12c0 12-7 21-12 24-5-3-12-12-12-24z" fill="#fff"/>
+    <rect x="25" y="142" width="195" height="224" rx="22" fill="#fff"/>
+    <text x="122" y="178" text-anchor="middle" class="phone" font-size="19" font-weight="700">تأیید کد</text>
+    <text x="122" y="204" text-anchor="middle" class="phone" font-size="12" fill="#607D8B">کد پیامک‌شده را وارد کنید</text>
+    <g fill="#F5F7FA" stroke="#DDE3EA">
+      <rect x="45" y="226" width="27" height="38" rx="8"/><rect x="78" y="226" width="27" height="38" rx="8"/>
+      <rect x="111" y="226" width="27" height="38" rx="8"/><rect x="144" y="226" width="27" height="38" rx="8"/>
+      <rect x="177" y="226" width="27" height="38" rx="8"/>
+    </g>
+    <text x="122" y="294" text-anchor="middle" class="phone" font-size="12" fill="#C77C00">۰۱:۵۹</text>
+    <rect x="47" y="316" width="151" height="38" rx="19" fill="#1A237E"/>
+    <text x="122" y="340" text-anchor="middle" class="phone" font-size="14" fill="#fff">تأیید و ادامه</text>
+  </g>
+  <text x="507" y="900" text-anchor="middle" class="fa section">OTP</text>
+
+  <!-- Registration -->
+  <g transform="translate(680 395)" filter="url(#shadow)">
+    <use href="#phone"/>
+    <circle cx="122" cy="80" r="27" fill="#1A237E"/>
+    <rect x="24" y="122" width="197" height="304" rx="22" fill="#fff"/>
+    <text x="122" y="158" text-anchor="middle" class="phone" font-size="19" font-weight="700">ثبت‌نام</text>
+    <text x="192" y="195" text-anchor="end" class="phone" font-size="12" fill="#607D8B">کد ملی</text>
+    <rect x="46" y="204" width="153" height="37" rx="18" fill="#F5F7FA" stroke="#DDE3EA"/>
+    <text x="122" y="228" text-anchor="middle" class="phone" font-size="13">۱۲۳۴۵۶۷۸۹۰</text>
+    <text x="192" y="272" text-anchor="end" class="phone" font-size="12" fill="#607D8B">حوزهٔ جغرافیایی</text>
+    <rect x="46" y="281" width="153" height="37" rx="18" fill="#F5F7FA" stroke="#DDE3EA"/>
+    <text x="181" y="305" text-anchor="end" class="phone" font-size="12" fill="#607D8B">استان / شهرستان</text>
+    <rect x="46" y="346" width="153" height="38" rx="19" fill="#1A237E"/>
+    <text x="122" y="370" text-anchor="middle" class="phone" font-size="14" fill="#fff">ادامه</text>
+  </g>
+  <text x="802" y="900" text-anchor="middle" class="fa section">ثبت‌نام</text>
+
+  <!-- Home -->
+  <g transform="translate(975 395)" filter="url(#shadow)">
+    <use href="#phone"/>
+    <rect x="9" y="48" width="227" height="55" fill="#1A237E"/>
+    <text x="122" y="83" text-anchor="middle" class="phone" font-size="21" fill="#fff" font-weight="700">وِتواَپ</text>
+    <rect x="25" y="125" width="195" height="68" rx="19" fill="#1A237E"/>
+    <text x="200" y="151" text-anchor="end" class="phone" font-size="12" fill="#fff">کاربران ثبت‌نام‌شده</text>
+    <text x="200" y="178" text-anchor="end" class="phone" font-size="22" fill="#fff" font-weight="700">۱۲٬۴۸۰ نفر</text>
+    <rect x="25" y="208" width="195" height="45" rx="17" fill="#fff" stroke="#DDE3EA"/>
+    <text x="200" y="236" text-anchor="end" class="phone" font-size="12" fill="#607D8B">کشور / استان / شهرستان</text>
+    <text x="200" y="290" text-anchor="end" class="phone" font-size="17" font-weight="700">آخرین رویدادها</text>
+    <rect x="25" y="306" width="195" height="47" rx="16" fill="#E8F5E9"/>
+    <circle cx="51" cy="329" r="11" fill="#2E7D32"/>
+    <text x="196" y="334" text-anchor="end" class="phone" font-size="12">۳ همه‌پرسی فعال</text>
+    <rect x="25" y="362" width="195" height="47" rx="16" fill="#E8EAF6"/>
+    <circle cx="51" cy="385" r="11" fill="#1A237E"/>
+    <text x="196" y="390" text-anchor="end" class="phone" font-size="12">۲ انتخابات فعال</text>
+  </g>
+  <text x="1097" y="900" text-anchor="middle" class="fa section">خانه</text>
+
+  <!-- Profile -->
+  <g transform="translate(1270 395)" filter="url(#shadow)">
+    <use href="#phone"/>
+    <rect x="9" y="48" width="227" height="55" fill="#C77C00"/>
+    <text x="122" y="83" text-anchor="middle" class="phone" font-size="20" fill="#fff" font-weight="700">حساب کاربری</text>
+    <circle cx="122" cy="147" r="33" fill="#FFF3E0"/>
+    <circle cx="122" cy="139" r="11" fill="#C77C00"/>
+    <path d="M99 169c6-18 40-18 46 0" fill="#C77C00"/>
+    <g fill="#fff" stroke="#DDE3EA">
+      <rect x="25" y="198" width="195" height="46" rx="16"/><rect x="25" y="253" width="195" height="46" rx="16"/>
+      <rect x="25" y="308" width="195" height="46" rx="16"/><rect x="25" y="363" width="195" height="46" rx="16"/>
+    </g>
+    <text x="198" y="227" text-anchor="end" class="phone" font-size="13">اطلاعات حساب</text>
+    <text x="198" y="282" text-anchor="end" class="phone" font-size="13">تغییر رمز عبور</text>
+    <text x="198" y="337" text-anchor="end" class="phone" font-size="13">مشخصات بیومتریک</text>
+    <text x="198" y="392" text-anchor="end" class="phone" font-size="13">موقعیت جغرافیایی</text>
+  </g>
+  <text x="1392" y="900" text-anchor="middle" class="fa section">پروفایل</text>
+
+  <!-- Footer -->
+  <g transform="translate(90 950)">
+    <rect width="1420" height="72" rx="22" fill="#fff" filter="url(#shadow)"/>
+    <text x="1360" y="30" text-anchor="end" class="fa section" font-size="19">اصول معماری و رابط</text>
+    <text x="1360" y="57" text-anchor="end" class="fa body" font-size="15">RTL و فارسی‌محور · Clean Architecture · Cubit/State برای هر Feature · بدون اتصال مستقیم Page به Data</text>
+    <rect x="55" y="20" width="110" height="31" rx="15" fill="#E8EAF6"/>
+    <text x="110" y="41" text-anchor="middle" class="fa body" font-size="14" fill="#1A237E">RTL First</text>
+    <rect x="180" y="20" width="120" height="31" rx="15" fill="#E8F5E9"/>
+    <text x="240" y="41" text-anchor="middle" class="fa body" font-size="14" fill="#2E7D32">Clean UI</text>
+  </g>
+</svg>

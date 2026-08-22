@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/auth_card.dart';
 import '../../../../core/validation/iranian_national_code_validator.dart';
 
 /// مرحلهٔ دریافت کد ملی در فلو ثبت‌نام.
@@ -21,7 +22,11 @@ class _RegistrationNationalCodePageState
   final _formKey = GlobalKey<FormState>();
   final _nationalCodeController = TextEditingController();
 
-  bool _isLoading = false;
+  bool get _canContinue =>
+      IranianNationalCodeValidator.normalize(
+        _nationalCodeController.text,
+      ).length ==
+      10;
 
   @override
   void dispose() {
@@ -46,28 +51,18 @@ class _RegistrationNationalCodePageState
     return null;
   }
 
-  Future<void> _continue() async {
-    if (!(_formKey.currentState?.validate() ?? false) || _isLoading) return;
+  void _continue() {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    setState(() => _isLoading = true);
-
-    try {
-      await Future<void>.delayed(const Duration(milliseconds: 300));
-
-      if (!mounted) return;
-
-      context.push(
-        '/register/geography',
-        extra: <String, dynamic>{
-          'phoneNumber': widget.phoneNumber,
-          'nationalCode': IranianNationalCodeValidator.normalize(
-            _nationalCodeController.text,
-          ),
-        },
-      );
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    context.push(
+      '/register/geography',
+      extra: <String, dynamic>{
+        'phoneNumber': widget.phoneNumber,
+        'nationalCode': IranianNationalCodeValidator.normalize(
+          _nationalCodeController.text,
+        ),
+      },
+    );
   }
 
   @override
@@ -90,149 +85,111 @@ class _RegistrationNationalCodePageState
                         alignment: Alignment.centerRight,
                         child: IconButton(
                           tooltip: 'بازگشت',
-                          onPressed: _isLoading ? null : () => context.pop(),
+                          onPressed: () => context.pop(),
                           icon: const Icon(Icons.arrow_forward_rounded),
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Image.asset(
-                        AppTheme.appLogo,
-                        width: 112,
-                        height: 112,
-                        fit: BoxFit.contain,
-                        errorBuilder:
-                            (_, __, ___) => const Icon(
-                              Icons.how_to_vote_rounded,
-                              size: 90,
-                              color: AppTheme.primary,
-                            ),
-                      ),
-                      const SizedBox(height: 24),
-                      Container(
-                        padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
-                        decoration: BoxDecoration(
-                          color: AppTheme.surface.withValues(alpha: 0.94),
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.shadow.withValues(alpha: 0.14),
-                              blurRadius: 24,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Container(
-                                height: 56,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      AppTheme.primary,
-                                      AppTheme.primaryDark,
-                                    ],
+                      const AuthBrandHeader(),
+                      const SizedBox(height: AppTheme.authLogoGap),
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.fromLTRB(24, 52, 24, 24),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surface.withValues(alpha: 0.94),
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.shadow.withValues(
+                                    alpha: 0.14,
                                   ),
-                                  borderRadius: BorderRadius.circular(28),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 10),
                                 ),
-                                child: const Text(
-                                  'ثبت نام در وِتواَپ',
-                                  style: TextStyle(
-                                    color: AppTheme.surface,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
+                              ],
+                            ),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'کد ملی خود را وارد کنید',
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.headlineSmall?.copyWith(
+                                      color: AppTheme.primaryDark,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 36),
-                              Text(
-                                'کد ملی خود را وارد کنید',
-                                textAlign: TextAlign.center,
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineSmall?.copyWith(
-                                  color: AppTheme.primaryDark,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              Directionality(
-                                textDirection: TextDirection.ltr,
-                                child: TextFormField(
-                                  controller: _nationalCodeController,
-                                  enabled: !_isLoading,
-                                  autofocus: true,
-                                  keyboardType: TextInputType.number,
-                                  textInputAction: TextInputAction.done,
-                                  textAlign: TextAlign.center,
-                                  maxLength: 10,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                      RegExp(r'[0-9۰-۹٠-٩]'),
-                                    ),
-                                    LengthLimitingTextInputFormatter(10),
-                                  ],
-                                  validator: _validateNationalCode,
-                                  onFieldSubmitted: (_) => _continue(),
-                                  decoration: InputDecoration(
-                                    hintText: '۱۱۱۱۱۱۱۱۱۱',
-                                    counterText: '',
-                                    filled: true,
-                                    fillColor:
-                                        Theme.of(
-                                          context,
-                                        ).scaffoldBackgroundColor,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(28),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(28),
-                                      borderSide: const BorderSide(
-                                        color: AppTheme.primary,
-                                        width: 2,
+                                  const SizedBox(height: 24),
+                                  Directionality(
+                                    textDirection: TextDirection.ltr,
+                                    child: TextFormField(
+                                      controller: _nationalCodeController,
+                                      enabled: true,
+                                      autofocus: true,
+                                      keyboardType: TextInputType.number,
+                                      textInputAction: TextInputAction.done,
+                                      textAlign: TextAlign.center,
+                                      maxLength: 10,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.allow(
+                                          RegExp(r'[0-9۰-۹٠-٩]'),
+                                        ),
+                                        LengthLimitingTextInputFormatter(10),
+                                      ],
+                                      validator: _validateNationalCode,
+                                      onChanged: (_) => setState(() {}),
+                                      onFieldSubmitted: (_) => _continue(),
+                                      decoration: InputDecoration(
+                                        hintText: '۱۱۱۱۱۱۱۱۱۱',
+                                        counterText: '',
+                                        filled: true,
+                                        fillColor:
+                                            Theme.of(
+                                              context,
+                                            ).scaffoldBackgroundColor,
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            28,
+                                          ),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            28,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: AppTheme.primary,
+                                            width: 2,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 36),
-                              SizedBox(
-                                height: 54,
-                                child: ElevatedButton(
-                                  onPressed: _isLoading ? null : _continue,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.primary,
-                                    foregroundColor: AppTheme.surface,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(28),
-                                    ),
+                                  const SizedBox(height: 36),
+                                  AuthActionButton(
+                                    label: 'بعدی',
+                                    onPressed: _canContinue ? _continue : null,
                                   ),
-                                  child:
-                                      _isLoading
-                                          ? const SizedBox(
-                                            width: 22,
-                                            height: 22,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: AppTheme.surface,
-                                            ),
-                                          )
-                                          : const Text(
-                                            'بعدی',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                          const Positioned(
+                            top: -29,
+                            left: 24,
+                            right: 24,
+                            child: FloatingAuthTitle(
+                              title: 'ثبت نام در وِتواَپ',
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

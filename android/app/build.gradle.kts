@@ -1,7 +1,15 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
 }
 
 android {
@@ -32,9 +40,20 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig =
+                if (keystorePropertiesFile.exists()) {
+                    signingConfigs.create("releaseKeystore") {
+                        keyAlias = keystoreProperties["keyAlias"] as String
+                        keyPassword = keystoreProperties["keyPassword"] as String
+                        storeFile =
+                            rootProject.file(
+                                keystoreProperties["storeFile"] as String,
+                            )
+                        storePassword = keystoreProperties["storePassword"] as String
+                    }
+                } else {
+                    signingConfigs.getByName("debug")
+                }
         }
     }
 }
@@ -52,4 +71,11 @@ flutter {
 
 dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    // Flutter Embedding uses WindowMetricsCalculator and WindowInfoTracker.
+    // Keep this dependency explicit as a safety net when a local Flutter
+    // Maven mirror has incomplete metadata.
+    implementation("androidx.window:window-java:1.2.0")
+    // Keep ReLinker explicit because the local Flutter mirror may omit
+    // transitive metadata for FlutterJNI's loader.
+    implementation("com.getkeepsafe.relinker:relinker:1.4.5")
 }

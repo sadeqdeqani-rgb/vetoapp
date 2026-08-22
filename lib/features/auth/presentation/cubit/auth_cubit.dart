@@ -1,36 +1,38 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import '../../domain/repositories/auth_repository.dart';
+import '../../domain/entities/auth_session.dart';
+import '../../domain/usecases/check_auth_session_usecase.dart';
+import '../../domain/usecases/clear_auth_session_usecase.dart';
+import '../../domain/usecases/login_usecase.dart';
+import '../../domain/usecases/save_authenticated_session_usecase.dart';
+import '../../domain/usecases/save_guest_session_usecase.dart';
 import 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  AuthCubit(this._secureStorage, this._authRepository)
-    : super(const AuthState.initial());
+  AuthCubit({
+    required CheckAuthSessionUseCase checkSession,
+    required LoginUseCase loginUseCase,
+    required SaveAuthenticatedSessionUseCase saveAuthenticatedSession,
+    required SaveGuestSessionUseCase saveGuestSession,
+    required ClearAuthSessionUseCase clearSession,
+  }) : _checkSession = checkSession,
+       _loginUseCase = loginUseCase,
+       _saveAuthenticatedSession = saveAuthenticatedSession,
+       _saveGuestSession = saveGuestSession,
+       _clearSession = clearSession,
+       super(const AuthState.initial());
 
-  final FlutterSecureStorage _secureStorage;
-  final AuthRepository _authRepository;
-
-  static const String _sessionModeKey = 'auth_session_mode';
-  static const String _sessionTokenKey = 'auth_session_token';
-  static const String _userIdKey = 'auth_user_id';
-
-  static const String _modeAuthenticated = '1';
-  static const String _modeGuest = '2';
+  final CheckAuthSessionUseCase _checkSession;
+  final LoginUseCase _loginUseCase;
+  final SaveAuthenticatedSessionUseCase _saveAuthenticatedSession;
+  final SaveGuestSessionUseCase _saveGuestSession;
+  final ClearAuthSessionUseCase _clearSession;
 
   Future<void> checkAuthStatus() async {
     emit(const AuthState.loading());
-
     try {
-      final mode = await _secureStorage.read(key: _sessionModeKey);
-
-      if (mode == _modeAuthenticated) {
-        emit(const AuthState.authenticated());
-      } else if (mode == _modeGuest) {
-        emit(const AuthState.guest());
-      } else {
-        emit(const AuthState.unauthenticated());
-      }
+      final session = await _checkSession();
+      emit(_stateForSession(session));
     } catch (error) {
       emit(AuthState.error(error.toString()));
     }
@@ -41,8 +43,7 @@ class AuthCubit extends Cubit<AuthState> {
     required String password,
   }) async {
     emit(const AuthState.loading());
-
-    final result = await _authRepository.login(
+    final result = await _loginUseCase(
       phoneNumber: username,
       password: password,
     );
@@ -52,18 +53,12 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthState.error(failure.message));
         return false;
       },
-      (authResult) async {
+      (session) async {
         try {
-          await _secureStorage.write(
-            key: _sessionModeKey,
-            value: _modeAuthenticated,
+          await _saveAuthenticatedSession(
+            sessionToken: session.sessionToken,
+            userId: session.userId,
           );
-          await _secureStorage.write(
-            key: _sessionTokenKey,
-            value: authResult.sessionToken,
-          );
-          await _secureStorage.write(key: _userIdKey, value: authResult.userId);
-
           emit(const AuthState.authenticated());
           return true;
         } catch (error) {
@@ -76,14 +71,8 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> continueAsGuest() async {
     emit(const AuthState.loading());
-
     try {
-      // مهم: Guest نباید نشست واقعی یا session token داشته باشد.
-      await _secureStorage.delete(key: _sessionTokenKey);
-      await _secureStorage.delete(key: _userIdKey);
-
-      await _secureStorage.write(key: _sessionModeKey, value: _modeGuest);
-
+      await _saveGuestSession();
       emit(const AuthState.guest());
     } catch (error) {
       emit(AuthState.error(error.toString()));
@@ -92,15 +81,19 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> logout() async {
     emit(const AuthState.loading());
-
     try {
-      await _secureStorage.delete(key: _sessionModeKey);
-      await _secureStorage.delete(key: _sessionTokenKey);
-      await _secureStorage.delete(key: _userIdKey);
-
+      await _clearSession();
       emit(const AuthState.unauthenticated());
     } catch (error) {
       emit(AuthState.error(error.toString()));
     }
+  }
+
+  AuthState _stateForSession(AuthSession session) {
+    return switch (session.mode) {
+      AuthSessionMode.authenticated => const AuthState.authenticated(),
+      AuthSessionMode.guest => const AuthState.guest(),
+      AuthSessionMode.unauthenticated => const AuthState.unauthenticated(),
+    };
   }
 }

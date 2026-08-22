@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 
@@ -14,13 +15,8 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'خلاصه‌ی فعالیت سامانه',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.primary, AppTheme.primaryDark],
@@ -39,7 +35,7 @@ class HomeScreen extends StatelessWidget {
                   const Icon(
                     Icons.people_alt_outlined,
                     color: Colors.white,
-                    size: 34,
+                    size: 30,
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -47,23 +43,16 @@ class HomeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'کاربران فعال سامانه',
-                          style: TextStyle(color: Colors.white, fontSize: 17),
+                          'تعداد کاربران ثبت نام شده در سامانه',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
                         ),
                         const SizedBox(height: 4),
                         const Text(
                           '۱۲٬۴۸۰ نفر',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 30,
+                            fontSize: 26,
                             fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Text(
-                          'همین حالا در حال مشارکت',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.82),
-                            fontSize: 13,
                           ),
                         ),
                       ],
@@ -77,7 +66,9 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               'معرفی وِتواَپ',
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontSize: 22,
+              ),
             ),
             const SizedBox(height: 12),
             Container(
@@ -90,47 +81,34 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'سامانه‌ای برای مشارکت امن، شفاف و ساختاریافته‌ی شهروندان در تصمیم‌های عمومی.',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  const SizedBox(height: 14),
-                  Container(
-                    height: 150,
-                    decoration: BoxDecoration(
-                      color: AppTheme.textPrimary,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Center(
-                      child: CircleAvatar(
-                        radius: 28,
-                        backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.play_arrow_rounded,
-                          color: AppTheme.primary,
-                          size: 34,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
                   OutlinedButton.icon(
-                    onPressed: () {},
+                    onPressed: () => context.go('/about'),
+                    icon: const Icon(Icons.info_outline_rounded),
+                    label: const Text(
+                      'وتواپ، ابزار انقلاب سوم و تحقق جمهوری دوم در ایران',
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(56),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  FilledButton.icon(
+                    onPressed: () => context.go('/about'),
                     icon: const Icon(Icons.play_circle_outline_rounded),
-                    label: const Text('مشاهده ویدیوی معرفی'),
+                    label: const Text('مشاهده ویدیوی معرفی وتواپ'),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
             Text(
-              'آخرین فعالیت‌ها',
+              'آخرین رویدادهای وِتواَپ',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 12),
             const _ActivityRow(
               icon: Icons.how_to_vote_outlined,
-              title: '۳ همه‌پرسی در حال مشارکت',
+              title: '۳ همه‌پرسی در حال برگزاری',
               color: AppTheme.success,
             ),
             const SizedBox(height: 10),

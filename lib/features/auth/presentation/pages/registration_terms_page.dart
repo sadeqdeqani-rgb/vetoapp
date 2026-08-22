@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/auth_card.dart';
 
 /// صفحهٔ قوانین و مقررات پیش از شروع ثبت‌نام.
 class RegistrationTermsPage extends StatefulWidget {
@@ -50,19 +51,8 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                       constraints: const BoxConstraints(maxWidth: 520),
                       child: Column(
                         children: [
-                          Image.asset(
-                            AppTheme.appLogo,
-                            width: 112,
-                            height: 112,
-                            fit: BoxFit.contain,
-                            errorBuilder:
-                                (_, __, ___) => const Icon(
-                                  Icons.how_to_vote_rounded,
-                                  size: 96,
-                                  color: AppTheme.primary,
-                                ),
-                          ),
-                          const SizedBox(height: 16),
+                          const AuthBrandHeader(),
+                          const SizedBox(height: AppTheme.authLogoGap),
                           Text(
                             'به وِتواَپ خوش آمدید',
                             textAlign: TextAlign.center,
@@ -73,47 +63,15 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 20),
-                          Container(
-                            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                            decoration: BoxDecoration(
-                              color: AppTheme.surface.withValues(alpha: 0.96),
-                              borderRadius: BorderRadius.circular(28),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.shadow.withValues(
-                                    alpha: 0.14,
-                                  ),
-                                  blurRadius: 24,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
-                            ),
+                          const SizedBox(height: 64),
+                          AuthCard(
+                            title: 'ثبت نام در وِتواَپ',
+                            maxWidth: 520,
+                            padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                Container(
-                                  height: 56,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        AppTheme.primary,
-                                        AppTheme.primaryDark,
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(28),
-                                  ),
-                                  child: const Text(
-                                    'ثبت نام در وِتواَپ',
-                                    style: TextStyle(
-                                      color: AppTheme.surface,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
+                                const SizedBox(height: 0),
                                 Text(
                                   'لطفاً پیش از ادامه، قوانین و مقررات استفاده '
                                   'از وِتواَپ را مطالعه کنید.',
@@ -127,9 +85,6 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                 ),
                                 const SizedBox(height: 16),
                                 Container(
-                                  constraints: const BoxConstraints(
-                                    minHeight: 300,
-                                  ),
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
                                     color:
@@ -140,18 +95,11 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                     border: Border.all(color: AppTheme.divider),
                                   ),
                                   child: const Text(
-                                    'با ثبت‌نام در وِتواَپ، می‌پذیرید که اطلاعات '
-                                    'واردشده را صحیح و متعلق به خودتان ارائه '
-                                    'کنید.\n\n'
-                                    'استفاده از برنامه باید مطابق قوانین جاری '
-                                    'کشور و با رعایت حقوق سایر کاربران انجام '
-                                    'شود. مسئولیت حفظ اطلاعات ورود و هرگونه '
-                                    'فعالیت انجام‌شده با حساب کاربری بر عهدهٔ '
-                                    'کاربر است.\n\n'
-                                    'وِتواَپ می‌تواند برای بهبود خدمات، رفع خطا '
-                                    'و ارائهٔ قابلیت‌های جدید، برنامه و شرایط '
-                                    'استفاده را به‌روزرسانی کند. نسخهٔ جدید '
-                                    'قوانین از طریق برنامه اطلاع‌رسانی خواهد شد.',
+                                    'با ثبت نام در وِتواَپ متعهد می‌شوید که:\n\n'
+                                    '• سن قانونی کاربر بالای ۱۸ سال است.\n'
+                                    '• از کد ملی و شماره همراه خود برای ثبت نام استفاده کرده‌اید.\n'
+                                    '• مسئولیت اطلاعات ورود به عهده کاربر خواهد بود.\n'
+                                    '• مسئولیت فعالیت‌های انجام‌شده در سامانه به عهده کاربر خواهد بود.',
                                     textAlign: TextAlign.justify,
                                     style: TextStyle(
                                       fontSize: 16,
@@ -160,7 +108,7 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 18),
+                                const SizedBox(height: 0),
                                 Material(
                                   type: MaterialType.transparency,
                                   child: CheckboxListTile(
@@ -169,6 +117,10 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                     contentPadding: EdgeInsets.zero,
                                     controlAffinity:
                                         ListTileControlAffinity.leading,
+                                    visualDensity: const VisualDensity(
+                                      horizontal: 0,
+                                      vertical: -4,
+                                    ),
                                     onChanged:
                                         (value) => setState(
                                           () =>
@@ -186,28 +138,10 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                                   ),
                                 ),
                                 const SizedBox(height: 12),
-                                SizedBox(
-                                  height: 54,
-                                  child: ElevatedButton(
-                                    onPressed:
-                                        _hasAcceptedTerms ? _continue : null,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppTheme.primary,
-                                      disabledBackgroundColor:
-                                          AppTheme.textSecondary,
-                                      foregroundColor: AppTheme.surface,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(28),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'تأیید و ادامه',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
+                                AuthActionButton(
+                                  label: 'تأیید و ادامه',
+                                  onPressed:
+                                      _hasAcceptedTerms ? _continue : null,
                                 ),
                               ],
                             ),
