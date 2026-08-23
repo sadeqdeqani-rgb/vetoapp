@@ -223,7 +223,7 @@ class AdminManagementController extends Controller
 
     public function provinces(Request $request): JsonResponse
     {
-        return $this->geoList($request, Province::class, ['country_id', 'province_code', 'name_fa', 'is_active']);
+        return $this->geoList($request, Province::class, ['province_id', 'country_id', 'province_code', 'name_fa', 'is_active']);
     }
 
     public function storeProvince(Request $request): JsonResponse

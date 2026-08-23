@@ -41,8 +41,7 @@ class AdminVideoRecord extends AdminVideoDraft {
   final DateTime? publishedAt;
 }
 
-class NationalIdEligibilityRecord
-    extends NationalIdEligibilityDraft {
+class NationalIdEligibilityRecord extends NationalIdEligibilityDraft {
   const NationalIdEligibilityRecord({
     required super.prefix,
     required super.firstFrom,

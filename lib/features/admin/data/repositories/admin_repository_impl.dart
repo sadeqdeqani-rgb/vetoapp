@@ -34,6 +34,9 @@ class AdminRepositoryImpl implements AdminRepository {
   DateTime? _date(dynamic value) =>
       value == null ? null : DateTime.tryParse('$value');
 
+  int? _int(dynamic value) =>
+      value is num ? value.toInt() : int.tryParse('$value');
+
   @override
   Future<List<AdminContentRecord>> introductionRecords() async {
     final response = await _dio.get(
@@ -113,16 +116,18 @@ class AdminRepositoryImpl implements AdminRepository {
         .whereType<Map>()
         .map(
           (row) => AdminGeoItem(
-            id: (row['province_id'] ??
-                    row['county_id'] ??
-                    row['settlement_id'] as num)
-                .toInt(),
+            id:
+                _int(
+                  row['province_id'] ??
+                      row['county_id'] ??
+                      row['settlement_id'],
+                ) ??
+                0,
             name: '${row['name_fa'] ?? ''}',
             type: type,
-            parentId: (row['country_id'] ??
-                    row['province_id'] ??
-                    row['county_id'] as num?)
-                ?.toInt(),
+            parentId: _int(
+              row['country_id'] ?? row['province_id'] ?? row['county_id'],
+            ),
             isActive: row['is_active'] == true || row['is_active'] == 1,
           ),
         )

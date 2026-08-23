@@ -41,52 +41,70 @@ class _AdminPageState extends State<AdminPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        appBar: AppBar(title: const Text('مدیریت سامانه')),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final compact = constraints.maxWidth < 800;
-            return Row(
-              children: [
-                if (!compact)
-                  _AdminNavigation(
-                    sections: _sections,
-                    selectedIndex: _selectedSection,
-                    compact: false,
-                    onSelected:
-                        (index) => setState(() => _selectedSection = index),
-                  ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (compact)
-                          _AdminNavigation(
-                            sections: _sections,
-                            selectedIndex: _selectedSection,
-                            compact: true,
-                            onSelected:
-                                (index) =>
-                                    setState(() => _selectedSection = index),
+    final baseTheme = Theme.of(context);
+    final adminTheme = baseTheme.copyWith(
+      textTheme: _adminTextTheme(baseTheme.textTheme),
+      inputDecorationTheme: baseTheme.inputDecorationTheme.copyWith(
+        labelStyle: _adminStyle(
+          baseTheme.inputDecorationTheme.labelStyle,
+          fallbackSize: 16,
+        ),
+        hintStyle: _adminStyle(
+          baseTheme.inputDecorationTheme.hintStyle,
+          fallbackSize: 16,
+        ),
+      ),
+    );
+
+    return Theme(
+      data: adminTheme,
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Scaffold(
+          appBar: AppBar(title: const Text('مدیریت سامانه')),
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 800;
+              return Row(
+                children: [
+                  if (!compact)
+                    _AdminNavigation(
+                      sections: _sections,
+                      selectedIndex: _selectedSection,
+                      compact: false,
+                      onSelected:
+                          (index) => setState(() => _selectedSection = index),
+                    ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (compact)
+                            _AdminNavigation(
+                              sections: _sections,
+                              selectedIndex: _selectedSection,
+                              compact: true,
+                              onSelected:
+                                  (index) =>
+                                      setState(() => _selectedSection = index),
+                            ),
+                          if (compact) const SizedBox(height: 16),
+                          Text(
+                            _sections[_selectedSection],
+                            style: Theme.of(context).textTheme.headlineSmall,
                           ),
-                        if (compact) const SizedBox(height: 16),
-                        Text(
-                          _sections[_selectedSection],
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        const SizedBox(height: 16),
-                        _sectionBody(),
-                      ],
+                          const SizedBox(height: 16),
+                          _sectionBody(),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -105,6 +123,33 @@ class _AdminPageState extends State<AdminPage> {
       _ => const _AdminUserEditor(),
     };
   }
+}
+
+TextTheme _adminTextTheme(TextTheme source) {
+  return TextTheme(
+    displayLarge: _adminStyle(source.displayLarge, fallbackSize: 57),
+    displayMedium: _adminStyle(source.displayMedium, fallbackSize: 45),
+    displaySmall: _adminStyle(source.displaySmall, fallbackSize: 36),
+    headlineLarge: _adminStyle(source.headlineLarge, fallbackSize: 32),
+    headlineMedium: _adminStyle(source.headlineMedium, fallbackSize: 28),
+    headlineSmall: _adminStyle(source.headlineSmall, fallbackSize: 24),
+    titleLarge: _adminStyle(source.titleLarge, fallbackSize: 22),
+    titleMedium: _adminStyle(source.titleMedium, fallbackSize: 16),
+    titleSmall: _adminStyle(source.titleSmall, fallbackSize: 14),
+    bodyLarge: _adminStyle(source.bodyLarge, fallbackSize: 16),
+    bodyMedium: _adminStyle(source.bodyMedium, fallbackSize: 14),
+    bodySmall: _adminStyle(source.bodySmall, fallbackSize: 12),
+    labelLarge: _adminStyle(source.labelLarge, fallbackSize: 14),
+    labelMedium: _adminStyle(source.labelMedium, fallbackSize: 12),
+    labelSmall: _adminStyle(source.labelSmall, fallbackSize: 11),
+  );
+}
+
+TextStyle _adminStyle(TextStyle? source, {required double fallbackSize}) {
+  return (source ?? const TextStyle()).copyWith(
+    fontSize: (source?.fontSize ?? fallbackSize) + 10,
+    fontWeight: FontWeight.bold,
+  );
 }
 
 class _AdminNavigation extends StatelessWidget {
@@ -208,29 +253,42 @@ class _ContentEditorState extends State<_ContentEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return _EditorCard(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        TextField(
-          controller: _title,
-          decoration: const InputDecoration(labelText: 'عنوان'),
+        _EditorCard(
+          children: [
+            TextField(
+              controller: _title,
+              decoration: const InputDecoration(labelText: 'عنوان'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _body,
+              minLines: 10,
+              maxLines: 18,
+              decoration: const InputDecoration(labelText: 'متن کامل'),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('فعال‌سازی نسخه'),
+              value: _isActive,
+              onChanged: (value) => setState(() => _isActive = value),
+            ),
+            FilledButton.icon(
+              onPressed: _save,
+              icon: const Icon(Icons.save_outlined),
+              label: const Text('ذخیره نسخه'),
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _body,
-          minLines: 10,
-          maxLines: 18,
-          decoration: const InputDecoration(labelText: 'متن کامل'),
-        ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('فعال‌سازی نسخه'),
-          value: _isActive,
-          onChanged: (value) => setState(() => _isActive = value),
-        ),
-        FilledButton.icon(
-          onPressed: _save,
-          icon: const Icon(Icons.save_outlined),
-          label: const Text('ذخیره نسخه'),
+        const SizedBox(height: 16),
+        _ContentRecordsList(
+          title: 'نسخه‌های موجود',
+          future:
+              widget.kind == _ContentKind.introduction
+                  ? GetIt.I<AdminRepository>().introductionRecords()
+                  : GetIt.I<AdminRepository>().termsRecords(),
         ),
       ],
     );
@@ -285,36 +343,45 @@ class _VideoEditorState extends State<_VideoEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return _EditorCard(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        TextField(
-          controller: _title,
-          decoration: const InputDecoration(labelText: 'عنوان ویدئو'),
+        _EditorCard(
+          children: [
+            TextField(
+              controller: _title,
+              decoration: const InputDecoration(labelText: 'عنوان ویدئو'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _videoUrl,
+              keyboardType: TextInputType.url,
+              decoration: const InputDecoration(labelText: 'URL ویدئو (HTTPS)'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _posterUrl,
+              keyboardType: TextInputType.url,
+              decoration: const InputDecoration(
+                labelText: 'URL تصویر پوستر (اختیاری)',
+              ),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('فعال‌سازی نسخه'),
+              value: _isActive,
+              onChanged: (value) => setState(() => _isActive = value),
+            ),
+            FilledButton.icon(
+              onPressed: _save,
+              icon: const Icon(Icons.video_library_outlined),
+              label: const Text('ذخیره ویدئو'),
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _videoUrl,
-          keyboardType: TextInputType.url,
-          decoration: const InputDecoration(labelText: 'URL ویدئو (HTTPS)'),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _posterUrl,
-          keyboardType: TextInputType.url,
-          decoration: const InputDecoration(
-            labelText: 'URL تصویر پوستر (اختیاری)',
-          ),
-        ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('فعال‌سازی نسخه'),
-          value: _isActive,
-          onChanged: (value) => setState(() => _isActive = value),
-        ),
-        FilledButton.icon(
-          onPressed: _save,
-          icon: const Icon(Icons.video_library_outlined),
-          label: const Text('ذخیره ویدئو'),
+        const SizedBox(height: 16),
+        _VideoRecordsList(
+          future: GetIt.I<AdminRepository>().introductionVideoRecords(),
         ),
       ],
     );
@@ -376,33 +443,43 @@ class _GeographyEditorState extends State<_GeographyEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return _EditorCard(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        TextField(
-          controller: _name,
-          decoration: InputDecoration(labelText: 'نام ${widget.label}'),
+        _EditorCard(
+          children: [
+            TextField(
+              controller: _name,
+              decoration: InputDecoration(labelText: 'نام ${widget.label}'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _code,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'کد داخلی'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _parent,
+              decoration: const InputDecoration(labelText: 'شناسه داخلی والد'),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('رکورد فعال'),
+              value: _isActive,
+              onChanged: (value) => setState(() => _isActive = value),
+            ),
+            FilledButton.icon(
+              onPressed: _save,
+              icon: const Icon(Icons.account_tree_outlined),
+              label: Text('ذخیره ${widget.label}'),
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _code,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'کد داخلی'),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _parent,
-          decoration: const InputDecoration(labelText: 'شناسه داخلی والد'),
-        ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('رکورد فعال'),
-          value: _isActive,
-          onChanged: (value) => setState(() => _isActive = value),
-        ),
-        FilledButton.icon(
-          onPressed: _save,
-          icon: const Icon(Icons.account_tree_outlined),
-          label: Text('ذخیره ${widget.label}'),
+        const SizedBox(height: 16),
+        _GeoRecordsList(
+          label: widget.label,
+          future: GetIt.I<AdminRepository>().geographyRecords(widget.type),
         ),
       ],
     );
@@ -473,34 +550,43 @@ class _NationalIdEditorState extends State<_NationalIdEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return _EditorCard(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        TextField(
-          controller: _prefix,
-          maxLength: 3,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'Prefix سه‌رقمی'),
-        ),
-        Row(
+        _EditorCard(
           children: [
-            Expanded(child: _rangeField('محدوده اول از', _firstFrom)),
-            const SizedBox(width: 12),
-            Expanded(child: _rangeField('محدوده اول تا', _firstTo)),
+            TextField(
+              controller: _prefix,
+              maxLength: 3,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Prefix سه‌رقمی'),
+            ),
+            Row(
+              children: [
+                Expanded(child: _rangeField('محدوده اول از', _firstFrom)),
+                const SizedBox(width: 12),
+                Expanded(child: _rangeField('محدوده اول تا', _firstTo)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(child: _rangeField('محدوده دوم از', _secondFrom)),
+                const SizedBox(width: 12),
+                Expanded(child: _rangeField('محدوده دوم تا', _secondTo)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              onPressed: _save,
+              icon: const Icon(Icons.pin_outlined),
+              label: const Text('ذخیره محدوده'),
+            ),
           ],
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _rangeField('محدوده دوم از', _secondFrom)),
-            const SizedBox(width: 12),
-            Expanded(child: _rangeField('محدوده دوم تا', _secondTo)),
-          ],
-        ),
-        const SizedBox(height: 12),
-        FilledButton.icon(
-          onPressed: _save,
-          icon: const Icon(Icons.pin_outlined),
-          label: const Text('ذخیره محدوده'),
+        const SizedBox(height: 16),
+        _NationalIdRecordsList(
+          future: GetIt.I<AdminRepository>().nationalIdRecords(),
         ),
       ],
     );
@@ -590,6 +676,176 @@ class _AdminUserEditorState extends State<_AdminUserEditor> {
           label: const Text('ایجاد کاربر ادمین'),
         ),
       ],
+    );
+  }
+}
+
+class _ContentRecordsList extends StatelessWidget {
+  const _ContentRecordsList({required this.title, required this.future});
+
+  final String title;
+  final Future<List<AdminContentRecord>> future;
+
+  @override
+  Widget build(BuildContext context) {
+    return _AsyncRecordsCard<AdminContentRecord>(
+      title: title,
+      future: future,
+      emptyText: 'هیچ نسخه‌ای ثبت نشده است.',
+      itemBuilder:
+          (context, item) => ExpansionTile(
+            leading: Icon(
+              item.isActive ? Icons.check_circle : Icons.description_outlined,
+              color: item.isActive ? Colors.green : null,
+            ),
+            title: Text('${item.title} — نسخه ${item.versionNumber}'),
+            subtitle: Text(
+              'شناسه: ${item.id} | ${item.isActive ? 'فعال' : 'غیرفعال'}'
+              '${item.publishedAt == null ? '' : ' | منتشرشده'}',
+            ),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: SelectableText(item.body),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+}
+
+class _VideoRecordsList extends StatelessWidget {
+  const _VideoRecordsList({required this.future});
+
+  final Future<List<AdminVideoRecord>> future;
+
+  @override
+  Widget build(BuildContext context) {
+    return _AsyncRecordsCard<AdminVideoRecord>(
+      title: 'ویدئوهای موجود',
+      future: future,
+      emptyText: 'هیچ ویدئویی ثبت نشده است.',
+      itemBuilder:
+          (context, item) => ListTile(
+            leading: Icon(
+              item.isActive ? Icons.play_circle : Icons.video_library_outlined,
+              color: item.isActive ? Colors.green : null,
+            ),
+            title: Text('${item.title} — نسخه ${item.versionNumber}'),
+            subtitle: Text(
+              'شناسه: ${item.id} | ${item.isActive ? 'فعال' : 'غیرفعال'}\n${item.videoUrl}',
+            ),
+          ),
+    );
+  }
+}
+
+class _GeoRecordsList extends StatelessWidget {
+  const _GeoRecordsList({required this.label, required this.future});
+
+  final String label;
+  final Future<List<AdminGeoItem>> future;
+
+  @override
+  Widget build(BuildContext context) {
+    return _AsyncRecordsCard<AdminGeoItem>(
+      title: '$label‌های موجود',
+      future: future,
+      emptyText: 'رکوردی پیدا نشد.',
+      itemBuilder:
+          (context, item) => ListTile(
+            leading: Icon(
+              item.isActive ? Icons.check_circle : Icons.block,
+              color: item.isActive ? Colors.green : Colors.red,
+            ),
+            title: Text('${item.name} — شناسه ${item.id}'),
+            subtitle: Text(
+              'والد: ${item.parentId ?? '—'} | ${item.isActive ? 'فعال' : 'غیرفعال'}',
+            ),
+          ),
+    );
+  }
+}
+
+class _NationalIdRecordsList extends StatelessWidget {
+  const _NationalIdRecordsList({required this.future});
+
+  final Future<List<NationalIdEligibilityRecord>> future;
+
+  @override
+  Widget build(BuildContext context) {
+    return _AsyncRecordsCard<NationalIdEligibilityRecord>(
+      title: 'Prefixهای موجود',
+      future: future,
+      emptyText: 'Prefixی پیدا نشد.',
+      itemBuilder:
+          (context, item) => ListTile(
+            leading: const Icon(Icons.pin_outlined),
+            title: Text('Prefix ${item.prefix}'),
+            subtitle: Text(
+              'محدوده اول: ${item.firstFrom} تا ${item.firstTo} | '
+              'محدوده دوم: ${item.secondFrom} تا ${item.secondTo}',
+            ),
+          ),
+    );
+  }
+}
+
+class _AsyncRecordsCard<T> extends StatelessWidget {
+  const _AsyncRecordsCard({
+    required this.title,
+    required this.future,
+    required this.itemBuilder,
+    required this.emptyText,
+  });
+
+  final String title;
+  final Future<List<T>> future;
+  final Widget Function(BuildContext, T) itemBuilder;
+  final String emptyText;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: FutureBuilder<List<T>>(
+          future: future,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Padding(
+                padding: EdgeInsets.all(20),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+            if (snapshot.hasError) {
+              return ListTile(
+                leading: const Icon(Icons.error_outline, color: Colors.red),
+                title: Text('خطا در خواندن $title'),
+                subtitle: Text('${snapshot.error}'),
+              );
+            }
+            final records = snapshot.data ?? <T>[];
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(title, style: Theme.of(context).textTheme.titleMedium),
+                const Divider(),
+                if (records.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(emptyText),
+                  )
+                else
+                  ...records.map((record) => itemBuilder(context, record)),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 }
