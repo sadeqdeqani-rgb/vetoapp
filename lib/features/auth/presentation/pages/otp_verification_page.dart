@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/auth_card.dart';
+import '../../../../core/validation/digit_normalizer.dart';
 import '../../domain/entities/otp_challenge.dart';
 import '../cubit/otp_cubit.dart';
 
@@ -64,7 +65,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   }
 
   String? _validateOtp(String? value) {
-    final otp = value?.trim() ?? '';
+    final otp = normalizeDigits(value?.trim() ?? '');
 
     if (otp.isEmpty) {
       return 'کد تأیید را وارد کنید.';
@@ -94,7 +95,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
     await context.read<OtpCubit>().verify(
       phoneNumber: widget.phoneNumber,
-      code: _otpController.text.trim(),
+      code: normalizeDigits(_otpController.text.trim()),
       purpose:
           widget.isPasswordRecovery
               ? OtpPurpose.passwordRecovery
@@ -131,224 +132,129 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             ? 'کد تأیید ارسال‌شده به شمارهٔ زیر را وارد کنید.'
             : 'کد تأیید ارسال‌شده به شمارهٔ زیر را وارد کنید.';
 
-    return Scaffold(
-      body: Container(
-        decoration: AppTheme.pageBackground,
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
-                child: Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: BlocListener<OtpCubit, OtpState>(
-                    listener: (context, state) {
-                      if (state is OtpVerified) {
-                        if (widget.isPasswordRecovery) {
-                          context.push(
-                            '/forgot-password/reset',
-                            extra: <String, dynamic>{
-                              'phoneNumber': widget.phoneNumber,
-                              'verificationToken':
-                                  state.challenge.verificationToken ?? '',
-                            },
-                          );
-                        } else if (widget.isRegistration) {
-                          context.push(
-                            '/register/national-code',
-                            extra: <String, dynamic>{
-                              'phoneNumber': widget.phoneNumber,
-                            },
-                          );
-                        } else {
-                          context.go('/');
-                        }
-                      } else if (state is OtpError && mounted) {
-                        setState(() => _isLoading = false);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(state.message)),
-                        );
-                      }
-                    },
-                    child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: IconButton(
-                          tooltip: 'بازگشت',
-                          onPressed: _isLoading ? null : () => context.pop(),
-                          icon: const Icon(Icons.arrow_forward_rounded),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      const AuthBrandHeader(),
-                      const SizedBox(height: AppTheme.authLogoGap),
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.fromLTRB(24, 52, 24, 52),
-                            decoration: BoxDecoration(
-                              color: AppTheme.surface.withValues(alpha: 0.94),
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.shadow.withValues(
-                                    alpha: 0.14,
-                                  ),
-                                  blurRadius: 24,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
-                            ),
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Icon(
-                                    widget.isPasswordRecovery
-                                        ? Icons.lock_reset_outlined
-                                        : Icons.verified_user_outlined,
-                                    size: 56,
-                                    color: AppTheme.primary,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    title,
-                                    textAlign: TextAlign.center,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.headlineSmall?.copyWith(
-                                      color: AppTheme.primary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    description,
-                                    textAlign: TextAlign.center,
-                                    style:
-                                        Theme.of(context).textTheme.bodyLarge,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Directionality(
-                                    textDirection: TextDirection.ltr,
-                                    child: Text(
-                                      widget.phoneNumber,
-                                      textAlign: TextAlign.center,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleLarge?.copyWith(
-                                        color: AppTheme.primary,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 28),
-                                  TextFormField(
-                                    controller: _otpController,
-                                    autofocus: true,
-                                    keyboardType: TextInputType.number,
-                                    textInputAction: TextInputAction.done,
-                                    textAlign: TextAlign.center,
-                                    maxLength: 6,
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.digitsOnly,
-                                      LengthLimitingTextInputFormatter(6),
-                                    ],
-                                    validator: _validateOtp,
-                                    onChanged: (_) => setState(() {}),
-                                    onFieldSubmitted: (_) => _verifyOtp(),
-                                    decoration: const InputDecoration(
-                                      labelText: 'کد تأیید ۶ رقمی',
-                                      hintText: '123456',
-                                      counterText: '',
-                                      prefixIcon: Icon(Icons.password_rounded),
-                                      border: OutlineInputBorder(),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'زمان باقی‌مانده: '
-                                    '${(_remainingSeconds ~/ 60).toString().padLeft(2, '0')}:'
-                                    '${(_remainingSeconds % 60).toString().padLeft(2, '0')}',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color:
-                                          _remainingSeconds == 0
-                                              ? AppTheme.danger
-                                              : AppTheme.textSecondary,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  AuthActionButton(
-                                    label:
-                                        widget.isPasswordRecovery
-                                            ? 'تأیید و ادامه'
-                                            : widget.isRegistration
-                                            ? 'تأیید و ادامه ثبت‌نام'
-                                            : 'تأیید و ورود',
-                                    onPressed:
-                                        _otpComplete ? _verifyOtp : null,
-                                    loading: _isLoading,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  TextButton(
-                                    onPressed: _isLoading ? null : _resendOtp,
-                                    child: Text(
-                                      'ارسال مجدد کد',
-                                      style: TextStyle(color: AppTheme.primary),
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed:
-                                        _isLoading ? null : () => context.pop(),
-                                    child: Text(
-                                      'ویرایش شمارهٔ تلفن همراه',
-                                      style: TextStyle(
-                                        color: AppTheme.textSecondary,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            top: -29,
-                            left: 24,
-                            right: 24,
-                            child: FloatingAuthTitle(
-                              title:
-                                  widget.isRegistration
-                                      ? 'تأیید و ادامه ثبت‌نام'
-                                      : title,
-                              enabled: true,
-                            ),
-                          ),
-                          Positioned(
-                            bottom: -29,
-                            left: 24,
-                            right: 24,
-                            child: FloatingAuthTitle(
-                              title:
-                                  widget.isRegistration
-                                      ? 'تأیید و ادامه ثبت‌نام'
-                                      : title,
-                              enabled: _otpComplete,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+    return AuthScaffold(
+      maxWidth: 520,
+      onBack: _isLoading ? null : () => context.pop(),
+      child: BlocListener<OtpCubit, OtpState>(
+        listener: (context, state) {
+          if (state is OtpVerified) {
+            if (widget.isPasswordRecovery) {
+              context.push(
+                '/forgot-password/reset',
+                extra: <String, dynamic>{
+                  'phoneNumber': widget.phoneNumber,
+                  'verificationToken': state.challenge.verificationToken ?? '',
+                },
+              );
+            } else if (widget.isRegistration) {
+              context.push(
+                '/register/national-code',
+                extra: <String, dynamic>{'phoneNumber': widget.phoneNumber},
+              );
+            } else {
+              context.go('/');
+            }
+          } else if (state is OtpError && mounted) {
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
+          }
+        },
+        child: AuthFormCard(
+          title: title,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Icon(
+                  widget.isPasswordRecovery
+                      ? Icons.lock_reset_outlined
+                      : Icons.verified_user_outlined,
+                  size: 56,
+                  color: AppTheme.primary,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  description,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 12),
+                Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Text(
+                    widget.phoneNumber,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: AppTheme.primary,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 28),
+                TextFormField(
+                  controller: _otpController,
+                  autofocus: true,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  textAlign: TextAlign.center,
+                  maxLength: 6,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9۰-۹٠-٩]')),
+                    LengthLimitingTextInputFormatter(6),
+                  ],
+                  validator: _validateOtp,
+                  onChanged: (_) => setState(() {}),
+                  onFieldSubmitted: (_) => _verifyOtp(),
+                  decoration: const InputDecoration(
+                    labelText: 'کد تأیید ۶ رقمی',
+                    hintText: '123456',
+                    counterText: '',
+                    prefixIcon: Icon(Icons.password_rounded),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'زمان باقی‌مانده: '
+                  '${(_remainingSeconds ~/ 60).toString().padLeft(2, '0')}:'
+                  '${(_remainingSeconds % 60).toString().padLeft(2, '0')}',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color:
+                        _remainingSeconds == 0
+                            ? AppTheme.danger
+                            : AppTheme.textSecondary,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextButton(
+                  onPressed: _isLoading ? null : _resendOtp,
+                  child: Text(
+                    'ارسال مجدد کد',
+                    style: TextStyle(color: AppTheme.primary),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _isLoading ? null : () => context.pop(),
+                  child: Text(
+                    'ویرایش شمارهٔ تلفن همراه',
+                    style: TextStyle(color: AppTheme.textSecondary),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                AuthActionButton(
+                  label:
+                      widget.isRegistration
+                          ? 'تأیید و ادامه ثبت‌نام'
+                          : 'تأیید و ادامه',
+                  onPressed: _otpComplete && !_isLoading ? _verifyOtp : null,
+                  loading: _isLoading,
+                ),
+              ],
             ),
           ),
         ),

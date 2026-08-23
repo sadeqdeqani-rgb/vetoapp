@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/errors/failures.dart';
+import '../../../../core/validation/digit_normalizer.dart';
 import '../../domain/entities/auth_result.dart';
 import '../../domain/repositories/auth_repository.dart';
 
@@ -10,7 +11,9 @@ import '../../domain/repositories/auth_repository.dart';
 /// برای اتصال API، آن را حذف نکنید؛ کافی است ثبت [AuthRepository] در فایل DI
 /// با [AuthRepositoryImpl] انجام شود. در آن حالت هیچ صفحه یا Cubit تغییری
 /// نخواهد کرد.
-@Deprecated('فقط برای تست فرانت؛ در محیط API از AuthRepositoryImpl استفاده شود.')
+@Deprecated(
+  'فقط برای تست فرانت؛ در محیط API از AuthRepositoryImpl استفاده شود.',
+)
 class FakeAuthRepository implements AuthRepository {
   /// شماره موبایل معتبر برای تست ورود.
   static const String validUsername = '09123456789';
@@ -27,7 +30,8 @@ class FakeAuthRepository implements AuthRepository {
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
 
-    if (phoneNumber.trim() != validUsername || password != validPassword) {
+    if (normalizeDigits(phoneNumber.trim()) != validUsername ||
+        normalizeDigits(password) != validPassword) {
       return const Left(AuthFailure('نام کاربری یا رمز عبور صحیح نیست.'));
     }
 

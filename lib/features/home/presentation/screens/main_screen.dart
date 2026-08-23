@@ -72,7 +72,7 @@ class MainScreen extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
                   child: Image.asset(
                     AppTheme.appLogo,
-                    height: 76,
+                    height: AppTheme.authLogoSize * 0.78,
                     fit: BoxFit.contain,
                     semanticLabel: 'وِتواَپ',
                   ),
@@ -84,7 +84,7 @@ class MainScreen extends StatelessWidget {
                     clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
                       color: colors.surface.withValues(alpha: 0.92),
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(AppTheme.cardRadius),
                       border: Border.all(
                         color: AppTheme.primary.withValues(alpha: 0.24),
                         width: 1.6,
@@ -107,7 +107,7 @@ class MainScreen extends StatelessWidget {
         bottomNavigationBar: SafeArea(
           minimum: const EdgeInsets.fromLTRB(18, 0, 18, 16),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(36),
+            borderRadius: BorderRadius.circular(32),
             child: BackdropFilter(
               filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
               child: Container(
@@ -115,7 +115,7 @@ class MainScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 7),
                 decoration: BoxDecoration(
                   color: colors.surface.withValues(alpha: 0.92),
-                  borderRadius: BorderRadius.circular(36),
+                  borderRadius: BorderRadius.circular(32),
                   border: Border.all(
                     color: AppTheme.primary.withValues(alpha: 0.46),
                     width: 2.2,

@@ -1,13 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 
 import '../../features/auth/data/datasources/auth_local_data_source_impl.dart';
 import '../../features/auth/data/datasources/auth_remote_datasource.dart';
+import '../../features/auth/data/datasources/frontend_test_otp_data_source.dart';
 import '../../features/auth/data/datasources/otp_remote_data_source.dart';
 import '../../features/auth/data/datasources/registration_local_data_source.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/data/repositories/auth_session_repository_impl.dart';
+import '../../features/auth/data/repositories/fake_auth_repository.dart';
 import '../../features/auth/data/repositories/otp_repository_impl.dart';
 import '../../features/auth/data/repositories/registration_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
@@ -33,11 +36,24 @@ import '../../features/profile/domain/repositories/profile_repository.dart';
 import '../../features/profile/domain/usecases/close_account.dart';
 import '../../features/profile/domain/usecases/get_profile.dart';
 import '../../features/profile/presentation/cubit/profile_cubit.dart';
+import '../../features/admin/data/repositories/admin_repository_impl.dart';
+import '../../features/admin/domain/repositories/admin_repository.dart';
+import '../storage/secure_storage_service.dart';
 import '../network/dio_client.dart';
+import '../validation/frontend_test_config.dart';
 
 final getIt = GetIt.instance;
 
 void configureDependencies() {
+  if (!getIt.isRegistered<SecureStorageService>()) {
+    getIt.registerLazySingleton<SecureStorageService>(SecureStorageService.new);
+  }
+  if (!getIt.isRegistered<AdminRepository>()) {
+    getIt.registerLazySingleton<AdminRepository>(
+      () => AdminRepositoryImpl(getIt<Dio>(), getIt<SecureStorageService>()),
+    );
+  }
+
   if (!getIt.isRegistered<Dio>()) {
     getIt.registerLazySingleton<Dio>(createDioClient);
   }
@@ -64,12 +80,23 @@ void configureDependencies() {
   }
   if (!getIt.isRegistered<AuthRepository>()) {
     getIt.registerLazySingleton<AuthRepository>(
-      () => AuthRepositoryImpl(getIt<AuthRemoteDataSource>()),
+      () =>
+          kDebugMode && enableFrontendFakeAuth
+              ? const FakeAuthRepository()
+              : AuthRepositoryImpl(getIt<AuthRemoteDataSource>()),
+    );
+  }
+  if (!getIt.isRegistered<OtpRemoteDataSourceImpl>()) {
+    getIt.registerLazySingleton<OtpRemoteDataSourceImpl>(
+      () => OtpRemoteDataSourceImpl(getIt<Dio>()),
     );
   }
   if (!getIt.isRegistered<OtpRemoteDataSource>()) {
     getIt.registerLazySingleton<OtpRemoteDataSource>(
-      () => OtpRemoteDataSourceImpl(getIt<Dio>()),
+      () =>
+          kDebugMode && enableFrontendFakeAuth
+              ? FrontendTestOtpDataSource(getIt<OtpRemoteDataSourceImpl>())
+              : getIt<OtpRemoteDataSourceImpl>(),
     );
   }
   if (!getIt.isRegistered<OtpRepository>()) {

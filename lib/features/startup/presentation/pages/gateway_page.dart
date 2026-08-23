@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/app_background.dart';
 import '../../../../core/widgets/auth_card.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
@@ -48,84 +47,39 @@ class _GatewayPageState extends State<GatewayPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: AppBackground(
-        child: SafeArea(
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24.0,
-                vertical: 24.0,
-              ),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 480),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Center(
-                      child: Image.asset(
-                        AppTheme.appLogo,
-                        width: 130,
-                        height: 130,
-                        fit: BoxFit.contain,
-                        errorBuilder:
-                            (context, error, stackTrace) => const Icon(
-                              Icons.account_balance,
-                              size: 90,
-                              color: AppTheme.primaryDark,
-                            ),
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    AuthCard(
-                      title: 'ورود به وِتواَپ',
-                      padding: const EdgeInsets.fromLTRB(22, 18, 22, 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Text(
-                            'برای ادامه، روش ورود خود را انتخاب کنید',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: AppTheme.textPrimary,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          GatewayActionButton(
-                            title: 'ثبت نام',
-                            onTap:
-                                _isContinuingAsGuest
-                                    ? null
-                                    : () => context.pushNamed('register-terms'),
-                          ),
-                          const SizedBox(height: 10),
-                          GatewayActionButton(
-                            title: 'ورود کاربر',
-                            onTap:
-                                _isContinuingAsGuest
-                                    ? null
-                                    : () => context.go('/login'),
-                          ),
-                          const SizedBox(height: 10),
-                          GatewayActionButton(
-                            title:
-                                _isContinuingAsGuest
-                                    ? 'در حال ورود...'
-                                    : 'ورود مهمان',
-                            onTap:
-                                _isContinuingAsGuest ? null : _continueAsGuest,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+    return AuthScaffold(
+      showBackButton: false,
+      maxWidth: 520,
+      child: AuthFormCard(
+        title: 'ورود',
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 26),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'برای ادامه، روش ورود خود را انتخاب کنید',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleMedium,
             ),
-          ),
+            const SizedBox(height: 20),
+            GatewayActionButton(
+              title: 'ثبت نام',
+              onTap:
+                  _isContinuingAsGuest
+                      ? null
+                      : () => context.pushNamed('register-terms'),
+            ),
+            const SizedBox(height: 12),
+            GatewayActionButton(
+              title: 'ورود کاربر',
+              onTap: _isContinuingAsGuest ? null : () => context.go('/login'),
+            ),
+            const SizedBox(height: 12),
+            GatewayActionButton(
+              title: _isContinuingAsGuest ? 'در حال ورود...' : 'ورود مهمان',
+              onTap: _isContinuingAsGuest ? null : _continueAsGuest,
+            ),
+          ],
         ),
       ),
     );
@@ -151,7 +105,7 @@ class _GatewayActionButtonState extends State<GatewayActionButton> {
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = BorderRadius.circular(28.0);
+    final borderRadius = BorderRadius.circular(AppTheme.buttonRadius);
     final isEnabled = widget.onTap != null;
 
     final Color buttonColor =
@@ -167,7 +121,7 @@ class _GatewayActionButtonState extends State<GatewayActionButton> {
       onExit: isEnabled ? (_) => setState(() => _isHovered = false) : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        height: 48,
+        height: 52,
         decoration: BoxDecoration(
           color: buttonColor,
           borderRadius: borderRadius,

@@ -92,163 +92,113 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: AppTheme.pageBackground,
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
-                child: Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: BlocListener<OtpCubit, OtpState>(
-                    listener: (context, state) {
-                      if (state is OtpPasswordReset && mounted) {
-                        setState(() => _isLoading = false);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'رمز عبور با موفقیت تغییر کرد. اکنون وارد شوید.',
-                            ),
-                          ),
-                        );
-                        context.go('/login');
-                      } else if (state is OtpError && mounted) {
-                        setState(() => _isLoading = false);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(state.message)),
-                        );
-                      }
-                    },
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: IconButton(
-                          tooltip: 'بازگشت',
-                          onPressed: _isLoading ? null : () => context.pop(),
-                          icon: const Icon(Icons.arrow_forward_rounded),
-                        ),
+    return AuthScaffold(
+      maxWidth: 520,
+      onBack: _isLoading ? null : () => context.pop(),
+      child: BlocListener<OtpCubit, OtpState>(
+        listener: (context, state) {
+          if (state is OtpPasswordReset && mounted) {
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('رمز عبور با موفقیت تغییر کرد. اکنون وارد شوید.'),
+              ),
+            );
+            context.go('/login');
+          } else if (state is OtpError && mounted) {
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
+          }
+        },
+        child: AuthFormCard(
+          title: 'بازیابی رمز عبور',
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Icon(
+                  Icons.lock_reset_outlined,
+                  size: 56,
+                  color: AppTheme.primary,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'تعیین رمز عبور جدید',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: AppTheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'برای شمارهٔ ${widget.phoneNumber} یک رمز عبور جدید تعیین کنید.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 28),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  textInputAction: TextInputAction.next,
+                  validator: _validatePassword,
+                  decoration: InputDecoration(
+                    labelText: 'رمز عبور جدید',
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      tooltip:
+                          _obscurePassword ? 'نمایش رمز' : 'پنهان کردن رمز',
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
                       ),
-                      const SizedBox(height: 4),
-                      const AuthBrandHeader(),
-                      const SizedBox(height: AppTheme.authLogoGap),
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: AppTheme.surface.withValues(alpha: 0.94),
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.shadow.withValues(alpha: 0.14),
-                              blurRadius: 24,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Icon(
-                                Icons.lock_reset_outlined,
-                                size: 56,
-                                color: AppTheme.primary,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'تعیین رمز عبور جدید',
-                                textAlign: TextAlign.center,
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineSmall?.copyWith(
-                                  color: AppTheme.primary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                'برای شمارهٔ ${widget.phoneNumber} یک رمز عبور جدید تعیین کنید.',
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodyLarge,
-                              ),
-                              const SizedBox(height: 28),
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: _obscurePassword,
-                                textInputAction: TextInputAction.next,
-                                validator: _validatePassword,
-                                decoration: InputDecoration(
-                                  labelText: 'رمز عبور جدید',
-                                  prefixIcon: const Icon(Icons.lock_outline),
-                                  border: const OutlineInputBorder(),
-                                  suffixIcon: IconButton(
-                                    tooltip:
-                                        _obscurePassword
-                                            ? 'نمایش رمز'
-                                            : 'پنهان کردن رمز',
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscurePassword = !_obscurePassword;
-                                      });
-                                    },
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility_outlined
-                                          : Icons.visibility_off_outlined,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _confirmationController,
-                                obscureText: _obscureConfirmation,
-                                textInputAction: TextInputAction.done,
-                                validator: _validateConfirmation,
-                                onFieldSubmitted: (_) => _submit(),
-                                decoration: InputDecoration(
-                                  labelText: 'تکرار رمز عبور جدید',
-                                  prefixIcon: const Icon(Icons.lock_reset),
-                                  border: const OutlineInputBorder(),
-                                  suffixIcon: IconButton(
-                                    tooltip:
-                                        _obscureConfirmation
-                                            ? 'نمایش رمز'
-                                            : 'پنهان کردن رمز',
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscureConfirmation =
-                                            !_obscureConfirmation;
-                                      });
-                                    },
-                                    icon: Icon(
-                                      _obscureConfirmation
-                                          ? Icons.visibility_outlined
-                                          : Icons.visibility_off_outlined,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              AuthActionButton(
-                                label: 'ثبت رمز جدید',
-                                onPressed: _submit,
-                                loading: _isLoading,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      ],
                     ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _confirmationController,
+                  obscureText: _obscureConfirmation,
+                  textInputAction: TextInputAction.done,
+                  validator: _validateConfirmation,
+                  onFieldSubmitted: (_) => _submit(),
+                  decoration: InputDecoration(
+                    labelText: 'تکرار رمز عبور جدید',
+                    prefixIcon: const Icon(Icons.lock_reset),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      tooltip:
+                          _obscureConfirmation ? 'نمایش رمز' : 'پنهان کردن رمز',
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmation = !_obscureConfirmation;
+                        });
+                      },
+                      icon: Icon(
+                        _obscureConfirmation
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                AuthActionButton(
+                  label: 'ثبت رمز جدید',
+                  onPressed: _submit,
+                  loading: _isLoading,
+                ),
+              ],
             ),
           ),
         ),

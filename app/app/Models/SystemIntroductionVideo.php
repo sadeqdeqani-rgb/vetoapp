@@ -1,0 +1,44 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+
+class SystemIntroductionVideo extends Model
+{
+    protected $table = 'system_introduction_videos';
+    protected $primaryKey = 'introduction_video_id';
+
+    protected $fillable = [
+        'version_number',
+        'title',
+        'video_url',
+        'poster_url',
+        'duration_seconds',
+        'is_active',
+        'published_at',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'version_number' => 'integer',
+            'duration_seconds' => 'integer',
+            'is_active' => 'boolean',
+            'published_at' => 'datetime',
+        ];
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where($query->qualifyColumn('is_active'), true);
+    }
+
+    public function scopePublished(Builder $query): Builder
+    {
+        return $query->active()
+            ->whereNotNull($query->qualifyColumn('published_at'))
+            ->where($query->qualifyColumn('published_at'), '<=', now());
+    }
+}

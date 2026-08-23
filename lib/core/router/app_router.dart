@@ -9,6 +9,7 @@ import '../../features/auth/presentation/pages/registration_page.dart';
 import '../../features/auth/presentation/pages/registration_national_code_page.dart';
 import '../../features/auth/presentation/pages/registration_geography_page.dart';
 import '../../features/auth/presentation/pages/registration_password_page.dart';
+import '../../features/auth/presentation/pages/registration_success_page.dart';
 import '../../features/auth/presentation/pages/registration_terms_page.dart';
 import '../../features/ballot/presentation/screens/ballot_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
@@ -19,6 +20,8 @@ import '../../features/home/presentation/screens/election_screen.dart';
 import '../../features/home/presentation/screens/impeachment_screen.dart';
 import '../../features/participation/presentation/screens/participation_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/admin/presentation/pages/admin_page.dart';
+import '../../features/admin/presentation/pages/admin_login_page.dart';
 import '../../features/startup/presentation/pages/gateway_page.dart'
     as gateway_page;
 import '../../features/startup/presentation/pages/splash_page.dart';
@@ -27,9 +30,13 @@ GoRouter createAppRouter(AuthCubit authCubit) {
   /// فعلاً AuthCubit در redirect استفاده نمی‌شود.
   /// با فعال شدن احراز هویت واقعی، redirect بر اساس state همین Cubit تکمیل می‌شود.
   final _ = authCubit;
+  const startRoute = String.fromEnvironment(
+    'VETO_START_ROUTE',
+    defaultValue: '/splash',
+  );
 
   return GoRouter(
-    initialLocation: '/splash',
+    initialLocation: startRoute,
     redirect: (context, state) {
       final location = state.matchedLocation;
 
@@ -41,6 +48,7 @@ GoRouter createAppRouter(AuthCubit authCubit) {
           location == '/register/national-code' ||
           location == '/register/geography' ||
           location == '/register/password' ||
+          location == '/register/success' ||
           location == '/register' ||
           location == '/forgot-password' ||
           location == '/otp-verification' ||
@@ -164,6 +172,11 @@ GoRouter createAppRouter(AuthCubit authCubit) {
           );
         },
       ),
+      GoRoute(
+        path: '/register/success',
+        name: 'register-success',
+        builder: (context, state) => const RegistrationSuccessPage(),
+      ),
 
       /// مرحلهٔ اول بازیابی رمز: دریافت شمارهٔ موبایل.
       GoRoute(
@@ -228,6 +241,16 @@ GoRouter createAppRouter(AuthCubit authCubit) {
             verificationToken: verificationToken.trim(),
           );
         },
+      ),
+      GoRoute(
+        path: '/admin/login',
+        name: 'admin-login',
+        builder: (context, state) => const AdminLoginPage(),
+      ),
+      GoRoute(
+        path: '/admin',
+        name: 'admin',
+        builder: (context, state) => const AdminPage(),
       ),
 
       ShellRoute(

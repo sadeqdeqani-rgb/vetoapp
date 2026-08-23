@@ -19,7 +19,7 @@ abstract final class GeographySeedData {
       type: 'county',
     ),
     GeographicalArea(id: 121, parentId: 12, name: 'شهرضا', type: 'county'),
-    GeographicalArea(id: 131, parentId: 13, name: 'نعیم آباد', type: 'county'),
+    GeographicalArea(id: 131, parentId: 13, name: 'یزد', type: 'county'),
   ];
 
   static const localities = <GeographicalArea>[
@@ -33,7 +33,7 @@ abstract final class GeographySeedData {
     GeographicalArea(
       id: 1311,
       parentId: 131,
-      name: 'تخت دو طبقه',
+      name: 'نعیم آباد',
       type: 'locality',
     ),
   ];

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_theme.dart';
+import '../../../../core/validation/digit_normalizer.dart';
 import '../../../../core/widgets/auth_card.dart';
 
 class LoginPage extends StatefulWidget {
@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   String? _validatePhoneNumber(String? value) {
-    final phoneNumber = value?.trim() ?? '';
+    final phoneNumber = normalizeDigits(value?.trim() ?? '');
 
     if (phoneNumber.isEmpty) {
       return 'شماره تلفن همراه را وارد کنید.';
@@ -69,111 +69,82 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final isPasswordRecovery = widget.isPasswordRecovery;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(isPasswordRecovery ? 'بازیابی رمز عبور' : 'ورود به سامانه'),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Directionality(
-                textDirection: TextDirection.rtl,
-                child: Column(
-                  children: [
-                    const AuthBrandHeader(),
-                    const SizedBox(height: AppTheme.authLogoGap),
-                    AuthCard(
-                      title:
-                          isPasswordRecovery
-                              ? 'بازیابی رمز عبور'
-                              : 'ورود به وِتواَپ',
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                        Icon(
-                          isPasswordRecovery
-                              ? Icons.lock_reset_outlined
-                              : Icons.phone_android_outlined,
-                          size: 72,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          isPasswordRecovery
-                              ? 'شماره همراه حساب کاربری خود را وارد کنید.'
-                              : 'برای ورود، شماره همراه خود را وارد کنید.',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 28),
-                        TextFormField(
-                          controller: _phoneController,
-                          keyboardType: TextInputType.phone,
-                          textInputAction: TextInputAction.done,
-                          textAlign: TextAlign.left,
-                          autofocus: true,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                            LengthLimitingTextInputFormatter(11),
-                          ],
-                          validator: _validatePhoneNumber,
-                          onFieldSubmitted: (_) => _requestOtp(),
-                          decoration: const InputDecoration(
-                            labelText: 'شماره تلفن همراه',
-                            hintText: '09123456789',
-                            prefixIcon: Icon(Icons.phone_outlined),
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        FilledButton(
-                          onPressed: _requestOtp,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: Text(
-                              isPasswordRecovery
-                                  ? 'دریافت کد بازیابی رمز'
-                                  : 'دریافت کد تأیید',
-                            ),
-                          ),
-                        ),
-
-                        /// در فلو بازیابی رمز، این لینک ضرورتی ندارد.
-                        if (!isPasswordRecovery) ...[
-                          const SizedBox(height: 8),
-                          TextButton(
-                            onPressed: () {
-                              context.push('/login-credentials');
-                            },
-                            child: const Text('ورود با نام کاربری و رمز عبور'),
-                          ),
-                        ],
-
-                        /// کاربر در فلو بازیابی بتواند به صفحهٔ ورود
-                        /// با نام کاربری و رمز برگردد.
-                        if (isPasswordRecovery) ...[
-                          const SizedBox(height: 8),
-                          TextButton(
-                            onPressed: () {
-                              context.push('/login-credentials');
-                            },
-                            child: const Text('بازگشت به صفحهٔ ورود'),
-                          ),
-                        ],
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+    return AuthScaffold(
+      showBackButton: false,
+      child: AuthFormCard(
+        title: isPasswordRecovery ? 'بازیابی رمز عبور' : 'ورود',
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Icon(
+                isPasswordRecovery
+                    ? Icons.lock_reset_outlined
+                    : Icons.phone_android_outlined,
+                size: 72,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                isPasswordRecovery
+                    ? 'شماره همراه حساب کاربری خود را وارد کنید.'
+                    : 'برای ورود، شماره همراه خود را وارد کنید.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 28),
+              TextFormField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                textInputAction: TextInputAction.done,
+                textAlign: TextAlign.left,
+                autofocus: true,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(11),
+                ],
+                validator: _validatePhoneNumber,
+                onFieldSubmitted: (_) => _requestOtp(),
+                decoration: const InputDecoration(
+                  labelText: 'شماره تلفن همراه',
+                  hintText: '09123456789',
+                  prefixIcon: Icon(Icons.phone_outlined),
+                  border: OutlineInputBorder(),
                 ),
               ),
-            ),
+              const SizedBox(height: 20),
+              AuthActionButton(
+                onPressed: _requestOtp,
+                label:
+                    isPasswordRecovery
+                        ? 'دریافت کد بازیابی رمز'
+                        : 'دریافت کد تأیید',
+              ),
+
+              /// در فلو بازیابی رمز، این لینک ضرورتی ندارد.
+              if (!isPasswordRecovery) ...[
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () {
+                    context.push('/login-credentials');
+                  },
+                  child: const Text('ورود با نام کاربری و رمز عبور'),
+                ),
+              ],
+
+              /// کاربر در فلو بازیابی بتواند به صفحهٔ ورود
+              /// با نام کاربری و رمز برگردد.
+              if (isPasswordRecovery) ...[
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () {
+                    context.push('/login-credentials');
+                  },
+                  child: const Text('بازگشت به صفحهٔ ورود'),
+                ),
+              ],
+            ],
           ),
         ),
       ),

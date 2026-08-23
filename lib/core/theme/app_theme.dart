@@ -22,32 +22,39 @@ abstract final class AppTheme {
   static const Color pressedTab = Color(0xFFD1D5F0);
   static const Color shadow = Color(0x33263238);
   static const Color authCardSurface = Color(0xF7FFFFFF);
-  static const double authCardRadius = 30;
-  static const double authHeaderHeight = 58;
+  static const double cardRadius = 24;
+  static const double authCardRadius = cardRadius;
+  static const double inputRadius = 16;
+  static const double buttonRadius = 16;
+  static const double authHeaderHeight = 52;
   static const double authLogoSize = 96;
   static const double authLogoGap = 28;
+  static const double pageHorizontalPadding = 20;
+  static const double pageVerticalPadding = 24;
 
   static const String appLogo = 'assets/images/vetoapp.png';
   static const String iranMap = 'assets/images/persianmap.png';
 
   static const BoxDecoration pageBackground = BoxDecoration(color: background);
 
-  static BoxDecoration get authCardDecoration => BoxDecoration(
+  static BoxDecoration get cardDecoration => BoxDecoration(
     color: authCardSurface,
     borderRadius: BorderRadius.circular(authCardRadius),
-    border: Border.all(color: surface, width: 2),
+    border: Border.all(color: divider),
     boxShadow: [
       BoxShadow(
         color: shadow.withValues(alpha: 0.16),
-        blurRadius: 28,
-        offset: const Offset(0, 12),
+        blurRadius: 20,
+        offset: const Offset(0, 8),
       ),
     ],
   );
 
+  static BoxDecoration get authCardDecoration => cardDecoration;
+
   static BoxDecoration get authHeaderDecoration => BoxDecoration(
     color: primary,
-    borderRadius: BorderRadius.circular(29),
+    borderRadius: BorderRadius.circular(buttonRadius),
     boxShadow: [
       BoxShadow(
         color: primary.withValues(alpha: 0.24),
@@ -149,8 +156,9 @@ abstract final class AppTheme {
           foregroundColor: surface,
           disabledBackgroundColor: divider,
           disabledForegroundColor: textSecondary,
+          minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(buttonRadius),
           ),
         ),
       ),
@@ -160,8 +168,9 @@ abstract final class AppTheme {
           foregroundColor: surface,
           disabledBackgroundColor: divider,
           disabledForegroundColor: textSecondary,
+          minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(buttonRadius),
           ),
         ),
       ),
@@ -169,8 +178,9 @@ abstract final class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: primary,
           side: const BorderSide(color: primary),
+          minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(buttonRadius),
           ),
         ),
       ),
@@ -223,19 +233,19 @@ abstract final class AppTheme {
           vertical: 14,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(inputRadius),
           borderSide: const BorderSide(color: divider),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(inputRadius),
           borderSide: const BorderSide(color: primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(inputRadius),
           borderSide: const BorderSide(color: danger),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(inputRadius),
           borderSide: const BorderSide(color: danger, width: 2),
         ),
       ),
