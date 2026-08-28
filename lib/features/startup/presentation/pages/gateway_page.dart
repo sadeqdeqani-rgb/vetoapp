@@ -40,7 +40,7 @@ class _GatewayPageState extends State<GatewayPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('ورود به حالت مهمان انجام نشد. دوباره تلاش کنید.'),
+        content: Text('ورود به حالت مشاهده محیط سامانه انجام نشد. دوباره تلاش کنید.'),
       ),
     );
   }
@@ -76,7 +76,10 @@ class _GatewayPageState extends State<GatewayPage> {
             ),
             const SizedBox(height: 12),
             GatewayActionButton(
-              title: _isContinuingAsGuest ? 'در حال ورود...' : 'ورود مهمان',
+              title:
+                  _isContinuingAsGuest
+                      ? 'در حال ورود...'
+                      : 'مشاهده محیط سامانه',
               onTap: _isContinuingAsGuest ? null : _continueAsGuest,
             ),
           ],

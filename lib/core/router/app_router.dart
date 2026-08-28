@@ -1,7 +1,36 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vetoapp_demo/core/di/injection.dart' as demo_di;
+import 'package:vetoapp_demo/features/ballot/presentation/screens/ballot_screen.dart'
+    as demo;
+import 'package:vetoapp_demo/features/home/presentation/screens/about_detail_screen.dart'
+    as demo;
+import 'package:vetoapp_demo/features/home/presentation/screens/about_screen.dart'
+    as demo;
+import 'package:vetoapp_demo/features/home/presentation/screens/about_sections.dart'
+    as demo;
+import 'package:vetoapp_demo/features/home/presentation/screens/civic_detail_screen.dart'
+    as demo;
+import 'package:vetoapp_demo/features/home/presentation/screens/election_screen.dart'
+    as demo;
+import 'package:vetoapp_demo/features/home/presentation/screens/home_screen.dart'
+    as demo;
+import 'package:vetoapp_demo/features/home/presentation/screens/impeachment_screen.dart'
+    as demo;
+import 'package:vetoapp_demo/features/home/presentation/screens/main_screen.dart'
+    as demo;
+import 'package:vetoapp_demo/features/home/presentation/screens/referendum_screen.dart'
+    as demo;
+import 'package:vetoapp_demo/core/theme/app_theme.dart' as demo;
+import 'package:vetoapp_demo/features/participation/presentation/screens/participation_screen.dart'
+    as demo;
+import 'package:vetoapp_demo/features/profile/presentation/cubit/profile_cubit.dart'
+    as demo;
+import 'package:vetoapp_demo/features/profile/presentation/screens/profile_screen.dart'
+    as demo;
 
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/auth/presentation/cubit/auth_state.dart';
@@ -29,6 +58,8 @@ import '../../features/admin/presentation/pages/admin_login_page.dart';
 import '../../features/startup/presentation/pages/gateway_page.dart'
     as gateway_page;
 import '../../features/startup/presentation/pages/splash_page.dart';
+import 'package:vetoapp_demo/core/theme/app_theme.dart';
+import 'package:vetoapp_demo/features/home/presentation/screens/civic_detail_screen.dart';
 
 class _AuthRouterRefresh extends ChangeNotifier {
   _AuthRouterRefresh(Stream<AuthState> stream) {
@@ -48,6 +79,7 @@ GoRouter createAppRouter(AuthCubit authCubit) {
   /// فعلاً AuthCubit در redirect استفاده نمی‌شود.
   /// با فعال شدن احراز هویت واقعی، redirect بر اساس state همین Cubit تکمیل می‌شود.
   final _ = authCubit;
+  demo_di.configureDependencies();
   const startRoute = String.fromEnvironment(
     'VETO_START_ROUTE',
     defaultValue: '/splash',
@@ -283,47 +315,336 @@ GoRouter createAppRouter(AuthCubit authCubit) {
       ),
 
       ShellRoute(
-        builder: (context, state, child) => MainScreen(child: child),
+        builder: (context, state, child) {
+          if (authCubit.state is Guest) {
+            return BlocProvider<demo.ProfileCubit>(
+              create: (_) => demo_di.getIt<demo.ProfileCubit>(),
+              child: demo.MainScreen(child: child),
+            );
+          }
+          return MainScreen(child: child);
+        },
         routes: [
           GoRoute(
             path: '/',
             name: 'home',
-            builder: (context, state) => const HomeScreen(),
+            builder:
+                (context, state) =>
+                    authCubit.state is Guest
+                        ? const demo.HomeScreen()
+                        : const HomeScreen(),
           ),
           GoRoute(
             path: '/about',
             name: 'about',
-            builder: (context, state) => const AboutScreen(),
+            builder:
+                (context, state) =>
+                    authCubit.state is Guest
+                        ? const demo.AboutScreen()
+                        : const AboutScreen(),
+          ),
+          GoRoute(
+            path: '/about/detail',
+            name: 'about-detail',
+            builder: (context, state) {
+              if (authCubit.state is Guest) {
+                final section = state.extra;
+                return section is demo.AboutSection
+                    ? demo.AboutDetailScreen(section: section)
+                    : const demo.AboutScreen();
+              }
+              return const AboutScreen();
+            },
           ),
           GoRoute(
             path: '/participation',
             name: 'participation',
-            builder: (context, state) => const ParticipationScreen(),
+            builder:
+                (context, state) =>
+                    authCubit.state is Guest
+                        ? const demo.ParticipationScreen()
+                        : const ParticipationScreen(),
           ),
           GoRoute(
             path: '/ballot',
             name: 'ballot',
-            builder: (context, state) => const BallotScreen(),
+            builder:
+                (context, state) =>
+                    authCubit.state is Guest
+                        ? const demo.BallotScreen()
+                        : const BallotScreen(),
           ),
           GoRoute(
             path: '/profile',
             name: 'profile',
-            builder: (context, state) => const ProfileScreen(),
+            builder:
+                (context, state) =>
+                    authCubit.state is Guest
+                        ? const demo.ProfileScreen()
+                        : const ProfileScreen(),
           ),
           GoRoute(
             path: '/referendum',
             name: 'referendum',
-            builder: (context, state) => const ReferendumScreen(),
+            builder:
+                (context, state) =>
+                    authCubit.state is Guest
+                        ? const demo.ReferendumScreen()
+                        : const ReferendumScreen(),
           ),
           GoRoute(
             path: '/elections',
             name: 'elections',
-            builder: (context, state) => const ElectionScreen(),
+            builder:
+                (context, state) =>
+                    authCubit.state is Guest
+                        ? const demo.ElectionScreen()
+                        : const ElectionScreen(),
           ),
           GoRoute(
             path: '/impeachment',
             name: 'impeachment',
-            builder: (context, state) => const ImpeachmentScreen(),
+            builder:
+                (context, state) =>
+                    authCubit.state is Guest
+                        ? const demo.ImpeachmentScreen()
+                        : const ImpeachmentScreen(),
+          ),
+          GoRoute(
+            path: '/referendum/propose',
+            builder:
+                (context, state) => authCubit.state is Guest
+                    ? const demo.CivicDetailScreen(
+                        title: 'پیشنهاد موضوع برای همه‌پرسی',
+                        parentIcon: Icons.how_to_vote_outlined,
+                        proposalForm: true,
+                        accent: Color(0xFF2E7D32),
+                        items: [],
+                      )
+                    : const CivicDetailScreen(
+                        title: 'پیشنهاد موضوع برای همه‌پرسی',
+                        parentIcon: Icons.how_to_vote_outlined,
+                        proposalForm: true,
+                        accent: Color(0xFF2E7D32),
+                        items: [],
+                      ),
+          ),
+          GoRoute(
+            path: '/referendum/supported',
+            builder:
+                (context, state) => authCubit.state is Guest
+                    ? const demo.CivicDetailScreen(
+                        title: 'مرور موضوعات و ثبت حمایت',
+                        parentIcon: Icons.how_to_vote_outlined,
+                        accent: Color(0xFF2E7D32),
+                        items: [
+                          demo.CivicDetailItem(
+                            title: 'قرارداد ۲۵ ساله با چین',
+                            count: '۳۷۸۹۰',
+                          ),
+                          demo.CivicDetailItem(
+                            title: 'تعطیلی ایران خودرو',
+                            count: '۳۴۵۶۷۸۹',
+                          ),
+                        ],
+                      )
+                    : const CivicDetailScreen(
+                        title: 'مرور موضوعات و ثبت حمایت',
+                        parentIcon: Icons.how_to_vote_outlined,
+                        accent: Color(0xFF2E7D32),
+                        items: [],
+                      ),
+          ),
+          GoRoute(
+            path: '/referendum/active',
+            builder:
+                (context, state) => authCubit.state is Guest
+                    ? const demo.CivicDetailScreen(
+                        title: 'مشاهده و ثبت رای در موضوعات فعال',
+                        parentIcon: Icons.how_to_vote_outlined,
+                        accent: Color(0xFF2E7D32),
+                        items: [
+                          demo.CivicDetailItem(title: 'انحلال جمهوری'),
+                          demo.CivicDetailItem(title: 'محو اسراییل'),
+                          demo.CivicDetailItem(title: 'بستن تنگه هرمز'),
+                          demo.CivicDetailItem(title: 'غنی سازی اورانیوم'),
+                        ],
+                      )
+                    : const CivicDetailScreen(
+                        title: 'مشاهده و ثبت رای در موضوعات فعال',
+                        parentIcon: Icons.how_to_vote_outlined,
+                        accent: Color(0xFF2E7D32),
+                        items: [],
+                      ),
+          ),
+          GoRoute(
+            path: '/referendum/results',
+            builder:
+                (context, state) => authCubit.state is Guest
+                    ? const demo.CivicDetailScreen(
+                        title: 'بررسی نتایج و سوابق قبلی',
+                        parentIcon: Icons.home_outlined,
+                        accent: Color(0xFF2E7D32),
+                        items: [
+                          demo.CivicDetailItem(title: 'حجاب اجباری'),
+                          demo.CivicDetailItem(title: 'مذاکره با آمریکا'),
+                          demo.CivicDetailItem(title: 'نظارت استصوابی'),
+                        ],
+                      )
+                    : const CivicDetailScreen(
+                        title: 'بررسی نتایج و سوابق قبلی',
+                        parentIcon: Icons.home_outlined,
+                        accent: Color(0xFF2E7D32),
+                        items: [],
+                      ),
+          ),
+          GoRoute(
+            path: '/elections/participate',
+            builder:
+                (context, state) => authCubit.state is Guest
+                    ? const demo.CivicDetailScreen(
+                        title: 'شرکت در انتخابات',
+                        parentIcon: Icons.how_to_vote_rounded,
+                        accent: demo.AppTheme.election,
+                        items: [
+                          demo.CivicDetailItem(title: 'انتخابات ریاست جمهوری'),
+                          demo.CivicDetailItem(title: 'انتخابات استانداری یزد'),
+                          demo.CivicDetailItem(title: 'انتخابات استانداری اصفهان'),
+                          demo.CivicDetailItem(title: 'انتخابات استانداری فارس'),
+                        ],
+                      )
+                    : const CivicDetailScreen(
+                        title: 'شرکت در انتخابات',
+                        parentIcon: Icons.how_to_vote_rounded,
+                        accent: AppTheme.election,
+                        items: [],
+                      ),
+          ),
+          GoRoute(
+            path: '/elections/live',
+            builder:
+                (context, state) => authCubit.state is Guest
+                    ? const demo.CivicDetailScreen(
+                        title: 'نتایج زنده انتخابات',
+                        parentIcon: Icons.show_chart_rounded,
+                        accent: demo.AppTheme.election,
+                        items: [
+                          demo.CivicDetailItem(
+                            title: 'انتخابات ریاست جمهوری',
+                            status: 'در حال برگزاری',
+                          ),
+                        ],
+                      )
+                    : const CivicDetailScreen(
+                        title: 'نتایج زنده انتخابات',
+                        parentIcon: Icons.show_chart_rounded,
+                        accent: AppTheme.election,
+                        items: [],
+                      ),
+          ),
+          GoRoute(
+            path: '/elections/results',
+            builder:
+                (context, state) => authCubit.state is Guest
+                    ? const demo.CivicDetailScreen(
+                        title: 'نتایج انتخابات پایان‌یافته',
+                        parentIcon: Icons.poll_outlined,
+                        accent: demo.AppTheme.election,
+                        items: [
+                          demo.CivicDetailItem(title: 'انتخابات استانداری یزد'),
+                          demo.CivicDetailItem(title: 'انتخابات استانداری اصفهان'),
+                          demo.CivicDetailItem(title: 'انتخابات استانداری فارس'),
+                        ],
+                      )
+                    : const CivicDetailScreen(
+                        title: 'نتایج انتخابات پایان‌یافته',
+                        parentIcon: Icons.poll_outlined,
+                        accent: AppTheme.election,
+                        items: [],
+                      ),
+          ),
+          GoRoute(
+            path: '/impeachment/request',
+            builder:
+                (context, state) => authCubit.state is Guest
+                    ? const demo.CivicDetailScreen(
+                        title: 'درخواست استیضاح یک مسول ملی یا محلی',
+                        parentIcon: Icons.gavel_outlined,
+                        accent: demo.AppTheme.danger,
+                        items: [
+                          demo.CivicDetailItem(
+                            title: 'حوزه کاربری شما',
+                            subtitle:
+                                'کشور: ایران / استان: فارس / شهرستان: نورآباد ممسنی / شهر / روستا: دهگپ محمودی',
+                          ),
+                          demo.CivicDetailItem(title: 'ثبت درخواست استیضاح رییس جمهور'),
+                          demo.CivicDetailItem(
+                            title: 'ثبت درخواست استیضاح استاندار / فارس',
+                          ),
+                        ],
+                      )
+                    : const CivicDetailScreen(
+                        title: 'درخواست استیضاح یک مسول ملی یا محلی',
+                        parentIcon: Icons.gavel_outlined,
+                        accent: AppTheme.danger,
+                        items: [],
+                      ),
+          ),
+          GoRoute(
+            path: '/impeachment/active',
+            builder:
+                (context, state) => authCubit.state is Guest
+                    ? const demo.CivicDetailScreen(
+                        title: 'شرکت در فرآیند رای اعتماد و ثبت رای',
+                        parentIcon: Icons.gavel_outlined,
+                        accent: demo.AppTheme.danger,
+                        items: [
+                          demo.CivicDetailItem(
+                            title: 'رای اعتماد به رییس جمهور',
+                            status: 'در حال برگزاری',
+                          ),
+                        ],
+                      )
+                    : const CivicDetailScreen(
+                        title: 'شرکت در فرآیند رای اعتماد و ثبت رای',
+                        parentIcon: Icons.gavel_outlined,
+                        accent: AppTheme.danger,
+                        items: [],
+                      ),
+          ),
+          GoRoute(
+            path: '/impeachment/results',
+            builder:
+                (context, state) => authCubit.state is Guest
+                    ? const demo.CivicDetailScreen(
+                        title: 'نتایج استیضاح های انجام شده و اطلاعات و آمار نهایی',
+                        parentIcon: Icons.gavel_outlined,
+                        accent: demo.AppTheme.danger,
+                        items: [
+                          demo.CivicDetailItem(
+                            title: 'استاندار کرمان',
+                            status: 'برکنار شد',
+                          ),
+                          demo.CivicDetailItem(
+                            title: 'استاندار اصفهان',
+                            status: 'برکنار شد',
+                          ),
+                          demo.CivicDetailItem(
+                            title: 'استاندار یزد',
+                            status: 'ابقا شد',
+                          ),
+                          demo.CivicDetailItem(
+                            title: 'استاندار فارس',
+                            status: 'به حد نصاب نرسید',
+                          ),
+                        ],
+                      )
+                    : const CivicDetailScreen(
+                        title: 'نتایج استیضاح های انجام شده و اطلاعات و آمار نهایی',
+                        parentIcon: Icons.gavel_outlined,
+                        accent: AppTheme.danger,
+                        items: [],
+                      ),
           ),
         ],
       ),

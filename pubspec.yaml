@@ -18,6 +18,8 @@ dependencies:
   dartz: ^0.10.1
   dio: ^5.8.0+1
   get_it: ^8.0.3
+  vetoapp_demo:
+    path: /home/sadeq/workspace/VetoAppDemo
 
 dev_dependencies:
   flutter_test:

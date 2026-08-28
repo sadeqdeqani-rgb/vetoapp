@@ -893,6 +893,13 @@ packages:
       url: "https://pub.myket.ir"
     source: hosted
     version: "2.4.2"
+  vetoapp_demo:
+    dependency: "direct main"
+    description:
+      path: "/home/sadeq/workspace/VetoAppDemo"
+      relative: false
+    source: path
+    version: "1.4.0"
   vm_service:
     dependency: transitive
     description:
