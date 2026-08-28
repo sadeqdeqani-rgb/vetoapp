@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::getConnection()->getDriverName() !== 'mysql') {
+            return;
+        }
+
         Schema::table('registration_drafts', function (Blueprint $table) {
             $table->unsignedInteger('settlement_id')->nullable()->change();
         });
@@ -15,6 +19,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (Schema::getConnection()->getDriverName() !== 'mysql') {
+            return;
+        }
+
         Schema::table('registration_drafts', function (Blueprint $table) {
             $table->unsignedInteger('settlement_id')->nullable(false)->change();
         });

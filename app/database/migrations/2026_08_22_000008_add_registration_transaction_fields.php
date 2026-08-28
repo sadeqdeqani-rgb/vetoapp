@@ -26,20 +26,24 @@ return new class extends Migration
             });
         }
 
-        $this->dropProfileForeignKeys();
-        DB::statement(
-            'ALTER TABLE user_profiles MODIFY user_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT'
-        );
-        $this->restoreProfileForeignKeys();
+        if (DB::getDriverName() === 'mysql') {
+            $this->dropProfileForeignKeys();
+            DB::statement(
+                'ALTER TABLE user_profiles MODIFY user_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT'
+            );
+            $this->restoreProfileForeignKeys();
+        }
     }
 
     public function down(): void
     {
-        $this->dropProfileForeignKeys();
-        DB::statement(
-            'ALTER TABLE user_profiles MODIFY user_id BIGINT UNSIGNED NOT NULL'
-        );
-        $this->restoreProfileForeignKeys();
+        if (DB::getDriverName() === 'mysql') {
+            $this->dropProfileForeignKeys();
+            DB::statement(
+                'ALTER TABLE user_profiles MODIFY user_id BIGINT UNSIGNED NOT NULL'
+            );
+            $this->restoreProfileForeignKeys();
+        }
 
         Schema::table('registration_drafts', function (Blueprint $table) {
             $table->dropIndex('idx_registration_draft_telegram_nonce');

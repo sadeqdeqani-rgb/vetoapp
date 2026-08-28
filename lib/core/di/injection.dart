@@ -38,8 +38,12 @@ import '../../features/profile/domain/usecases/get_profile.dart';
 import '../../features/profile/presentation/cubit/profile_cubit.dart';
 import '../../features/admin/data/repositories/admin_repository_impl.dart';
 import '../../features/admin/domain/repositories/admin_repository.dart';
+import '../../features/content/data/repositories/public_content_repository_impl.dart';
+import '../../features/content/domain/repositories/public_content_repository.dart';
+import '../../features/content/domain/usecases/get_public_content.dart';
 import '../storage/secure_storage_service.dart';
 import '../network/dio_client.dart';
+import '../network/auth_session_events.dart';
 import '../validation/frontend_test_config.dart';
 
 final getIt = GetIt.instance;
@@ -48,14 +52,29 @@ void configureDependencies() {
   if (!getIt.isRegistered<SecureStorageService>()) {
     getIt.registerLazySingleton<SecureStorageService>(SecureStorageService.new);
   }
+  if (!getIt.isRegistered<AuthSessionExpiredNotifier>()) {
+    getIt.registerLazySingleton<AuthSessionExpiredNotifier>(
+      AuthSessionExpiredNotifier.new,
+    );
+  }
   if (!getIt.isRegistered<AdminRepository>()) {
     getIt.registerLazySingleton<AdminRepository>(
       () => AdminRepositoryImpl(getIt<Dio>(), getIt<SecureStorageService>()),
     );
   }
+  if (!getIt.isRegistered<PublicContentRepository>()) {
+    getIt.registerLazySingleton<PublicContentRepository>(
+      () => PublicContentRepositoryImpl(getIt<Dio>()),
+    );
+  }
 
   if (!getIt.isRegistered<Dio>()) {
-    getIt.registerLazySingleton<Dio>(createDioClient);
+    getIt.registerLazySingleton<Dio>(
+      () => createDioClient(
+        getIt<SecureStorageService>(),
+        getIt<AuthSessionExpiredNotifier>(),
+      ),
+    );
   }
   if (!getIt.isRegistered<FlutterSecureStorage>()) {
     getIt.registerLazySingleton<FlutterSecureStorage>(
@@ -156,6 +175,17 @@ void configureDependencies() {
     ..registerLazySingleton(() => GetProfileUseCase(getIt<ProfileRepository>()))
     ..registerLazySingleton(
       () => CloseAccountUseCase(getIt<ProfileRepository>()),
+    )
+    ..registerLazySingleton(
+      () => GetPublicIntroductionUseCase(getIt<PublicContentRepository>()),
+    )
+    ..registerLazySingleton(
+      () => GetPublicTermsUseCase(getIt<PublicContentRepository>()),
+    )
+    ..registerLazySingleton(
+      () => GetPublicIntroductionVideoUseCase(
+        getIt<PublicContentRepository>(),
+      ),
     );
 
   if (!getIt.isRegistered<AuthCubit>()) {

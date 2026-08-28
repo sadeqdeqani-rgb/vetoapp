@@ -22,6 +22,8 @@ class _AdminPageState extends State<AdminPage> {
     'شهرها',
     'روستاها',
     'محدوده کد ملی',
+    'سیاست تغییرات جغرافیایی',
+    'جریمه بستن حساب',
     'کاربر ادمین',
   ];
 
@@ -68,12 +70,16 @@ class _AdminPageState extends State<AdminPage> {
               return Row(
                 children: [
                   if (!compact)
-                    _AdminNavigation(
-                      sections: _sections,
-                      selectedIndex: _selectedSection,
-                      compact: false,
-                      onSelected:
-                          (index) => setState(() => _selectedSection = index),
+                    SizedBox(
+                      width: 180,
+                      height: constraints.maxHeight,
+                      child: _AdminNavigation(
+                        sections: _sections,
+                        selectedIndex: _selectedSection,
+                        compact: false,
+                        onSelected:
+                            (index) => setState(() => _selectedSection = index),
+                      ),
                     ),
                   Expanded(
                     child: SingleChildScrollView(
@@ -120,6 +126,8 @@ class _AdminPageState extends State<AdminPage> {
       5 => const _GeographyEditor(type: 'city', label: 'شهر'),
       6 => const _GeographyEditor(type: 'village', label: 'روستا'),
       7 => const _NationalIdEditor(),
+      8 => const _GeoPolicyEditor(),
+      9 => const _ClosurePolicyEditor(),
       _ => const _AdminUserEditor(),
     };
   }
@@ -180,23 +188,37 @@ class _AdminNavigation extends StatelessWidget {
                 if (value != null) onSelected(value);
               },
             )
-            : NavigationRail(
-              selectedIndex: selectedIndex,
-              onDestinationSelected: onSelected,
-              labelType: NavigationRailLabelType.all,
-              destinations: [
-                for (final section in sections)
-                  NavigationRailDestination(
-                    icon: const Icon(Icons.settings_outlined),
-                    selectedIcon: const Icon(Icons.settings),
-                    label: Text(section),
+            : ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: sections.length,
+              itemBuilder: (context, index) {
+                final selected = index == selectedIndex;
+                return ListTile(
+                  dense: true,
+                  selected: selected,
+                  selectedTileColor: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.12),
+                  leading: Icon(
+                    selected ? Icons.settings : Icons.settings_outlined,
                   ),
-              ],
+                  title: Text(
+                    sections[index],
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onTap: () => onSelected(index),
+                );
+              },
             );
 
     return Card(
       margin: EdgeInsets.zero,
-      child: Padding(padding: const EdgeInsets.all(8), child: navigation),
+      clipBehavior: Clip.antiAlias,
+      child:
+          compact
+              ? Padding(padding: const EdgeInsets.all(8), child: navigation)
+              : navigation,
     );
   }
 }
@@ -790,6 +812,495 @@ class _NationalIdRecordsList extends StatelessWidget {
               'محدوده دوم: ${item.secondFrom} تا ${item.secondTo}',
             ),
           ),
+    );
+  }
+}
+
+class _GeoPolicyEditor extends StatefulWidget {
+  const _GeoPolicyEditor();
+
+  @override
+  State<_GeoPolicyEditor> createState() => _GeoPolicyEditorState();
+}
+
+class _GeoPolicyEditorState extends State<_GeoPolicyEditor> {
+  final _code = TextEditingController();
+  final _name = TextEditingController();
+  final _description = TextEditingController();
+  final _stage = TextEditingController();
+  final _maxChanges = TextEditingController();
+  final _windowDays = TextEditingController();
+  final _cooldownDays = TextEditingController();
+  final _effectiveFrom = TextEditingController(
+    text: '2026-08-24T00:00:00.000Z',
+  );
+  final _effectiveTo = TextEditingController();
+  bool _isActive = true;
+  int? _editingId;
+  var _refresh = 0;
+
+  @override
+  void dispose() {
+    for (final controller in [
+      _code,
+      _name,
+      _description,
+      _stage,
+      _maxChanges,
+      _windowDays,
+      _cooldownDays,
+      _effectiveFrom,
+      _effectiveTo,
+    ]) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final stage = int.tryParse(_stage.text.trim());
+    final cooldown = int.tryParse(_cooldownDays.text.trim());
+    if (_code.text.trim().isEmpty ||
+        _name.text.trim().isEmpty ||
+        stage == null ||
+        stage < 1 ||
+        cooldown == null ||
+        cooldown < 1 ||
+        DateTime.tryParse(_effectiveFrom.text.trim()) == null ||
+        (_effectiveTo.text.trim().isNotEmpty &&
+            DateTime.tryParse(_effectiveTo.text.trim()) == null)) {
+      _message('کد، نام، مرحله و تعداد روز معتبر را وارد کنید.');
+      return;
+    }
+    final data = <String, dynamic>{
+      'policy_code': _code.text.trim(),
+      'policy_name': _name.text.trim(),
+      'description':
+          _description.text.trim().isEmpty ? null : _description.text.trim(),
+      'policy_stage': stage,
+      'max_changes_allowed': _nullableInt(_maxChanges),
+      'window_days': _nullableInt(_windowDays),
+      'cooldown_days': cooldown,
+      'is_active': _isActive,
+      'effective_from': _effectiveFrom.text.trim(),
+      'effective_to':
+          _effectiveTo.text.trim().isEmpty ? null : _effectiveTo.text.trim(),
+    };
+    final repository = GetIt.I<AdminRepository>();
+    if (_editingId == null) {
+      await repository.createGeoCooldownPolicy(data);
+    } else {
+      await repository.updateGeoCooldownPolicy(_editingId!, data);
+    }
+    _clear();
+    setState(() => _refresh++);
+    _message('سیاست تغییرات جغرافیایی ذخیره شد.');
+  }
+
+  int? _nullableInt(TextEditingController controller) =>
+      controller.text.trim().isEmpty
+          ? null
+          : int.tryParse(controller.text.trim());
+
+  void _edit(AdminGeoCooldownPolicy item) {
+    _editingId = item.id;
+    _code.text = item.policyCode;
+    _name.text = item.policyName;
+    _description.text = item.description ?? '';
+    _stage.text = '${item.policyStage}';
+    _maxChanges.text = '${item.maxChangesAllowed ?? ''}';
+    _windowDays.text = '${item.windowDays ?? ''}';
+    _cooldownDays.text = '${item.cooldownDays}';
+    _effectiveFrom.text = item.effectiveFrom.toIso8601String();
+    _effectiveTo.text = item.effectiveTo?.toIso8601String() ?? '';
+    _isActive = item.isActive;
+    setState(() {});
+  }
+
+  Future<void> _delete(AdminGeoCooldownPolicy item) async {
+    await GetIt.I<AdminRepository>().deleteGeoCooldownPolicy(item.id);
+    setState(() => _refresh++);
+    _message('سیاست حذف شد.');
+  }
+
+  void _clear() {
+    _editingId = null;
+    for (final controller in [
+      _code,
+      _name,
+      _description,
+      _stage,
+      _maxChanges,
+      _windowDays,
+      _cooldownDays,
+      _effectiveFrom,
+      _effectiveTo,
+    ]) {
+      controller.clear();
+    }
+    _effectiveFrom.text = '2026-08-24T00:00:00.000Z';
+    _isActive = true;
+  }
+
+  void _message(String value) {
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(value)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _EditorCard(
+          children: [
+            TextField(
+              controller: _code,
+              decoration: const InputDecoration(labelText: 'کد سیاست'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _name,
+              decoration: const InputDecoration(labelText: 'نام سیاست'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _description,
+              maxLines: 3,
+              decoration: const InputDecoration(labelText: 'توضیحات'),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(child: _numberField('مرحله', _stage)),
+                const SizedBox(width: 12),
+                Expanded(child: _numberField('حداکثر تغییر', _maxChanges)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _dateField('شروع اجرا (ISO)', _effectiveFrom),
+            const SizedBox(height: 12),
+            _dateField('پایان اجرا (اختیاری، ISO)', _effectiveTo),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(child: _numberField('پنجره روز', _windowDays)),
+                const SizedBox(width: 12),
+                Expanded(child: _numberField('دوره انتظار روز', _cooldownDays)),
+              ],
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('فعال'),
+              value: _isActive,
+              onChanged: (value) => setState(() => _isActive = value),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: _save,
+                    icon: const Icon(Icons.save_outlined),
+                    label: Text(
+                      _editingId == null ? 'ایجاد سیاست' : 'ویرایش سیاست',
+                    ),
+                  ),
+                ),
+                if (_editingId != null) ...[
+                  const SizedBox(width: 12),
+                  OutlinedButton(
+                    onPressed: () => setState(_clear),
+                    child: const Text('انصراف'),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _AsyncRecordsCard<AdminGeoCooldownPolicy>(
+          title: 'سیاست‌های تغییرات جغرافیایی',
+          future: GetIt.I<AdminRepository>().geoCooldownPolicies(),
+          emptyText: 'سیاستی ثبت نشده است.',
+          itemBuilder:
+              (context, item) => ListTile(
+                title: Text('${item.policyName} — مرحله ${item.policyStage}'),
+                subtitle: Text(
+                  '${item.policyCode} | انتظار: ${item.cooldownDays} روز | '
+                  '${item.isActive ? 'فعال' : 'غیرفعال'}',
+                ),
+                trailing: _PolicyActions(
+                  onEdit: () => _edit(item),
+                  onDelete: () => _delete(item),
+                ),
+              ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ClosurePolicyEditor extends StatefulWidget {
+  const _ClosurePolicyEditor();
+
+  @override
+  State<_ClosurePolicyEditor> createState() => _ClosurePolicyEditorState();
+}
+
+class _ClosurePolicyEditorState extends State<_ClosurePolicyEditor> {
+  final _familyCode = TextEditingController(text: 'account_closure');
+  final _code = TextEditingController();
+  final _name = TextEditingController();
+  final _description = TextEditingController();
+  final _stage = TextEditingController();
+  final _hours = TextEditingController();
+  final _scope = TextEditingController(text: 'account_closure');
+  final _effectiveFrom = TextEditingController(
+    text: '2026-08-24T00:00:00.000Z',
+  );
+  final _effectiveTo = TextEditingController();
+  bool _isActive = true;
+  int? _editingId;
+  var _refresh = 0;
+
+  @override
+  void dispose() {
+    for (final controller in [
+      _familyCode,
+      _code,
+      _name,
+      _description,
+      _stage,
+      _hours,
+      _scope,
+      _effectiveFrom,
+      _effectiveTo,
+    ]) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final stage = int.tryParse(_stage.text.trim());
+    final hours = int.tryParse(_hours.text.trim());
+    if (_familyCode.text.trim().isEmpty ||
+        _code.text.trim().isEmpty ||
+        _name.text.trim().isEmpty ||
+        _scope.text.trim().isEmpty ||
+        stage == null ||
+        stage < 1 ||
+        hours == null ||
+        hours < 1 ||
+        DateTime.tryParse(_effectiveFrom.text.trim()) == null ||
+        (_effectiveTo.text.trim().isNotEmpty &&
+            DateTime.tryParse(_effectiveTo.text.trim()) == null)) {
+      _message('کدها، نام، مرحله و ساعات معتبر را وارد کنید.');
+      return;
+    }
+    final data = <String, dynamic>{
+      'policy_family_code': _familyCode.text.trim(),
+      'policy_code': _code.text.trim(),
+      'policy_name': _name.text.trim(),
+      'description':
+          _description.text.trim().isEmpty ? null : _description.text.trim(),
+      'penalty_stage': stage,
+      'penalty_hours': hours,
+      'trigger_scope': _scope.text.trim(),
+      'is_active': _isActive,
+      'effective_from': _effectiveFrom.text.trim(),
+      'effective_to':
+          _effectiveTo.text.trim().isEmpty ? null : _effectiveTo.text.trim(),
+    };
+    final repository = GetIt.I<AdminRepository>();
+    if (_editingId == null) {
+      await repository.createClosurePenaltyPolicy(data);
+    } else {
+      await repository.updateClosurePenaltyPolicy(_editingId!, data);
+    }
+    _clear();
+    setState(() => _refresh++);
+    _message('سیاست جریمه بستن حساب ذخیره شد.');
+  }
+
+  void _edit(AdminClosurePenaltyPolicy item) {
+    _editingId = item.id;
+    _familyCode.text = item.policyFamilyCode;
+    _code.text = item.policyCode;
+    _name.text = item.policyName;
+    _description.text = item.description ?? '';
+    _stage.text = '${item.penaltyStage}';
+    _hours.text = '${item.penaltyHours}';
+    _scope.text = item.triggerScope;
+    _effectiveFrom.text = item.effectiveFrom.toIso8601String();
+    _effectiveTo.text = item.effectiveTo?.toIso8601String() ?? '';
+    _isActive = item.isActive;
+    setState(() {});
+  }
+
+  Future<void> _delete(AdminClosurePenaltyPolicy item) async {
+    await GetIt.I<AdminRepository>().deleteClosurePenaltyPolicy(item.id);
+    setState(() => _refresh++);
+    _message('سیاست حذف شد.');
+  }
+
+  void _clear() {
+    _editingId = null;
+    _familyCode.text = 'account_closure';
+    _code.clear();
+    _name.clear();
+    _description.clear();
+    _stage.clear();
+    _hours.clear();
+    _scope.text = 'account_closure';
+    _effectiveFrom.text = '2026-08-24T00:00:00.000Z';
+    _effectiveTo.clear();
+    _isActive = true;
+  }
+
+  void _message(String value) {
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(value)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _EditorCard(
+          children: [
+            TextField(
+              controller: _familyCode,
+              decoration: const InputDecoration(labelText: 'کد خانواده سیاست'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _code,
+              decoration: const InputDecoration(labelText: 'کد سیاست'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _name,
+              decoration: const InputDecoration(labelText: 'نام سیاست'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _description,
+              maxLines: 3,
+              decoration: const InputDecoration(labelText: 'توضیحات'),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(child: _numberField('مرحله جریمه', _stage)),
+                const SizedBox(width: 12),
+                Expanded(child: _numberField('ساعات جریمه', _hours)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _scope,
+              decoration: const InputDecoration(labelText: 'محدوده اجرا'),
+            ),
+            const SizedBox(height: 12),
+            _dateField('شروع اجرا (ISO)', _effectiveFrom),
+            const SizedBox(height: 12),
+            _dateField('پایان اجرا (اختیاری، ISO)', _effectiveTo),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('فعال'),
+              value: _isActive,
+              onChanged: (value) => setState(() => _isActive = value),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: _save,
+                    icon: const Icon(Icons.save_outlined),
+                    label: Text(
+                      _editingId == null ? 'ایجاد سیاست' : 'ویرایش سیاست',
+                    ),
+                  ),
+                ),
+                if (_editingId != null) ...[
+                  const SizedBox(width: 12),
+                  OutlinedButton(
+                    onPressed: () => setState(_clear),
+                    child: const Text('انصراف'),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _AsyncRecordsCard<AdminClosurePenaltyPolicy>(
+          title: 'سیاست‌های جریمه بستن حساب',
+          future: GetIt.I<AdminRepository>().closurePenaltyPolicies(),
+          emptyText: 'سیاستی ثبت نشده است.',
+          itemBuilder:
+              (context, item) => ListTile(
+                title: Text('${item.policyName} — مرحله ${item.penaltyStage}'),
+                subtitle: Text(
+                  '${item.policyCode} | جریمه: ${item.penaltyHours} ساعت | '
+                  '${item.isActive ? 'فعال' : 'غیرفعال'}',
+                ),
+                trailing: _PolicyActions(
+                  onEdit: () => _edit(item),
+                  onDelete: () => _delete(item),
+                ),
+              ),
+        ),
+      ],
+    );
+  }
+}
+
+Widget _numberField(String label, TextEditingController controller) {
+  return TextField(
+    controller: controller,
+    keyboardType: TextInputType.number,
+    decoration: InputDecoration(labelText: label),
+  );
+}
+
+Widget _dateField(String label, TextEditingController controller) {
+  return TextField(
+    controller: controller,
+    decoration: InputDecoration(labelText: label),
+  );
+}
+
+class _PolicyActions extends StatelessWidget {
+  const _PolicyActions({required this.onEdit, required this.onDelete});
+
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          tooltip: 'ویرایش',
+          onPressed: onEdit,
+          icon: const Icon(Icons.edit_outlined),
+        ),
+        IconButton(
+          tooltip: 'حذف',
+          onPressed: onDelete,
+          icon: const Icon(Icons.delete_outline, color: Colors.red),
+        ),
+      ],
     );
   }
 }

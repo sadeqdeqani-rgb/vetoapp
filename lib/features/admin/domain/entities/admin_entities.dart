@@ -113,3 +113,59 @@ class NationalIdEligibilityDraft {
   final int secondFrom;
   final int secondTo;
 }
+
+class AdminGeoCooldownPolicy {
+  const AdminGeoCooldownPolicy({
+    required this.id,
+    required this.policyCode,
+    required this.policyName,
+    required this.policyStage,
+    required this.cooldownDays,
+    required this.isActive,
+    required this.effectiveFrom,
+    this.description,
+    this.maxChangesAllowed,
+    this.windowDays,
+    this.effectiveTo,
+  });
+
+  final int id;
+  final String policyCode;
+  final String policyName;
+  final String? description;
+  final int policyStage;
+  final int? maxChangesAllowed;
+  final int? windowDays;
+  final int cooldownDays;
+  final bool isActive;
+  final DateTime effectiveFrom;
+  final DateTime? effectiveTo;
+}
+
+class AdminClosurePenaltyPolicy {
+  const AdminClosurePenaltyPolicy({
+    required this.id,
+    required this.policyFamilyCode,
+    required this.policyCode,
+    required this.policyName,
+    required this.penaltyStage,
+    required this.penaltyHours,
+    required this.triggerScope,
+    required this.isActive,
+    required this.effectiveFrom,
+    this.description,
+    this.effectiveTo,
+  });
+
+  final int id;
+  final String policyFamilyCode;
+  final String policyCode;
+  final String policyName;
+  final String? description;
+  final int penaltyStage;
+  final int penaltyHours;
+  final String triggerScope;
+  final bool isActive;
+  final DateTime effectiveFrom;
+  final DateTime? effectiveTo;
+}

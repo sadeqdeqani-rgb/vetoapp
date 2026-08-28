@@ -14,15 +14,22 @@ import '../../domain/entities/geographical_area.dart';
   'از RegistrationRepository و RegistrationRepositoryImpl استفاده شود.',
 )
 class GeographicalAreaRepository {
-  GeographicalAreaRepository({Dio? client}) : _client = client ?? createDioClient();
+  GeographicalAreaRepository({Dio? client})
+    : _client = client ?? createDioClient();
 
   final Dio _client;
 
-  Future<List<GeographicalArea>> children({int? parentId}) async {
+  Future<List<GeographicalArea>> children({
+    int? parentId,
+    String? childType,
+  }) async {
     try {
       final response = await _client.get<Map<String, dynamic>>(
-        '/api/geographical-areas',
-        queryParameters: parentId == null ? null : {'parent_id': parentId},
+        '/api/v1/geographical-areas',
+        queryParameters: {
+          if (parentId != null) 'parent_id': parentId,
+          if (childType != null) 'child_type': childType,
+        },
       );
 
       final data = response.data?['data'];

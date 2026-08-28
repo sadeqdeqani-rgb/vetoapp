@@ -40,7 +40,7 @@ class OtpRemoteDataSourceImpl implements OtpRemoteDataSource {
   }) async {
     try {
       final response = await _dio.post<Map<String, dynamic>>(
-        '/auth/otp/request',
+        '/api/v1/auth/otp/request',
         data: {'phone_number': phoneNumber, 'purpose': _purpose(purpose)},
       );
       final data = response.data;
@@ -61,7 +61,7 @@ class OtpRemoteDataSourceImpl implements OtpRemoteDataSource {
   }) async {
     try {
       final response = await _dio.post<Map<String, dynamic>>(
-        '/auth/otp/verify',
+        '/api/v1/auth/otp/verify',
         data: {
           'phone_number': phoneNumber,
           'code': code,
@@ -86,7 +86,7 @@ class OtpRemoteDataSourceImpl implements OtpRemoteDataSource {
   }) async {
     try {
       await _dio.post<void>(
-        '/auth/password/reset',
+        '/api/v1/auth/password/reset',
         data: {
           'phone_number': phoneNumber,
           'verification_token': verificationToken,
@@ -105,15 +105,12 @@ class OtpRemoteDataSourceImpl implements OtpRemoteDataSource {
   ) {
     final expiresAtValue = json['expires_at'];
     final expiresAt =
-        expiresAtValue is String
-            ? DateTime.tryParse(expiresAtValue)
-            : null;
+        expiresAtValue is String ? DateTime.tryParse(expiresAtValue) : null;
 
     return OtpChallenge(
       phoneNumber: phoneNumber,
       purpose: purpose,
-      expiresAt:
-          expiresAt ?? DateTime.now().add(const Duration(seconds: 120)),
+      expiresAt: expiresAt ?? DateTime.now().add(const Duration(seconds: 120)),
       verificationToken: json['verification_token'] as String?,
     );
   }

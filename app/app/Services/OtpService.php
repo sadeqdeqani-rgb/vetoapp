@@ -2,19 +2,18 @@
 
 namespace App\Services;
 
+use App\Jobs\TelegramSendMessageJob;
 use App\Models\Otp;
 use App\Models\OtpDeliveryAttempt;
 use App\Models\OtpThrottleWindow;
 use App\Models\RegistrationDraft;
+use App\Models\UserProfile;
 use App\Models\UserTelegramIdentity;
-use App\Support\MobileIdentity;
 use App\Support\OtpCodeHasher;
-use App\Jobs\TelegramSendMessageJob;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use RuntimeException;
 
 class OtpService
@@ -80,6 +79,62 @@ class OtpService
                 // The raw code is never returned or persisted.
                 return $otp;
             });
+        });
+    }
+
+    public function issueForUser(int $userId, int $telegramIdentityId, string $purpose): Otp
+    {
+        return DB::transaction(function () use ($userId, $telegramIdentityId, $purpose): Otp {
+            $profile = UserProfile::query()
+                ->whereKey($userId)
+                ->where('is_active', true)
+                ->firstOrFail();
+            $identity = UserTelegramIdentity::query()
+                ->whereKey($telegramIdentityId)
+                ->where('user_id', $userId)
+                ->where('phone_verification_status', 'Verified')
+                ->firstOrFail();
+
+            $window = $this->openUserThrottleWindow($profile);
+            $this->assertCanSend($window);
+            $this->expirePrevious($profile->mobile_hash, $purpose, null);
+
+            $code = (string) random_int(100000, 999999);
+            $nonce = random_bytes(16);
+            $otp = Otp::query()->create([
+                'mobile_hash' => $profile->mobile_hash,
+                'mobile_encrypted' => $profile->mobile_encrypted,
+                'purpose' => $purpose,
+                'otp_nonce' => $nonce,
+                'code_hash' => OtpCodeHasher::hash($code, $purpose, $profile->mobile_hash, $nonce),
+                'state' => 'Issued',
+                'issued_at' => now(),
+                'expires_at' => now()->addMinutes(2),
+                'attempt_count' => 0,
+                'max_attempt_count' => 3,
+                'delivery_channel' => 'telegram_bot',
+                'user_id' => $userId,
+                'otp_throttle_window_id' => $window->otp_throttle_window_id,
+            ]);
+
+            $window->increment('send_count');
+            $window->forceFill(['last_sent_at' => now(), 'updated_at' => now()])->save();
+            $attempt = OtpDeliveryAttempt::query()->create([
+                'otp_id' => $otp->otp_id,
+                'telegram_identity_id' => $identity->telegram_identity_id,
+                'channel' => 'telegram_bot',
+                'attempt_number' => 1,
+                'status' => 'Queued',
+                'attempted_at' => now(),
+                'created_at' => now(),
+            ]);
+
+            TelegramSendMessageJob::dispatch(
+                $attempt->delivery_attempt_id,
+                Crypt::encryptString($code)
+            )->afterCommit();
+
+            return $otp;
         });
     }
 
@@ -184,14 +239,47 @@ class OtpService
         }
     }
 
-    private function expirePrevious(string $mobileHash, string $purpose, int $draftId): void
+    private function expirePrevious(string $mobileHash, string $purpose, ?int $draftId): void
     {
-        Otp::query()
+        $query = Otp::query()
             ->where('mobile_hash', $mobileHash)
             ->where('purpose', $purpose)
-            ->where('registration_draft_id', $draftId)
-            ->where('state', 'Issued')
-            ->update(['state' => 'Expired', 'updated_at' => now()]);
+            ->where('state', 'Issued');
+
+        if ($draftId === null) {
+            $query->whereNull('registration_draft_id');
+        } else {
+            $query->where('registration_draft_id', $draftId);
+        }
+
+        $query->update(['state' => 'Expired', 'updated_at' => now()]);
+    }
+
+    private function openUserThrottleWindow(UserProfile $profile): OtpThrottleWindow
+    {
+        $window = OtpThrottleWindow::query()
+            ->where('mobile_hash', $profile->mobile_hash)
+            ->whereIn('state', ['Open', 'Throttled', 'Blocked'])
+            ->latest('otp_throttle_window_id')
+            ->lockForUpdate()
+            ->first();
+
+        if ($window !== null && $window->window_ends_at->isFuture()) {
+            return $window;
+        }
+
+        return OtpThrottleWindow::query()->create([
+            'mobile_hash' => $profile->mobile_hash,
+            'mobile_encrypted' => $profile->mobile_encrypted,
+            'window_started_at' => now(),
+            'window_ends_at' => now()->addMinutes(15),
+            'send_count' => 0,
+            'verify_failed_count' => 0,
+            'state' => 'Open',
+            'penalty_tier' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     private function withMobileLock(int $draftId, callable $callback): Otp

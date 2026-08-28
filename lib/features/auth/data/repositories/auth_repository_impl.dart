@@ -34,7 +34,16 @@ class AuthRepositoryImpl implements AuthRepository {
         );
       }
 
-      return Right(AuthResult(sessionToken: sessionToken, userId: userId));
+      final expiresAtValue = result['expires_at'];
+      return Right(
+        AuthResult(
+          sessionToken: sessionToken,
+          userId: userId,
+          expiresAt: expiresAtValue is String
+              ? DateTime.tryParse(expiresAtValue)
+              : null,
+        ),
+      );
     } on Failure catch (failure) {
       return Left(failure);
     } catch (_) {

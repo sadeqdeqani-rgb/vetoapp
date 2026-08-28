@@ -18,15 +18,21 @@ class RegistrationRepositoryImpl implements RegistrationRepository {
   @override
   Future<Either<Failure, List<GeographicalArea>>> children({
     int? parentId,
+    String? childType,
   }) async {
     try {
       final response = await _client.get<Map<String, dynamic>>(
-        '/api/geographical-areas',
-        queryParameters: parentId == null ? null : {'parent_id': parentId},
+        '/api/v1/geographical-areas',
+        queryParameters: {
+          if (parentId != null) 'parent_id': parentId,
+          if (childType != null) 'child_type': childType,
+        },
       );
       final data = response.data?['data'];
       if (data is! List) {
-        return const Left(ServerFailure('پاسخ حوزه‌های جغرافیایی نامعتبر است.'));
+        return const Left(
+          ServerFailure('پاسخ حوزه‌های جغرافیایی نامعتبر است.'),
+        );
       }
       return Right(
         data

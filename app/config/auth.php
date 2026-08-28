@@ -4,6 +4,8 @@ use App\Models\User;
 
 return [
 
+    'user_session_days' => (int) env('USER_SESSION_DAYS', 30),
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults

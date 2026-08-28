@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'core/di/injection.dart';
 import 'core/router/app_router.dart';
+import 'core/network/auth_session_events.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/auth/presentation/cubit/otp_cubit.dart';
@@ -16,6 +17,7 @@ Future<void> main() async {
   configureDependencies();
 
   final authCubit = getIt<AuthCubit>();
+  getIt<AuthSessionExpiredNotifier>().addListener(authCubit.expireSession);
   await authCubit.checkAuthStatus();
 
   final appRouter = createAppRouter(authCubit);

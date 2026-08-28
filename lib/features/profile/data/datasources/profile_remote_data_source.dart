@@ -16,7 +16,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<ProfileModel> getProfile() async {
     try {
-      final response = await _dio.get<Map<String, dynamic>>('/profile');
+      final response = await _dio.get<Map<String, dynamic>>('/api/v1/profile');
       final data = response.data?['data'] ?? response.data;
       if (data is! Map<String, dynamic>) {
         throw const ServerFailure('اطلاعات حساب نامعتبر است.');
@@ -30,7 +30,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<void> closeAccount() async {
     try {
-      await _dio.post<void>('/profile/close');
+      await _dio.post<void>('/api/v1/profile/close');
     } on DioException catch (error) {
       throw ServerFailure('بستن حساب انجام نشد: ${error.message}');
     }

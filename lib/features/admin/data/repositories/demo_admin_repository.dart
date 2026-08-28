@@ -13,6 +13,10 @@ class DemoAdminRepository implements AdminRepository {
   final List<AdminGeoItem> geography = <AdminGeoItem>[];
   final List<NationalIdEligibilityDraft> nationalIdRanges =
       <NationalIdEligibilityDraft>[];
+  final List<AdminGeoCooldownPolicy> geoPolicies =
+      <AdminGeoCooldownPolicy>[];
+  final List<AdminClosurePenaltyPolicy> closurePolicies =
+      <AdminClosurePenaltyPolicy>[];
 
   @override
   Future<List<AdminContentRecord>> introductionRecords() async => [];
@@ -28,6 +32,14 @@ class DemoAdminRepository implements AdminRepository {
 
   @override
   Future<List<NationalIdEligibilityRecord>> nationalIdRecords() async => [];
+
+  @override
+  Future<List<AdminGeoCooldownPolicy>> geoCooldownPolicies() async =>
+      List.unmodifiable(geoPolicies);
+
+  @override
+  Future<List<AdminClosurePenaltyPolicy>> closurePenaltyPolicies() async =>
+      List.unmodifiable(closurePolicies);
 
   @override
   Future<AdminSession> login({
@@ -87,4 +99,28 @@ class DemoAdminRepository implements AdminRepository {
   }) async {
     // رمز عبور عمداً در کلاینت ذخیره نمی‌شود.
   }
+
+  @override
+  Future<void> createGeoCooldownPolicy(Map<String, dynamic> data) async {}
+
+  @override
+  Future<void> updateGeoCooldownPolicy(
+    int id,
+    Map<String, dynamic> data,
+  ) async {}
+
+  @override
+  Future<void> deleteGeoCooldownPolicy(int id) async {}
+
+  @override
+  Future<void> createClosurePenaltyPolicy(Map<String, dynamic> data) async {}
+
+  @override
+  Future<void> updateClosurePenaltyPolicy(
+    int id,
+    Map<String, dynamic> data,
+  ) async {}
+
+  @override
+  Future<void> deleteClosurePenaltyPolicy(int id) async {}
 }

@@ -28,6 +28,11 @@ class AdminRepositoryImpl implements AdminRepository {
     if (payload is Map && payload['data'] is List) {
       return payload['data'] as List;
     }
+    if (payload is Map &&
+        payload['data'] is Map &&
+        (payload['data'] as Map)['data'] is List) {
+      return ((payload['data'] as Map)['data'] as List);
+    }
     return const [];
   }
 
@@ -157,6 +162,60 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
+  Future<List<AdminGeoCooldownPolicy>> geoCooldownPolicies() async {
+    final response = await _dio.get(
+      '/api/admin/geo-cooldown-policies',
+      options: await _authorizedOptions(),
+    );
+    return _rows(response)
+        .whereType<Map>()
+        .map(
+          (row) => AdminGeoCooldownPolicy(
+            id: _int(row['policy_id']) ?? 0,
+            policyCode: '${row['policy_code'] ?? ''}',
+            policyName: '${row['policy_name'] ?? ''}',
+            description: row['description']?.toString(),
+            policyStage: _int(row['policy_stage']) ?? 0,
+            maxChangesAllowed: _int(row['max_changes_allowed']),
+            windowDays: _int(row['window_days']),
+            cooldownDays: _int(row['cooldown_days']) ?? 0,
+            isActive: row['is_active'] == true || row['is_active'] == 1,
+            effectiveFrom:
+                _date(row['effective_from']) ?? DateTime.fromMillisecondsSinceEpoch(0),
+            effectiveTo: _date(row['effective_to']),
+          ),
+        )
+        .toList();
+  }
+
+  @override
+  Future<List<AdminClosurePenaltyPolicy>> closurePenaltyPolicies() async {
+    final response = await _dio.get(
+      '/api/admin/account-closure-penalty-policies',
+      options: await _authorizedOptions(),
+    );
+    return _rows(response)
+        .whereType<Map>()
+        .map(
+          (row) => AdminClosurePenaltyPolicy(
+            id: _int(row['policy_id']) ?? 0,
+            policyFamilyCode: '${row['policy_family_code'] ?? ''}',
+            policyCode: '${row['policy_code'] ?? ''}',
+            policyName: '${row['policy_name'] ?? ''}',
+            description: row['description']?.toString(),
+            penaltyStage: _int(row['penalty_stage']) ?? 0,
+            penaltyHours: _int(row['penalty_hours']) ?? 0,
+            triggerScope: '${row['trigger_scope'] ?? 'account_closure'}',
+            isActive: row['is_active'] == true || row['is_active'] == 1,
+            effectiveFrom:
+                _date(row['effective_from']) ?? DateTime.fromMillisecondsSinceEpoch(0),
+            effectiveTo: _date(row['effective_to']),
+          ),
+        )
+        .toList();
+  }
+
+  @override
   Future<AdminSession> login({
     required String username,
     required String password,
@@ -226,7 +285,7 @@ class AdminRepositoryImpl implements AdminRepository {
     final response = await _dio.post<Map<String, dynamic>>(
       '/api/admin/introduction',
       data: {
-        'version_number': DateTime.now().millisecondsSinceEpoch,
+        'version_number': DateTime.now().millisecondsSinceEpoch ~/ 1000,
         'title': draft.title,
         'body_text': draft.body,
         'is_active': draft.isActive,
@@ -245,7 +304,7 @@ class AdminRepositoryImpl implements AdminRepository {
     final response = await _dio.post<Map<String, dynamic>>(
       '/api/admin/terms',
       data: {
-        'version_number': DateTime.now().millisecondsSinceEpoch,
+        'version_number': DateTime.now().millisecondsSinceEpoch ~/ 1000,
         'title': draft.title,
         'body_text': draft.body,
         'is_active': draft.isActive,
@@ -264,7 +323,7 @@ class AdminRepositoryImpl implements AdminRepository {
     final response = await _dio.post<Map<String, dynamic>>(
       '/api/admin/introduction-videos',
       data: {
-        'version_number': DateTime.now().millisecondsSinceEpoch,
+        'version_number': DateTime.now().millisecondsSinceEpoch ~/ 1000,
         'title': draft.title,
         'video_url': draft.videoUrl,
         if (draft.posterUrl.isNotEmpty) 'poster_url': draft.posterUrl,
@@ -334,6 +393,64 @@ class AdminRepositoryImpl implements AdminRepository {
         'password': password,
         'password_confirmation': password,
       },
+      options: await _authorizedOptions(),
+    );
+  }
+
+  @override
+  Future<void> createGeoCooldownPolicy(Map<String, dynamic> data) async {
+    await _dio.post(
+      '/api/admin/geo-cooldown-policies',
+      data: data,
+      options: await _authorizedOptions(),
+    );
+  }
+
+  @override
+  Future<void> updateGeoCooldownPolicy(
+    int id,
+    Map<String, dynamic> data,
+  ) async {
+    await _dio.patch(
+      '/api/admin/geo-cooldown-policies/$id',
+      data: data,
+      options: await _authorizedOptions(),
+    );
+  }
+
+  @override
+  Future<void> deleteGeoCooldownPolicy(int id) async {
+    await _dio.delete(
+      '/api/admin/geo-cooldown-policies/$id',
+      options: await _authorizedOptions(),
+    );
+  }
+
+  @override
+  Future<void> createClosurePenaltyPolicy(Map<String, dynamic> data) async {
+    await _dio.post(
+      '/api/admin/account-closure-penalty-policies',
+      data: data,
+      options: await _authorizedOptions(),
+    );
+  }
+
+  @override
+  Future<void> updateClosurePenaltyPolicy(
+    int id,
+    Map<String, dynamic> data,
+  ) async {
+    await _dio.patch(
+      '/api/admin/account-closure-penalty-policies/$id',
+      data: data,
+      options: await _authorizedOptions(),
+    );
+  }
+
+  @override
+  Future<void> deleteClosurePenaltyPolicy(int id) async {
+    await _dio.delete(
+      '/api/admin/account-closure-penalty-policies/$id',
       options: await _authorizedOptions(),
     );
   }

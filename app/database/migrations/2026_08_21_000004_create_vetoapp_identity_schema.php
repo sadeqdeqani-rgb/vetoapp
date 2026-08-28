@@ -109,24 +109,34 @@ return new class extends Migration
             $table->index('settlement_id', 'idx_registration_draft_settlement');
         });
 
-        DB::statement("
-            ALTER TABLE registration_drafts
-            ADD active_mobile_hash BINARY(32)
-                GENERATED ALWAYS AS (
-                    CASE WHEN state_code = 'Initiated' THEN mobile_hash ELSE NULL END
-                ) STORED,
-            ADD active_national_id_hash BINARY(32)
-                GENERATED ALWAYS AS (
-                    CASE
-                        WHEN state_code = 'Initiated'
-                         AND step_code <> 'Mobile_Verification'
-                        THEN national_id_hash
-                        ELSE NULL
-                    END
-                ) STORED,
-            ADD UNIQUE KEY uq_registration_draft_active_mobile (active_mobile_hash),
-            ADD UNIQUE KEY uq_registration_draft_active_national_id (active_national_id_hash)
-        ");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("
+                ALTER TABLE registration_drafts
+                ADD active_mobile_hash BINARY(32)
+                    GENERATED ALWAYS AS (
+                        CASE WHEN state_code = 'Initiated' THEN mobile_hash ELSE NULL END
+                    ) STORED,
+                ADD active_national_id_hash BINARY(32)
+                    GENERATED ALWAYS AS (
+                        CASE
+                            WHEN state_code = 'Initiated'
+                             AND step_code <> 'Mobile_Verification'
+                            THEN national_id_hash
+                            ELSE NULL
+                        END
+                    ) STORED,
+                ADD UNIQUE KEY uq_registration_draft_active_mobile (active_mobile_hash),
+                ADD UNIQUE KEY uq_registration_draft_active_national_id (active_national_id_hash)
+            ");
+        } else {
+            // SQLite is used for fast tests and does not share MySQL's generated-column syntax.
+            Schema::table('registration_drafts', function (Blueprint $table): void {
+                $table->binary('active_mobile_hash', 32)->nullable();
+                $table->binary('active_national_id_hash', 32)->nullable();
+                $table->unique('active_mobile_hash', 'uq_registration_draft_active_mobile');
+                $table->unique('active_national_id_hash', 'uq_registration_draft_active_national_id');
+            });
+        }
 
         Schema::create('user_geo_change_logs', function (Blueprint $table) {
             $this->configure($table);
@@ -183,12 +193,19 @@ return new class extends Migration
             $table->dateTime('created_at')->useCurrent();
             $table->dateTime('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
-        DB::statement("
-            ALTER TABLE security_policies
-            ADD active_marker TINYINT
-                GENERATED ALWAYS AS (CASE WHEN is_active = 1 THEN 1 ELSE NULL END) STORED,
-            ADD UNIQUE KEY uq_security_policy_active (active_marker)
-        ");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("
+                ALTER TABLE security_policies
+                ADD active_marker TINYINT
+                    GENERATED ALWAYS AS (CASE WHEN is_active = 1 THEN 1 ELSE NULL END) STORED,
+                ADD UNIQUE KEY uq_security_policy_active (active_marker)
+            ");
+        } else {
+            Schema::table('security_policies', function (Blueprint $table): void {
+                $table->unsignedTinyInteger('active_marker')->nullable();
+                $table->unique('active_marker', 'uq_security_policy_active');
+            });
+        }
 
         Schema::create('user_login_audit_logs', function (Blueprint $table) {
             $this->configure($table);
@@ -227,15 +244,24 @@ return new class extends Migration
             $table->index(['user_id', 'is_active'], 'idx_biometric_user_active');
             $table->index('public_key_sha256', 'idx_biometric_public_hash');
         });
-        DB::statement("
-            ALTER TABLE user_biometric_credentials
-            ADD active_user_id BIGINT UNSIGNED
-                GENERATED ALWAYS AS (CASE WHEN is_active = 1 THEN user_id ELSE NULL END) STORED,
-            ADD default_user_id BIGINT UNSIGNED
-                GENERATED ALWAYS AS (CASE WHEN is_default = 1 THEN user_id ELSE NULL END) STORED,
-            ADD UNIQUE KEY uq_biometric_active_user (active_user_id),
-            ADD UNIQUE KEY uq_biometric_default_user (default_user_id)
-        ");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("
+                ALTER TABLE user_biometric_credentials
+                ADD active_user_id BIGINT UNSIGNED
+                    GENERATED ALWAYS AS (CASE WHEN is_active = 1 THEN user_id ELSE NULL END) STORED,
+                ADD default_user_id BIGINT UNSIGNED
+                    GENERATED ALWAYS AS (CASE WHEN is_default = 1 THEN user_id ELSE NULL END) STORED,
+                ADD UNIQUE KEY uq_biometric_active_user (active_user_id),
+                ADD UNIQUE KEY uq_biometric_default_user (default_user_id)
+            ");
+        } else {
+            Schema::table('user_biometric_credentials', function (Blueprint $table): void {
+                $table->unsignedBigInteger('active_user_id')->nullable();
+                $table->unsignedBigInteger('default_user_id')->nullable();
+                $table->unique('active_user_id', 'uq_biometric_active_user');
+                $table->unique('default_user_id', 'uq_biometric_default_user');
+            });
+        }
 
         Schema::create('auth_sessions', function (Blueprint $table) {
             $this->configure($table);
@@ -262,12 +288,19 @@ return new class extends Migration
             $table->index(['state', 'last_activity_at'], 'idx_auth_session_state_activity');
             $table->index(['state', 'terminated_at'], 'idx_auth_session_archival');
         });
-        DB::statement("
-            ALTER TABLE auth_sessions
-            ADD active_user_id BIGINT UNSIGNED
-                GENERATED ALWAYS AS (CASE WHEN state = 'Active' AND user_id IS NOT NULL THEN user_id ELSE NULL END) STORED,
-            ADD UNIQUE KEY uq_auth_session_active_user (active_user_id)
-        ");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("
+                ALTER TABLE auth_sessions
+                ADD active_user_id BIGINT UNSIGNED
+                    GENERATED ALWAYS AS (CASE WHEN state = 'Active' AND user_id IS NOT NULL THEN user_id ELSE NULL END) STORED,
+                ADD UNIQUE KEY uq_auth_session_active_user (active_user_id)
+            ");
+        } else {
+            Schema::table('auth_sessions', function (Blueprint $table): void {
+                $table->unsignedBigInteger('active_user_id')->nullable();
+                $table->unique('active_user_id', 'uq_auth_session_active_user');
+            });
+        }
 
         Schema::create('auth_session_archives', function (Blueprint $table) {
             $this->configure($table);
@@ -307,23 +340,25 @@ return new class extends Migration
             $table->index('state_value', 'idx_system_state_value');
         });
 
-        DB::statement("ALTER TABLE user_accounts
-            ADD CONSTRAINT chk_user_account_status
-            CHECK (account_status in ('Active','Locked','Closed'))");
-        DB::statement("ALTER TABLE security_policies
-            ADD CONSTRAINT chk_policy_max_failed CHECK (max_failed_attempts > 0),
-            ADD CONSTRAINT chk_policy_base_lockout CHECK (base_lockout_seconds > 0),
-            ADD CONSTRAINT chk_policy_progressive_factor CHECK (progressive_factor >= 1.0),
-            ADD CONSTRAINT chk_policy_max_lockout CHECK (max_lockout_seconds >= base_lockout_seconds)");
-        DB::statement("ALTER TABLE user_login_audit_logs
-            ADD CONSTRAINT chk_login_audit_status CHECK (login_status in ('Success','Failed')),
-            ADD CONSTRAINT chk_login_audit_failure CHECK (
-                (login_status = 'Success' and failure_reason is null)
-                or (login_status = 'Failed' and failure_reason is not null)
-            )");
-        DB::statement("ALTER TABLE system_states
-            ADD CONSTRAINT chk_system_state_singleton CHECK (system_state_id = 1),
-            ADD CONSTRAINT chk_system_state_value CHECK (state_value between 1 and 7)");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE user_accounts
+                ADD CONSTRAINT chk_user_account_status
+                CHECK (account_status in ('Active','Locked','Closed'))");
+            DB::statement("ALTER TABLE security_policies
+                ADD CONSTRAINT chk_policy_max_failed CHECK (max_failed_attempts > 0),
+                ADD CONSTRAINT chk_policy_base_lockout CHECK (base_lockout_seconds > 0),
+                ADD CONSTRAINT chk_policy_progressive_factor CHECK (progressive_factor >= 1.0),
+                ADD CONSTRAINT chk_policy_max_lockout CHECK (max_lockout_seconds >= base_lockout_seconds)");
+            DB::statement("ALTER TABLE user_login_audit_logs
+                ADD CONSTRAINT chk_login_audit_status CHECK (login_status in ('Success','Failed')),
+                ADD CONSTRAINT chk_login_audit_failure CHECK (
+                    (login_status = 'Success' and failure_reason is null)
+                    or (login_status = 'Failed' and failure_reason is not null)
+                )");
+            DB::statement("ALTER TABLE system_states
+                ADD CONSTRAINT chk_system_state_singleton CHECK (system_state_id = 1),
+                ADD CONSTRAINT chk_system_state_value CHECK (state_value between 1 and 7)");
+        }
     }
 
     public function down(): void

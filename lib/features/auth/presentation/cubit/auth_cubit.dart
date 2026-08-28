@@ -89,6 +89,10 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  void expireSession() {
+    emit(const AuthState.unauthenticated());
+  }
+
   AuthState _stateForSession(AuthSession session) {
     return switch (session.mode) {
       AuthSessionMode.authenticated => const AuthState.authenticated(),

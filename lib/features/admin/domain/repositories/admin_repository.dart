@@ -11,6 +11,10 @@ abstract interface class AdminRepository {
 
   Future<List<NationalIdEligibilityRecord>> nationalIdRecords();
 
+  Future<List<AdminGeoCooldownPolicy>> geoCooldownPolicies();
+
+  Future<List<AdminClosurePenaltyPolicy>> closurePenaltyPolicies();
+
   Future<AdminSession> login({
     required String username,
     required String password,
@@ -34,4 +38,16 @@ abstract interface class AdminRepository {
     required String username,
     required String password,
   });
+
+  Future<void> createGeoCooldownPolicy(Map<String, dynamic> data);
+
+  Future<void> updateGeoCooldownPolicy(int id, Map<String, dynamic> data);
+
+  Future<void> deleteGeoCooldownPolicy(int id);
+
+  Future<void> createClosurePenaltyPolicy(Map<String, dynamic> data);
+
+  Future<void> updateClosurePenaltyPolicy(int id, Map<String, dynamic> data);
+
+  Future<void> deleteClosurePenaltyPolicy(int id);
 }

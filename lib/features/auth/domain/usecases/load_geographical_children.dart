@@ -9,6 +9,8 @@ class LoadGeographicalChildrenUseCase {
 
   final RegistrationRepository _repository;
 
-  Future<Either<Failure, List<GeographicalArea>>> call({int? parentId}) =>
-      _repository.children(parentId: parentId);
+  Future<Either<Failure, List<GeographicalArea>>> call({
+    int? parentId,
+    String? childType,
+  }) => _repository.children(parentId: parentId, childType: childType);
 }

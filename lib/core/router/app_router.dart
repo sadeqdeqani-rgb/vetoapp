@@ -1,6 +1,10 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
+import '../../features/auth/presentation/cubit/auth_state.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_phone_page.dart';
 import '../../features/auth/presentation/pages/login_credentials_page.dart';
@@ -26,6 +30,20 @@ import '../../features/startup/presentation/pages/gateway_page.dart'
     as gateway_page;
 import '../../features/startup/presentation/pages/splash_page.dart';
 
+class _AuthRouterRefresh extends ChangeNotifier {
+  _AuthRouterRefresh(Stream<AuthState> stream) {
+    _subscription = stream.listen((_) => notifyListeners());
+  }
+
+  late final StreamSubscription<AuthState> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
+
 GoRouter createAppRouter(AuthCubit authCubit) {
   /// فعلاً AuthCubit در redirect استفاده نمی‌شود.
   /// با فعال شدن احراز هویت واقعی، redirect بر اساس state همین Cubit تکمیل می‌شود.
@@ -37,10 +55,11 @@ GoRouter createAppRouter(AuthCubit authCubit) {
 
   return GoRouter(
     initialLocation: startRoute,
+    refreshListenable: _AuthRouterRefresh(authCubit.stream),
     redirect: (context, state) {
       final location = state.matchedLocation;
-
-      if (location == '/splash' ||
+      final isPublic =
+          location == '/splash' ||
           location == '/gateway' ||
           location == '/login' ||
           location == '/register/terms' ||
@@ -52,8 +71,18 @@ GoRouter createAppRouter(AuthCubit authCubit) {
           location == '/register' ||
           location == '/forgot-password' ||
           location == '/otp-verification' ||
-          location == '/forgot-password/reset') {
-        return null;
+          location == '/forgot-password/reset' ||
+          location == '/admin/login' ||
+          location == '/admin';
+      final isAuthenticated =
+          authCubit.state is Authenticated || authCubit.state is Guest;
+
+      if (!isPublic && !isAuthenticated) {
+        return '/gateway';
+      }
+
+      if (location == '/login' && isAuthenticated) {
+        return '/';
       }
 
       return null;

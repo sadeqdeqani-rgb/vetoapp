@@ -147,17 +147,19 @@ return new class extends Migration
             $table->unique(['channel', 'provider_message_id'], 'uq_delivery_provider_message');
         });
 
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE otps
-            ADD CONSTRAINT chk_otp_attempt_count CHECK (attempt_count <= max_attempt_count),
-            ADD CONSTRAINT chk_otp_max_attempts CHECK (max_attempt_count > 0),
-            ADD CONSTRAINT chk_otp_channel CHECK (delivery_channel = 'telegram_bot')");
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE user_telegram_identities
-            ADD CONSTRAINT chk_telegram_link_status CHECK (link_status in ('Pending','Linked','Revoked')),
-            ADD CONSTRAINT chk_telegram_phone_status CHECK (phone_verification_status in ('Pending','Verified','Revoked'))");
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE integration_inbox_entries
-            ADD CONSTRAINT chk_inbox_channel CHECK (channel in ('telegram','system'))");
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE otp_delivery_attempts
-            ADD CONSTRAINT chk_delivery_channel CHECK (channel = 'telegram_bot')");
+        if (\Illuminate\Support\Facades\DB::getDriverName() === 'mysql') {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE otps
+                ADD CONSTRAINT chk_otp_attempt_count CHECK (attempt_count <= max_attempt_count),
+                ADD CONSTRAINT chk_otp_max_attempts CHECK (max_attempt_count > 0),
+                ADD CONSTRAINT chk_otp_channel CHECK (delivery_channel = 'telegram_bot')");
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE user_telegram_identities
+                ADD CONSTRAINT chk_telegram_link_status CHECK (link_status in ('Pending','Linked','Revoked')),
+                ADD CONSTRAINT chk_telegram_phone_status CHECK (phone_verification_status in ('Pending','Verified','Revoked'))");
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE integration_inbox_entries
+                ADD CONSTRAINT chk_inbox_channel CHECK (channel in ('telegram','system'))");
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE otp_delivery_attempts
+                ADD CONSTRAINT chk_delivery_channel CHECK (channel = 'telegram_bot')");
+        }
     }
 
     public function down(): void

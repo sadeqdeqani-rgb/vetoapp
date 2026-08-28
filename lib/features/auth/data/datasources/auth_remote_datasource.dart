@@ -16,7 +16,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<Map<String, dynamic>> login(LoginRequestModel request) async {
     try {
       final response = await _dio.post<Map<String, dynamic>>(
-        '/auth/login',
+        '/api/v1/auth/login',
         data: request.toJson(),
       );
 

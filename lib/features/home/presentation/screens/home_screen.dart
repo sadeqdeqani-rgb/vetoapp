@@ -1,10 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dartz/dartz.dart' show Either;
 
+import '../../../../core/di/injection.dart';
+import '../../../../core/errors/failures.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../content/domain/entities/public_content.dart';
+import '../../../content/domain/usecases/get_public_content.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late final Future<Either<Failure, PublicContent>> _introductionFuture;
+  late final Future<Either<Failure, PublicIntroductionVideo>> _videoFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _introductionFuture = getIt<GetPublicIntroductionUseCase>()();
+    _videoFuture = getIt<GetPublicIntroductionVideoUseCase>()();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,11 +84,25 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 12),
             _FilterCard(),
             const SizedBox(height: 20),
-            Text(
-              'معرفی وِتواَپ',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontSize: 22,
-              ),
+            FutureBuilder<Either<Failure, PublicContent>>(
+              future: _introductionFuture,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Text('در حال دریافت معرفی سامانه...');
+                }
+                return snapshot.data!.fold(
+                  (failure) => Text(
+                    failure.message,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  (content) => Text(
+                    content.title,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontSize: 22,
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 12),
             Container(
@@ -84,8 +118,17 @@ class HomeScreen extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: () => context.go('/about'),
                     icon: const Icon(Icons.info_outline_rounded),
-                    label: const Text(
-                      'وتواپ، ابزار انقلاب سوم و تحقق جمهوری دوم در ایران',
+                    label: FutureBuilder<Either<Failure, PublicContent>>(
+                      future: _introductionFuture,
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Text('در حال دریافت معرفی...');
+                        }
+                        return snapshot.data!.fold(
+                          (failure) => Text(failure.message),
+                          (content) => Text(content.title),
+                        );
+                      },
                     ),
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size.fromHeight(56),
@@ -95,7 +138,20 @@ class HomeScreen extends StatelessWidget {
                   FilledButton.icon(
                     onPressed: () => context.go('/about'),
                     icon: const Icon(Icons.play_circle_outline_rounded),
-                    label: const Text('مشاهده ویدیوی معرفی وتواپ'),
+                    label: FutureBuilder<
+                      Either<Failure, PublicIntroductionVideo>
+                    >(
+                      future: _videoFuture,
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Text('در حال دریافت ویدیو...');
+                        }
+                        return snapshot.data!.fold(
+                          (failure) => Text(failure.message),
+                          (video) => Text(video.title),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),

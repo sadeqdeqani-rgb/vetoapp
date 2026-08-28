@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dartz/dartz.dart' show Either;
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/auth_card.dart';
+import '../../../../core/errors/failures.dart';
+import '../../../../core/di/injection.dart';
+import '../../../content/domain/entities/public_content.dart';
+import '../../../content/domain/usecases/get_public_content.dart';
 
 /// صفحهٔ قوانین و مقررات پیش از شروع ثبت‌نام.
 class RegistrationTermsPage extends StatefulWidget {
@@ -14,6 +19,13 @@ class RegistrationTermsPage extends StatefulWidget {
 
 class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
   bool _hasAcceptedTerms = false;
+  late final Future<Either<Failure, PublicContent>> _termsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _termsFuture = getIt<GetPublicTermsUseCase>()();
+  }
 
   void _continue() {
     if (!_hasAcceptedTerms) {
@@ -34,14 +46,28 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'لطفاً پیش از ادامه، قوانین و مقررات استفاده '
-              'از وِتواَپ را مطالعه کنید.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppTheme.primaryDark,
-                fontWeight: FontWeight.bold,
-              ),
+            FutureBuilder<Either<Failure, PublicContent>>(
+              future: _termsFuture,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                return snapshot.data!.fold(
+                  (failure) => Text(
+                    failure.message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  (content) => Text(
+                    content.title,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppTheme.primaryDark,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
             Container(
@@ -51,18 +77,29 @@ class _RegistrationTermsPageState extends State<RegistrationTermsPage> {
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(color: AppTheme.divider),
               ),
-              child: const Text(
-                'با ثبت نام متعهد می‌شوید که:\n\n'
-                '• سن قانونی کاربر بالای ۱۸ سال است.\n'
-                '• از کد ملی و شماره همراه خود برای ثبت نام استفاده کرده‌اید.\n'
-                '• مسئولیت اطلاعات ورود به عهده کاربر خواهد بود.\n'
-                '• مسئولیت فعالیت‌های انجام‌شده در سامانه به عهده کاربر خواهد بود.',
-                textAlign: TextAlign.justify,
-                style: TextStyle(
-                  fontSize: 16,
-                  height: 1.9,
-                  color: AppTheme.textPrimary,
-                ),
+              child: FutureBuilder<Either<Failure, PublicContent>>(
+                future: _termsFuture,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  return snapshot.data!.fold(
+                    (failure) => Text(
+                      failure.message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                    (content) => Text(
+                      content.body,
+                      textAlign: TextAlign.justify,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        height: 1.9,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 0),

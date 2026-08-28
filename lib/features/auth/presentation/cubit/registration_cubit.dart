@@ -74,7 +74,15 @@ class RegistrationCubit extends Cubit<RegistrationState> {
         state is RegistrationGeographyLoaded
             ? state as RegistrationGeographyLoaded
             : const RegistrationGeographyLoaded();
-    final result = await _loadChildren(parentId: parentId);
+    final result = await _loadChildren(
+      parentId: parentId,
+      childType: switch (level) {
+        RegistrationLevel.country => 'country',
+        RegistrationLevel.province => 'province',
+        RegistrationLevel.county => 'county',
+        RegistrationLevel.locality => 'locality',
+      },
+    );
     result.fold(
       (failure) => emit(RegistrationError(failure.message)),
       (items) => emit(

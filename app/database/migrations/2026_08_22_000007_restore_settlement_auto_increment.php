@@ -9,6 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         $this->dropSettlementForeignKeys();
 
         DB::statement('ALTER TABLE settlements MODIFY settlement_id INT UNSIGNED NOT NULL AUTO_INCREMENT');
@@ -18,6 +22,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         $this->dropSettlementForeignKeys();
 
         DB::statement('ALTER TABLE settlements MODIFY settlement_id INT UNSIGNED NOT NULL');
