@@ -15,18 +15,13 @@ use Tests\TestCase;
 class GeographyDatabaseConstraintsTest extends TestCase
 {
     use DatabaseTransactions;
+    use CreatesTestGeography;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        if (
-            DB::getDriverName() !== 'mysql'
-            || ! Schema::hasTable('countries')
-            || DB::table('countries')->count() === 0
-        ) {
-            $this->markTestSkipped('These tests require the seeded MySQL geography database.');
-        }
+        $this->seedTestGeography();
     }
 
     public function test_foreign_keys_reject_invalid_geography_parents(): void

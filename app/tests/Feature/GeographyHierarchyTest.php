@@ -4,12 +4,21 @@ namespace Tests\Feature;
 
 use App\Models\Country;
 use App\Models\Settlement;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Tests\TestCase;
 
 class GeographyHierarchyTest extends TestCase
 {
     use WithoutMiddleware;
+    use RefreshDatabase;
+    use CreatesTestGeography;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seedTestGeography();
+    }
 
     public function test_active_scope_and_parent_child_relations_follow_the_drm_hierarchy(): void
     {

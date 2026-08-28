@@ -13,18 +13,14 @@ use Tests\TestCase;
 class RegistrationTransactionServiceTest extends TestCase
 {
     use DatabaseTransactions;
+    use CreatesTestGeography;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        if (
-            DB::getDriverName() !== 'mysql'
-            || ! Schema::hasTable('registration_drafts')
-            || DB::table('countries')->count() === 0
-        ) {
-            $this->markTestSkipped('These tests require the migrated and seeded MySQL database.');
-        }
+        $this->seed(\Database\Seeders\VetoAppLookupSeeder::class);
+        $this->seedTestGeography();
     }
 
     public function test_registration_contact_and_account_creation_are_atomic(): void

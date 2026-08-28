@@ -20,18 +20,14 @@ use Tests\TestCase;
 class OtpAndTelegramIntegrationTest extends TestCase
 {
     use DatabaseTransactions;
+    use CreatesTestGeography;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        if (
-            DB::getDriverName() !== 'mysql'
-            || ! Schema::hasTable('otps')
-            || DB::table('countries')->count() === 0
-        ) {
-            $this->markTestSkipped('These tests require the migrated and seeded MySQL database.');
-        }
+        $this->seed(\Database\Seeders\VetoAppLookupSeeder::class);
+        $this->seedTestGeography();
     }
 
     public function test_registration_otp_is_two_minutes_and_queued_for_verified_identity(): void
