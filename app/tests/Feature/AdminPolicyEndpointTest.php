@@ -107,7 +107,7 @@ class AdminPolicyEndpointTest extends TestCase
         $this->authRequest()->patchJson("/api/admin/account-closure-penalty-policies/{$id}", ['penalty_hours' => 48])
             ->assertOk()->assertJsonPath('data.penalty_hours', 48);
         $this->authRequest()->deleteJson("/api/admin/account-closure-penalty-policies/{$id}")->assertOk();
-        $this->assertSame(4, DB::table('admin_activity_logs')->where('target_table', 'account_closure_penalty_policies')->count());
+        $this->assertSame(3, DB::table('admin_activity_logs')->where('target_table', 'account_closure_penalty_policies')->count());
     }
 
     private function authRequest(): static

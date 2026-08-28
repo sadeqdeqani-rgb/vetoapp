@@ -24,7 +24,7 @@ return new class extends Migration
         ] as $tableName => $key) {
             Schema::create($tableName, function (Blueprint $table) use ($key) {
                 $this->configure($table);
-                $table->unsignedSmallInteger($key)->primary();
+                $table->{$key === 'settlement_id' ? 'unsignedInteger' : 'unsignedSmallInteger'}($key)->primary();
                 $table->unsignedBigInteger('active_user_count')->default(0);
                 $table->dateTime('updated_at')->useCurrent()->useCurrentOnUpdate();
             });
