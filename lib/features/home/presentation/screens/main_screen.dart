@@ -202,14 +202,14 @@ class _NavigationTabState extends State<_NavigationTab> {
     final colors = Theme.of(context).colorScheme;
     final foreground =
         widget.selected
-            ? (_pressed ? colors.onPrimaryContainer : widget.color)
-            : colors.onSurfaceVariant;
+            ? Color.lerp(widget.color, colors.surface, 0.68)!
+            : widget.color;
     final background =
         widget.selected
-            ? (_pressed
-                ? widget.color.withValues(alpha: 0.18)
-                : widget.color.withValues(alpha: 0.12))
-            : (_pressed ? AppTheme.pressedTab : Colors.transparent);
+            ? widget.color.withValues(alpha: _pressed ? 0.16 : 0.08)
+            : (_pressed
+                ? widget.color.withValues(alpha: 0.16)
+                : Colors.transparent);
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -233,7 +233,7 @@ class _NavigationTabState extends State<_NavigationTab> {
             children: [
               Icon(
                 widget.icon,
-                size: widget.selected ? 25 : 23,
+                size: widget.selected ? 23 : 25,
                 color: foreground,
               ),
               const SizedBox(height: 1),
@@ -244,10 +244,7 @@ class _NavigationTabState extends State<_NavigationTab> {
                 style: TextStyle(
                   fontFamily: AppTheme.fontFamily,
                   fontSize: 17,
-                  fontWeight:
-                      widget.selected || _pressed
-                          ? FontWeight.w700
-                          : FontWeight.w400,
+                  fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w500,
                   color: foreground,
                 ),
               ),

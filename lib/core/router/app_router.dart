@@ -6,12 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vetoapp_demo/core/di/injection.dart' as demo_di;
 import 'package:vetoapp_demo/features/ballot/presentation/screens/ballot_screen.dart'
     as demo;
-import 'package:vetoapp_demo/features/home/presentation/screens/about_detail_screen.dart'
-    as demo;
-import 'package:vetoapp_demo/features/home/presentation/screens/about_screen.dart'
-    as demo;
-import 'package:vetoapp_demo/features/home/presentation/screens/about_sections.dart'
-    as demo;
 import 'package:vetoapp_demo/features/home/presentation/screens/civic_detail_screen.dart'
     as demo;
 import 'package:vetoapp_demo/features/home/presentation/screens/election_screen.dart'
@@ -47,6 +41,8 @@ import '../../features/auth/presentation/pages/registration_terms_page.dart';
 import '../../features/ballot/presentation/screens/ballot_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/home/presentation/screens/about_screen.dart';
+import '../../features/home/presentation/screens/about_detail_screen.dart';
+import '../../features/home/presentation/screens/about_sections.dart';
 import '../../features/home/presentation/screens/main_screen.dart';
 import '../../features/home/presentation/screens/referendum_screen.dart';
 import '../../features/home/presentation/screens/election_screen.dart';
@@ -340,7 +336,7 @@ GoRouter createAppRouter(AuthCubit authCubit) {
             builder:
                 (context, state) =>
                     authCubit.state is Guest
-                        ? const demo.AboutScreen()
+                        ? const AboutScreen()
                         : const AboutScreen(),
           ),
           GoRoute(
@@ -349,9 +345,9 @@ GoRouter createAppRouter(AuthCubit authCubit) {
             builder: (context, state) {
               if (authCubit.state is Guest) {
                 final section = state.extra;
-                return section is demo.AboutSection
-                    ? demo.AboutDetailScreen(section: section)
-                    : const demo.AboutScreen();
+                return section is AboutSection
+                    ? AboutDetailScreen(section: section)
+                    : const AboutScreen();
               }
               return const AboutScreen();
             },
