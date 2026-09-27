@@ -3,12 +3,14 @@
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminManagementController;
 use App\Http\Controllers\AdminPolicyController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GeographicalAreaController;
 use App\Http\Controllers\NationalCodeController;
 use App\Http\Controllers\OtpApiController;
-use App\Http\Controllers\PublicContentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicContentController;
 use App\Http\Controllers\RegistrationApiController;
+use App\Http\Controllers\TelegramPasswordRecoveryController;
 use App\Http\Controllers\TelegramWebhookController;
 use App\Http\Controllers\UserAuthController;
 use App\Http\Middleware\AuthenticateSystemAdmin;
@@ -20,6 +22,8 @@ Route::prefix('v1')->group(function (): void {
     Route::post('/auth/otp/request', [OtpApiController::class, 'requestOtp']);
     Route::post('/auth/otp/verify', [OtpApiController::class, 'verifyOtp']);
     Route::post('/auth/password/reset', [OtpApiController::class, 'resetPassword']);
+    Route::post('/auth/password-recovery/telegram', [TelegramPasswordRecoveryController::class, 'start']);
+    Route::get('/auth/password-recovery/telegram/status', [TelegramPasswordRecoveryController::class, 'status']);
 
     Route::post('/auth/registration/drafts', [
         RegistrationApiController::class,
@@ -29,6 +33,8 @@ Route::prefix('v1')->group(function (): void {
         RegistrationApiController::class,
         'selectDetails',
     ]);
+    Route::post('/auth/registration/drafts/{draft}/validate-national-code', [RegistrationApiController::class, 'validateDraftNationalCode']);
+    Route::post('/auth/registration/drafts/{draft}/age-eligibility-reports', [RegistrationApiController::class, 'submitAgeEligibilityReport']);
     Route::get('/auth/registration/drafts/{draft}/status', [
         RegistrationApiController::class,
         'status',
@@ -50,6 +56,7 @@ Route::prefix('v1')->group(function (): void {
     ]);
 
     Route::middleware(AuthenticateUserSession::class)->group(function (): void {
+        Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
         Route::post('/auth/logout', [UserAuthController::class, 'logout']);
         Route::post('/auth/session/heartbeat', [UserAuthController::class, 'heartbeat']);
         Route::get('/profile', [ProfileController::class, 'show']);

@@ -19,3 +19,7 @@ class AuthFailure extends Failure {
 class ValidationFailure extends Failure {
   const ValidationFailure(super.message);
 }
+
+class RegistrationMobileAlreadyRegisteredFailure extends Failure {
+  const RegistrationMobileAlreadyRegisteredFailure(super.message);
+}

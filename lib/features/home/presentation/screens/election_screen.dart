@@ -12,7 +12,7 @@ class ElectionScreen extends StatelessWidget {
       title: 'انتخابات',
       description:
           'در انتخابات آزادانه شرکت کنید، آزادانه انتخاب شوید و رأی‌گیری شفاف را دنبال کنید.',
-      icon: Icons.how_to_vote_rounded,
+      icon: Icons.ballot_outlined,
       accent: AppTheme.election,
       activeCountLabel: '۲ انتخابات در حال رأی‌گیری است',
       actions: const [
@@ -21,7 +21,7 @@ class ElectionScreen extends StatelessWidget {
           subtitle: 'مشاهده حوزه‌ها و ثبت رأی',
           icon: Icons.ballot_outlined,
           color: AppTheme.election,
-          route: '/ballot',
+          route: '/elections/participate',
           emphasized: true,
         ),
         CivicSectionAction(
@@ -29,14 +29,14 @@ class ElectionScreen extends StatelessWidget {
           subtitle: 'مشاهده‌ی آمار رأی‌ها به‌صورت لحظه‌ای',
           icon: Icons.show_chart_rounded,
           color: AppTheme.election,
-          route: '/ballot',
+          route: '/elections/live',
         ),
         CivicSectionAction(
           title: 'نتایج انتخابات پایان‌یافته',
           subtitle: 'جست‌وجو و مشاهده نتایج انتخابات‌های پیشین',
           icon: Icons.poll_outlined,
           color: AppTheme.election,
-          route: '/ballot',
+          route: '/elections/results',
         ),
       ],
     );

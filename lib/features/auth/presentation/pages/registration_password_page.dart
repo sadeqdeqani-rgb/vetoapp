@@ -17,6 +17,8 @@ class RegistrationPasswordPage extends StatefulWidget {
     required this.provinceId,
     required this.countyId,
     required this.localityId,
+    required this.draftId,
+    required this.telegramIdentityId,
   });
 
   final String phoneNumber;
@@ -25,6 +27,8 @@ class RegistrationPasswordPage extends StatefulWidget {
   final int provinceId;
   final int countyId;
   final int localityId;
+  final String draftId;
+  final String telegramIdentityId;
 
   @override
   State<RegistrationPasswordPage> createState() =>
@@ -87,6 +91,8 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
 
     await context.read<RegistrationCubit>().save(
       RegistrationDraft(
+        draftId: widget.draftId,
+        telegramIdentityId: widget.telegramIdentityId,
         phoneNumber: widget.phoneNumber,
         nationalCode: widget.nationalCode,
         countryId: widget.countryId,
@@ -110,9 +116,8 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
             if (context.mounted) context.go('/register/success');
           } else if (state is RegistrationError && mounted) {
             setState(() => _isLoading = false);
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
         child: AuthFormCard(
@@ -149,8 +154,9 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                     labelText: 'رمز عبور',
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
-                      tooltip:
-                          _obscurePassword ? 'نمایش رمز' : 'پنهان کردن رمز',
+                      tooltip: _obscurePassword
+                          ? 'نمایش رمز'
+                          : 'پنهان کردن رمز',
                       onPressed: () {
                         setState(() => _obscurePassword = !_obscurePassword);
                       },
@@ -175,8 +181,9 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                     labelText: 'تکرار رمز عبور',
                     prefixIcon: const Icon(Icons.lock_reset),
                     suffixIcon: IconButton(
-                      tooltip:
-                          _obscureConfirmation ? 'نمایش رمز' : 'پنهان کردن رمز',
+                      tooltip: _obscureConfirmation
+                          ? 'نمایش رمز'
+                          : 'پنهان کردن رمز',
                       onPressed: () {
                         setState(
                           () => _obscureConfirmation = !_obscureConfirmation,

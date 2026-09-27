@@ -21,9 +21,18 @@ class MainScreen extends StatelessWidget {
   ];
 
   int _selectedIndex(BuildContext context) {
-    final location = GoRouterState.of(context).uri.path;
-    final index = _locations.indexOf(location);
+    final index = _locations.indexOf(
+      _parentLocation(GoRouterState.of(context).uri.path),
+    );
     return index == -1 ? 0 : index;
+  }
+
+  String _parentLocation(String location) {
+    if (location.startsWith('/referendum')) return '/referendum';
+    if (location.startsWith('/elections')) return '/elections';
+    if (location.startsWith('/impeachment')) return '/impeachment';
+    if (location.startsWith('/profile')) return '/profile';
+    return '/';
   }
 
   Color _tabColor(int index) {
@@ -36,22 +45,14 @@ class MainScreen extends StatelessWidget {
     };
   }
 
-  Future<void> _handleBack(BuildContext context) async {
+  void _handleBack(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
     if (location == '/') {
-      await SystemNavigator.pop(animated: true);
+      SystemNavigator.pop(animated: true);
       return;
     }
-
-    if (location.startsWith('/referendum')) {
-      context.go('/referendum');
-    } else if (location.startsWith('/elections')) {
-      context.go('/elections');
-    } else if (location.startsWith('/impeachment')) {
-      context.go('/impeachment');
-    } else {
-      context.go('/');
-    }
+    final parent = _parentLocation(location);
+    context.go(location == parent ? '/' : parent);
   }
 
   @override
@@ -61,7 +62,9 @@ class MainScreen extends StatelessWidget {
 
     return PopScope<void>(
       canPop: false,
-      onPopInvokedWithResult: (_, __) => _handleBack(context),
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handleBack(context);
+      },
       child: Scaffold(
         backgroundColor: colors.surface,
         body: AppBackground(
@@ -137,7 +140,7 @@ class MainScreen extends StatelessWidget {
                       final icon = switch (index) {
                         0 => Icons.home_outlined,
                         1 => Icons.how_to_vote_outlined,
-                        2 => Icons.how_to_vote_rounded,
+                        2 => Icons.ballot_outlined,
                         3 => Icons.gavel_outlined,
                         _ => Icons.person_outline,
                       };
@@ -244,7 +247,7 @@ class _NavigationTabState extends State<_NavigationTab> {
                 style: TextStyle(
                   fontFamily: AppTheme.fontFamily,
                   fontSize: 17,
-                  fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w500,
+                  fontWeight: FontWeight.w700,
                   color: foreground,
                 ),
               ),

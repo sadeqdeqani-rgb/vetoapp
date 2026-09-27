@@ -9,7 +9,7 @@ Dio createDioClient([
 ]) {
   const baseUrl = String.fromEnvironment(
     'VETO_API_BASE_URL',
-    defaultValue: 'https://api.vetoapp.ir',
+    defaultValue: 'https://api.vetoapp.net',
   );
 
   final dio = Dio(

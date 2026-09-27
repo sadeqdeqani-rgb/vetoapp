@@ -13,9 +13,11 @@ class VerifyOtpUseCase {
     required String phoneNumber,
     required String code,
     required OtpPurpose purpose,
+    String? otpId,
   }) => _repository.verify(
     phoneNumber: phoneNumber,
     code: code,
     purpose: purpose,
+    otpId: otpId,
   );
 }

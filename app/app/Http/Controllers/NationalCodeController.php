@@ -11,11 +11,10 @@ class NationalCodeController extends Controller
     public function validateNationalCode(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'national_code' => ['required', 'string'],
+            'national_code' => ['required', 'string', 'regex:/^[0-9۰-۹٠-٩]{10}$/'],
         ]);
 
-        // TODO: پس از پایان تست، این مقدار باید false یا configurable شود.
-        $allowTestCode = true;
+        $allowTestCode = false;
         $isValid = IranianNationalCodeValidator::isValid(
             $validated['national_code'],
             $allowTestCode,

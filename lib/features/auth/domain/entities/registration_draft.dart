@@ -1,5 +1,7 @@
 class RegistrationDraft {
   const RegistrationDraft({
+    required this.draftId,
+    required this.telegramIdentityId,
     required this.phoneNumber,
     required this.nationalCode,
     required this.countryId,
@@ -9,6 +11,8 @@ class RegistrationDraft {
     required this.password,
   });
 
+  final String draftId;
+  final String telegramIdentityId;
   final String phoneNumber;
   final String nationalCode;
   final int countryId;

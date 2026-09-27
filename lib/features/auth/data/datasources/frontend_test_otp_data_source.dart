@@ -1,4 +1,3 @@
-import '../../../../core/errors/failures.dart';
 import '../../domain/entities/otp_challenge.dart';
 import 'otp_remote_data_source.dart';
 
@@ -8,59 +7,33 @@ import 'otp_remote_data_source.dart';
 class FrontendTestOtpDataSource implements OtpRemoteDataSource {
   FrontendTestOtpDataSource(this._realDataSource);
 
-  static const testRegistrationPhone = '0912345678';
-  static const legacyTestRegistrationPhone = '09123456789';
-  static const testRegistrationOtp = '123456';
-
   final OtpRemoteDataSource _realDataSource;
-
-  bool _isTestRegistration(String phoneNumber, OtpPurpose purpose) =>
-      purpose == OtpPurpose.registration &&
-      (phoneNumber == testRegistrationPhone ||
-          phoneNumber == legacyTestRegistrationPhone);
 
   @override
   Future<OtpChallenge> request({
     required String phoneNumber,
     required OtpPurpose purpose,
-  }) {
-    if (_isTestRegistration(phoneNumber, purpose)) {
-      return Future.value(
-        OtpChallenge(
-          phoneNumber: phoneNumber,
-          purpose: purpose,
-          expiresAt: DateTime.now().add(const Duration(minutes: 2)),
-          verificationToken: 'frontend-test-registration-token',
-        ),
-      );
-    }
-
-    return _realDataSource.request(phoneNumber: phoneNumber, purpose: purpose);
-  }
+    String? registrationDraftId,
+    String? telegramIdentityId,
+  }) => _realDataSource.request(
+    phoneNumber: phoneNumber,
+    purpose: purpose,
+    registrationDraftId: registrationDraftId,
+    telegramIdentityId: telegramIdentityId,
+  );
 
   @override
   Future<OtpChallenge> verify({
     required String phoneNumber,
     required String code,
     required OtpPurpose purpose,
+    String? otpId,
   }) async {
-    if (_isTestRegistration(phoneNumber, purpose)) {
-      if (code != testRegistrationOtp) {
-        throw const AuthFailure('کد تست ثبت‌نام باید ۱۲۳۴۵۶ باشد.');
-      }
-
-      return OtpChallenge(
-        phoneNumber: phoneNumber,
-        purpose: purpose,
-        expiresAt: DateTime.now().add(const Duration(minutes: 2)),
-        verificationToken: 'frontend-test-registration-token',
-      );
-    }
-
     return _realDataSource.verify(
       phoneNumber: phoneNumber,
       code: code,
       purpose: purpose,
+      otpId: otpId,
     );
   }
 

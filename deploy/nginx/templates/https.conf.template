@@ -1,0 +1,170 @@
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${APP_DOMAIN};
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        default_type text/plain;
+        try_files $uri =404;
+    }
+
+    # Keep the internal monitoring probe available after HTTP redirects to TLS.
+    location = /up {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME /var/www/html/public/index.php;
+        fastcgi_param DOCUMENT_ROOT /var/www/html/public;
+        fastcgi_pass app:9000;
+        fastcgi_read_timeout 15s;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${WORDPRESS_DOMAIN};
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        default_type text/plain;
+        try_files $uri =404;
+    }
+
+    location / {
+        return 301 https://${WORDPRESS_DOMAIN}$request_uri;
+    }
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${WORDPRESS_WWW_DOMAIN};
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        default_type text/plain;
+        try_files $uri =404;
+    }
+
+    location / {
+        return 301 https://${WORDPRESS_DOMAIN}$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name ${APP_DOMAIN};
+
+    root /var/www/html/public;
+    index index.php;
+    charset utf-8;
+    client_max_body_size 20m;
+
+    ssl_certificate /etc/letsencrypt/live/${APP_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${APP_DOMAIN}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        try_files $uri =404;
+        include fastcgi_params;
+        fastcgi_param HTTPS on;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+        fastcgi_pass app:9000;
+        fastcgi_read_timeout 60s;
+    }
+
+    location ~ /\. {
+        deny all;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name ${WORDPRESS_DOMAIN};
+
+    root /var/www/wordpress;
+    index index.php;
+    charset utf-8;
+    client_max_body_size 20m;
+
+    ssl_certificate /etc/letsencrypt/live/${WORDPRESS_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${WORDPRESS_DOMAIN}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
+
+    location ~* /wp-content/uploads/.*\.php$ {
+        deny all;
+    }
+
+    location ~* /(?:wp-config\.php|readme\.html|license\.txt)$ {
+        deny all;
+    }
+
+    location ~* \.(?:css|js|gif|jpe?g|png|webp|svg|ico|woff2?)$ {
+        try_files $uri =404;
+        expires 7d;
+        add_header Cache-Control "public, max-age=604800, immutable" always;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        try_files $uri =404;
+        include fastcgi_params;
+        fastcgi_param HTTPS on;
+        fastcgi_param SCRIPT_FILENAME /var/www/html$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT /var/www/html;
+        fastcgi_pass wordpress:9000;
+        fastcgi_read_timeout 60s;
+    }
+
+    location ~ /\. {
+        deny all;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name ${WORDPRESS_WWW_DOMAIN};
+
+    ssl_certificate /etc/letsencrypt/live/${WORDPRESS_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${WORDPRESS_DOMAIN}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    location / {
+        return 301 https://${WORDPRESS_DOMAIN}$request_uri;
+    }
+}

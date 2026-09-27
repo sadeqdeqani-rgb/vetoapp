@@ -20,7 +20,7 @@ class ReferendumScreen extends StatelessWidget {
           subtitle: 'ثبت یک موضوع برای بررسی عمومی',
           icon: Icons.add_circle_outline_rounded,
           color: Color(0xFF2E7D32),
-          route: '/participation',
+          route: '/referendum/propose',
           emphasized: true,
         ),
         CivicSectionAction(
@@ -28,21 +28,21 @@ class ReferendumScreen extends StatelessWidget {
           subtitle: 'مرور موضوعات و ثبت حمایت',
           icon: Icons.volunteer_activism_outlined,
           color: Color(0xFF2E7D32),
-          route: '/participation',
+          route: '/referendum/supported',
         ),
         CivicSectionAction(
           title: 'شرکت در همه‌پرسی',
           subtitle: 'مشاهده و ثبت رأی در موضوعات فعال',
           icon: Icons.how_to_vote_outlined,
           color: Color(0xFF2E7D32),
-          route: '/ballot',
+          route: '/referendum/active',
         ),
         CivicSectionAction(
           title: 'نتایج همه‌پرسی‌های پایان‌یافته',
           subtitle: 'بررسی نتایج و سوابق قبلی',
           icon: Icons.bar_chart_rounded,
           color: Color(0xFF2E7D32),
-          route: '/ballot',
+          route: '/referendum/results',
         ),
       ],
     );

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../auth/presentation/cubit/auth_state.dart';
 
 class CivicSectionAction {
   const CivicSectionAction({
@@ -41,6 +44,36 @@ class CivicSectionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (context.read<AuthCubit>().state is Authenticated) {
+      return Directionality(
+        textDirection: TextDirection.rtl,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+          children: [
+            _SectionHero(
+              title: title,
+              description: description,
+              icon: icon,
+              accent: accent,
+            ),
+            const SizedBox(height: 18),
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: AppTheme.divider),
+              ),
+              child: const Text(
+                'داده‌های زندهٔ این بخش هنوز از سرور ارائه نمی‌شود. محتوای نمایشی برای حساب واقعی پنهان است.',
+                style: TextStyle(fontSize: 16, height: 1.6),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: SingleChildScrollView(

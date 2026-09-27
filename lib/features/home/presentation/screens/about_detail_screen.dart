@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared_widgets/pdf_attachment_button.dart';
 import 'about_sections.dart';
 
 class AboutDetailScreen extends StatelessWidget {
@@ -36,6 +37,23 @@ class AboutDetailScreen extends StatelessWidget {
                 section.body,
                 style: const TextStyle(fontSize: 18, height: 1.9),
               ),
+              if (section.attachments.isNotEmpty) ...[
+                const SizedBox(height: 22),
+                const Text(
+                  'ضمیمه‌ها',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 10),
+                ...section.attachments.map(
+                  (attachment) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: PdfAttachmentButton(
+                      title: attachment.title,
+                      assetPath: attachment.assetPath,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

@@ -17,11 +17,17 @@ class OtpVerificationPage extends StatefulWidget {
     required this.phoneNumber,
     this.isPasswordRecovery = false,
     this.isRegistration = false,
+    this.registrationDraftId,
+    this.telegramIdentityId,
+    this.otpId,
   });
 
   final String phoneNumber;
   final bool isPasswordRecovery;
   final bool isRegistration;
+  final String? registrationDraftId;
+  final String? telegramIdentityId;
+  final String? otpId;
 
   @override
   State<OtpVerificationPage> createState() => _OtpVerificationPageState();
@@ -30,8 +36,6 @@ class OtpVerificationPage extends StatefulWidget {
 class _OtpVerificationPageState extends State<OtpVerificationPage> {
   final _formKey = GlobalKey<FormState>();
   final _otpController = TextEditingController();
-
-  static const _testRegistrationOtp = '123456';
 
   bool _isLoading = false;
   int _remainingSeconds = 120;
@@ -75,10 +79,6 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       return 'کد تأیید باید ۶ رقم باشد.';
     }
 
-    if (widget.isRegistration && otp != _testRegistrationOtp) {
-      return 'برای تست ثبت‌نام فقط کد ۱۲۳۴۵۶ قابل استفاده است.';
-    }
-
     return null;
   }
 
@@ -96,12 +96,12 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     await context.read<OtpCubit>().verify(
       phoneNumber: widget.phoneNumber,
       code: normalizeDigits(_otpController.text.trim()),
-      purpose:
-          widget.isPasswordRecovery
-              ? OtpPurpose.passwordRecovery
-              : widget.isRegistration
-              ? OtpPurpose.registration
-              : OtpPurpose.login,
+      purpose: widget.isPasswordRecovery
+          ? OtpPurpose.passwordRecovery
+          : widget.isRegistration
+          ? OtpPurpose.registration
+          : OtpPurpose.login,
+      otpId: widget.otpId,
     );
   }
 
@@ -118,19 +118,17 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
   @override
   Widget build(BuildContext context) {
-    final title =
-        widget.isPasswordRecovery
-            ? 'تأیید بازیابی رمز'
-            : widget.isRegistration
-            ? 'تأیید شمارهٔ ثبت‌نام'
-            : 'تأیید کد ورود';
+    final title = widget.isPasswordRecovery
+        ? 'تأیید بازیابی رمز'
+        : widget.isRegistration
+        ? 'تأیید شمارهٔ ثبت‌نام'
+        : 'تأیید کد ورود';
 
-    final description =
-        widget.isPasswordRecovery
-            ? 'کد بازیابی ارسال‌شده به شمارهٔ زیر را وارد کنید.'
-            : widget.isRegistration
-            ? 'کد تأیید ارسال‌شده به شمارهٔ زیر را وارد کنید.'
-            : 'کد تأیید ارسال‌شده به شمارهٔ زیر را وارد کنید.';
+    final description = widget.isPasswordRecovery
+        ? 'کد بازیابی ارسال‌شده به شمارهٔ زیر را وارد کنید.'
+        : widget.isRegistration
+        ? 'کد تأیید ارسال‌شده به شمارهٔ زیر را وارد کنید.'
+        : 'کد تأیید ارسال‌شده به شمارهٔ زیر را وارد کنید.';
 
     return AuthScaffold(
       maxWidth: 520,
@@ -149,16 +147,19 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             } else if (widget.isRegistration) {
               context.push(
                 '/register/national-code',
-                extra: <String, dynamic>{'phoneNumber': widget.phoneNumber},
+                extra: <String, dynamic>{
+                  'phoneNumber': widget.phoneNumber,
+                  'draftId': widget.registrationDraftId,
+                  'telegramIdentityId': widget.telegramIdentityId,
+                },
               );
             } else {
               context.go('/');
             }
           } else if (state is OtpError && mounted) {
             setState(() => _isLoading = false);
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
         child: AuthFormCard(
@@ -223,10 +224,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                   '${(_remainingSeconds % 60).toString().padLeft(2, '0')}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color:
-                        _remainingSeconds == 0
-                            ? AppTheme.danger
-                            : AppTheme.textSecondary,
+                    color: _remainingSeconds == 0
+                        ? AppTheme.danger
+                        : AppTheme.textSecondary,
                     fontSize: 15,
                   ),
                 ),
@@ -247,10 +247,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 ),
                 const SizedBox(height: 12),
                 AuthActionButton(
-                  label:
-                      widget.isRegistration
-                          ? 'تأیید و ادامه ثبت‌نام'
-                          : 'تأیید و ادامه',
+                  label: widget.isRegistration
+                      ? 'تأیید و ادامه ثبت‌نام'
+                      : 'تأیید و ادامه',
                   onPressed: _otpComplete && !_isLoading ? _verifyOtp : null,
                   loading: _isLoading,
                 ),

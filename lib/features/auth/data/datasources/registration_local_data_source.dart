@@ -18,6 +18,8 @@ class RegistrationLocalDataSourceImpl implements RegistrationLocalDataSource {
     return _storage.write(
       key: 'registration_draft',
       value: jsonEncode({
+        'draftId': draft.draftId,
+        'telegramIdentityId': draft.telegramIdentityId,
         'phoneNumber': draft.phoneNumber,
         'nationalCode': draft.nationalCode,
         'countryId': draft.countryId,

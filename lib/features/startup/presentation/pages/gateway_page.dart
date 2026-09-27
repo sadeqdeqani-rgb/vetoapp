@@ -15,78 +15,61 @@ class GatewayPage extends StatefulWidget {
 }
 
 class _GatewayPageState extends State<GatewayPage> {
-  bool _isContinuingAsGuest = false;
+  bool _openingDemo = false;
 
-  Future<void> _continueAsGuest() async {
-    if (_isContinuingAsGuest) {
-      return;
-    }
-
-    setState(() => _isContinuingAsGuest = true);
-
+  Future<void> _openInteractiveDemo() async {
+    if (_openingDemo) return;
+    setState(() => _openingDemo = true);
     await context.read<AuthCubit>().continueAsGuest();
-
-    if (!mounted) {
-      return;
-    }
-    final succeeded = context.read<AuthCubit>().state is Guest;
-
-    if (succeeded) {
+    if (!mounted) return;
+    if (context.read<AuthCubit>().state is Guest) {
       context.go('/');
       return;
     }
-
-    setState(() => _isContinuingAsGuest = false);
-
+    setState(() => _openingDemo = false);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('ورود به حالت مشاهده محیط سامانه انجام نشد. دوباره تلاش کنید.'),
+        content: Text('ورود به محیط تعاملی انجام نشد. دوباره تلاش کنید.'),
       ),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AuthScaffold(
-      showBackButton: false,
-      maxWidth: 520,
-      child: AuthFormCard(
-        title: 'ورود',
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 26),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'برای ادامه، روش ورود خود را انتخاب کنید',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 20),
-            GatewayActionButton(
-              title: 'ثبت نام',
-              onTap:
-                  _isContinuingAsGuest
-                      ? null
-                      : () => context.pushNamed('register-terms'),
-            ),
-            const SizedBox(height: 12),
-            GatewayActionButton(
-              title: 'ورود کاربر',
-              onTap: _isContinuingAsGuest ? null : () => context.go('/login'),
-            ),
-            const SizedBox(height: 12),
-            GatewayActionButton(
-              title:
-                  _isContinuingAsGuest
-                      ? 'در حال ورود...'
-                      : 'مشاهده محیط سامانه',
-              onTap: _isContinuingAsGuest ? null : _continueAsGuest,
-            ),
-          ],
-        ),
+  Widget build(BuildContext context) => AuthScaffold(
+    showBackButton: false,
+    maxWidth: 520,
+    child: AuthFormCard(
+      title: 'ورود',
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 26),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'برای ادامه، روش ورود خود را انتخاب کنید',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 20),
+          GatewayActionButton(
+            title: 'ثبت نام',
+            onTap: () => context.pushNamed('register-terms'),
+          ),
+          const SizedBox(height: 12),
+          GatewayActionButton(
+            title: 'ورود کاربر',
+            onTap: () => context.go('/login'),
+          ),
+          const SizedBox(height: 12),
+          GatewayActionButton(
+            title: _openingDemo ? 'در حال ورود...' : 'مشاهده محیط سامانه',
+            onTap: _openingDemo ? null : _openInteractiveDemo,
+          ),
+          // مسیر و اسلایدشوهای پیش‌نمایش برای استفادهٔ بعدی نگه داشته شده‌اند:
+          // context.pushNamed('system-preview');
+        ],
       ),
-    );
-  }
+    ),
+  );
 }
 
 class GatewayActionButton extends StatefulWidget {
@@ -95,44 +78,39 @@ class GatewayActionButton extends StatefulWidget {
     required this.title,
     required this.onTap,
   });
-
   final String title;
   final VoidCallback? onTap;
-
   @override
   State<GatewayActionButton> createState() => _GatewayActionButtonState();
 }
 
 class _GatewayActionButtonState extends State<GatewayActionButton> {
   bool _isHovered = false;
-
   @override
   Widget build(BuildContext context) {
     final borderRadius = BorderRadius.circular(AppTheme.buttonRadius);
-    final isEnabled = widget.onTap != null;
-
-    final Color buttonColor =
-        !isEnabled
+    final enabled = widget.onTap != null;
+    final color =
+        !enabled
             ? AppTheme.divider
             : _isHovered
             ? AppTheme.primaryDark
             : AppTheme.primary;
-
     return MouseRegion(
-      cursor: isEnabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
-      onEnter: isEnabled ? (_) => setState(() => _isHovered = true) : null,
-      onExit: isEnabled ? (_) => setState(() => _isHovered = false) : null,
+      cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      onEnter: enabled ? (_) => setState(() => _isHovered = true) : null,
+      onExit: enabled ? (_) => setState(() => _isHovered = false) : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         height: 52,
         decoration: BoxDecoration(
-          color: buttonColor,
+          color: color,
           borderRadius: borderRadius,
           boxShadow:
-              isEnabled
+              enabled
                   ? [
                     BoxShadow(
-                      color: buttonColor.withValues(alpha: 0.35),
+                      color: color.withValues(alpha: .35),
                       blurRadius: _isHovered ? 14 : 6,
                       offset: const Offset(0, 4),
                     ),

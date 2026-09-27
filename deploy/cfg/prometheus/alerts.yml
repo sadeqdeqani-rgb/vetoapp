@@ -1,0 +1,26 @@
+groups:
+  - name: vetoapp
+    rules:
+      - alert: VetoAppUnavailable
+        expr: probe_success{job="vetoapp-http"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: VetoApp health endpoint is unavailable
+
+      - alert: VetoAppBackupStale
+        expr: time() - vetoapp_backup_last_success_unixtime > 93600
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: The latest VetoApp database backup is older than 26 hours
+
+      - alert: VetoAppRootDiskLow
+        expr: node_filesystem_avail_bytes{mountpoint="/",fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{mountpoint="/",fstype!~"tmpfs|overlay"} < 0.15
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: Less than 15 percent of root disk is free

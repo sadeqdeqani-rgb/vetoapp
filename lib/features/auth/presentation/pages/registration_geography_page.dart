@@ -11,10 +11,14 @@ class RegistrationGeographyPage extends StatefulWidget {
     super.key,
     required this.phoneNumber,
     required this.nationalCode,
+    required this.draftId,
+    required this.telegramIdentityId,
   });
 
   final String phoneNumber;
   final String nationalCode;
+  final String draftId;
+  final String telegramIdentityId;
 
   @override
   State<RegistrationGeographyPage> createState() =>
@@ -114,6 +118,8 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
       extra: <String, dynamic>{
         'phoneNumber': widget.phoneNumber,
         'nationalCode': widget.nationalCode,
+        'draftId': widget.draftId,
+        'telegramIdentityId': widget.telegramIdentityId,
         'countryId': _country!.id,
         'provinceId': _province!.id,
         'countyId': _county!.id,
@@ -129,17 +135,12 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
     required ValueChanged<GeographicalArea?> onChanged,
     bool enabled = true,
   }) {
-    return DropdownButtonFormField<GeographicalArea>(
-      initialValue: value,
-      isExpanded: true,
-      decoration: InputDecoration(labelText: label),
-      items:
-          items
-              .map(
-                (item) => DropdownMenuItem(value: item, child: Text(item.name)),
-              )
-              .toList(),
-      onChanged: !enabled || items.isEmpty ? null : onChanged,
+    return _SearchableAreaSelector(
+      label: label,
+      value: value,
+      items: items,
+      enabled: enabled,
+      onSelected: onChanged,
     );
   }
 
@@ -153,9 +154,8 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
           if (state is RegistrationGeographyLoaded) {
             _onGeographyLoaded(state);
           } else if (state is RegistrationError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
         child: AuthFormCard(
@@ -168,6 +168,13 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
                 'حوزهٔ جغرافیایی کاربری خود را با دقت انتخاب کنید.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 17, height: 1.8),
+              ),
+              const SizedBox(height: 20),
+              _SelectedGeographySummary(
+                country: _country,
+                province: _province,
+                county: _county,
+                locality: _locality,
               ),
               const SizedBox(height: 20),
               _dropdown(
@@ -202,6 +209,250 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
               AuthActionButton(
                 label: 'بعدی',
                 onPressed: _canContinue ? _continue : null,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SelectedGeographySummary extends StatelessWidget {
+  const _SelectedGeographySummary({
+    required this.country,
+    required this.province,
+    required this.county,
+    required this.locality,
+  });
+
+  final GeographicalArea? country;
+  final GeographicalArea? province;
+  final GeographicalArea? county;
+  final GeographicalArea? locality;
+
+  @override
+  Widget build(BuildContext context) {
+    final values = <String, GeographicalArea?>{
+      'کشور': country,
+      'استان': province,
+      'شهرستان': county,
+      'شهر / روستا': locality,
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('مسیر انتخاب‌شده',
+              style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 8),
+          ...values.entries.map((entry) {
+            final area = entry.value;
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 3),
+              child: Row(
+                children: [
+                  SizedBox(width: 92, child: Text('${entry.key}:')),
+                  Expanded(
+                    child: Text(
+                      area?.name ?? 'انتخاب نشده',
+                      style: TextStyle(
+                        fontWeight:
+                            area == null ? FontWeight.normal : FontWeight.w600,
+                        color: area == null
+                            ? Theme.of(context).colorScheme.onSurfaceVariant
+                            : Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    area == null
+                        ? Icons.radio_button_unchecked
+                        : Icons.check_circle,
+                    size: 18,
+                    color: area == null
+                        ? Theme.of(context).colorScheme.onSurfaceVariant
+                        : Theme.of(context).colorScheme.primary,
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _SearchableAreaSelector extends StatelessWidget {
+  const _SearchableAreaSelector({
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.enabled,
+    required this.onSelected,
+  });
+
+  final String label;
+  final GeographicalArea? value;
+  final List<GeographicalArea> items;
+  final bool enabled;
+  final ValueChanged<GeographicalArea?> onSelected;
+
+  static String _normalize(String value) => value
+      .toLowerCase()
+      .replaceAll('ي', 'ی')
+      .replaceAll('ك', 'ک')
+      .trim();
+
+  Future<void> _openPicker(BuildContext context) async {
+    if (!enabled || items.isEmpty) return;
+    final selected = await showModalBottomSheet<GeographicalArea>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) => _AreaSearchSheet(
+        label: label,
+        items: items,
+        selected: value,
+        normalize: _normalize,
+      ),
+    );
+    if (selected != null) onSelected(selected);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: enabled && items.isNotEmpty ? () => _openPicker(context) : null,
+      borderRadius: BorderRadius.circular(14),
+      child: InputDecorator(
+        isEmpty: value == null,
+        decoration: InputDecoration(
+          labelText: label,
+          enabled: enabled,
+          suffixIcon: const Icon(Icons.search),
+          helperText: items.isEmpty && enabled ? 'فهرست آماده نیست' : null,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                value?.name ?? 'برای جست‌وجو و انتخاب لمس کنید',
+                style: TextStyle(
+                  color: value == null
+                      ? Theme.of(context).colorScheme.onSurfaceVariant
+                      : Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+            if (value != null)
+              Icon(Icons.check_circle,
+                  size: 18, color: Theme.of(context).colorScheme.primary),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AreaSearchSheet extends StatefulWidget {
+  const _AreaSearchSheet({
+    required this.label,
+    required this.items,
+    required this.selected,
+    required this.normalize,
+  });
+
+  final String label;
+  final List<GeographicalArea> items;
+  final GeographicalArea? selected;
+  final String Function(String) normalize;
+
+  @override
+  State<_AreaSearchSheet> createState() => _AreaSearchSheetState();
+}
+
+class _AreaSearchSheetState extends State<_AreaSearchSheet> {
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final query = widget.normalize(_query);
+    final filtered = widget.items
+        .where((area) => widget.normalize(area.name).contains(query))
+        .toList(growable: false);
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          4,
+          20,
+          20 + MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: SizedBox(
+          height: MediaQuery.sizeOf(context).height * .72,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(widget.label, style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: 'جست‌وجو در فهرست',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _query.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: 'پاک کردن جست‌وجو',
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _query = '');
+                          },
+                          icon: const Icon(Icons.close),
+                        ),
+                ),
+                onChanged: (text) => setState(() => _query = text),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: filtered.isEmpty
+                    ? const Center(child: Text('موردی پیدا نشد.'))
+                    : ListView.separated(
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final area = filtered[index];
+                          final isSelected = area.id == widget.selected?.id;
+                          return ListTile(
+                            title: Text(area.name),
+                            selected: isSelected,
+                            trailing: isSelected
+                                ? Icon(Icons.check_circle,
+                                    color: Theme.of(context).colorScheme.primary)
+                                : null,
+                            onTap: () => Navigator.of(context).pop(area),
+                          );
+                        },
+                      ),
               ),
             ],
           ),

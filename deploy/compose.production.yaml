@@ -1,0 +1,392 @@
+name: vetoapp-production
+
+x-app: &app
+  image: ${APP_IMAGE:-vetoapp-api}:${APP_TAG:-local}
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile
+  env_file:
+    - .env.production
+  init: true
+  restart: unless-stopped
+  networks:
+    - vetoapp
+  volumes:
+    - app_storage:/var/www/html/storage
+
+x-wordpress: &wordpress
+  image: ${WORDPRESS_IMAGE:-vetoapp-wordpress}:${WORDPRESS_TAG:-local}
+  build:
+    context: ${WORDPRESS_BUILD_CONTEXT:?WORDPRESS_BUILD_CONTEXT is required}
+    dockerfile: ${WORDPRESS_DOCKERFILE:-deployment/Dockerfile.wordpress}
+    args:
+      WORDPRESS_BASE_IMAGE: ${WORDPRESS_BASE_IMAGE:-wordpress:7.1.1-php8.3-fpm-alpine}
+  init: true
+  restart: unless-stopped
+  networks:
+    - vetoapp
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?MYSQL_DATABASE is required}
+      MYSQL_USER: ${MYSQL_USER:?MYSQL_USER is required}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --skip-name-resolve
+      - --default-time-zone=+00:00
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    networks:
+      - vetoapp
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    restart: unless-stopped
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:?VALKEY_PASSWORD is required}
+    command:
+      [
+        "valkey-server",
+        "--appendonly",
+        "yes",
+        "--appendfsync",
+        "everysec",
+        "--requirepass",
+        "${VALKEY_PASSWORD:?VALKEY_PASSWORD is required}",
+      ]
+    volumes:
+      - valkey_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli --no-auth-warning -a \"$${VALKEY_PASSWORD}\" ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 10s
+    networks:
+      - vetoapp
+
+  wordpress-db:
+    image: ${WORDPRESS_DB_IMAGE:-mariadb:11.4}
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${WORDPRESS_DB_NAME:?WORDPRESS_DB_NAME is required}
+      MARIADB_USER: ${WORDPRESS_DB_USER:?WORDPRESS_DB_USER is required}
+      MARIADB_PASSWORD: ${WORDPRESS_DB_PASSWORD:?WORDPRESS_DB_PASSWORD is required}
+      MARIADB_ROOT_PASSWORD: ${WORDPRESS_DB_ROOT_PASSWORD:?WORDPRESS_DB_ROOT_PASSWORD is required}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-name-resolve
+      - --default-time-zone=+00:00
+    volumes:
+      - wordpress_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -uroot -p$${MARIADB_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    networks:
+      - vetoapp
+
+  wordpress:
+    <<: *wordpress
+    environment:
+      WORDPRESS_DB_HOST: wordpress-db:3306
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:?WORDPRESS_DB_NAME is required}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:?WORDPRESS_DB_USER is required}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:?WORDPRESS_DB_PASSWORD is required}
+      WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX:-wp_}
+      WORDPRESS_URL: ${WORDPRESS_URL:?WORDPRESS_URL is required}
+      WORDPRESS_CONFIG_EXTRA: |-
+        define('WP_HOME', getenv('WORDPRESS_URL'));
+        define('WP_SITEURL', getenv('WORDPRESS_URL'));
+        define('FORCE_SSL_ADMIN', true);
+        define('DISALLOW_FILE_EDIT', true);
+        define('DISALLOW_FILE_MODS', true);
+        define('AUTOMATIC_UPDATER_DISABLED', true);
+        define('WP_ENVIRONMENT_TYPE', 'production');
+        define('WP_MEMORY_LIMIT', '128M');
+        define('WP_MAX_MEMORY_LIMIT', '256M');
+        define('WP_DEBUG', false);
+        define('AUTH_KEY', getenv('WORDPRESS_AUTH_KEY'));
+        define('SECURE_AUTH_KEY', getenv('WORDPRESS_SECURE_AUTH_KEY'));
+        define('LOGGED_IN_KEY', getenv('WORDPRESS_LOGGED_IN_KEY'));
+        define('NONCE_KEY', getenv('WORDPRESS_NONCE_KEY'));
+        define('AUTH_SALT', getenv('WORDPRESS_AUTH_SALT'));
+        define('SECURE_AUTH_SALT', getenv('WORDPRESS_SECURE_AUTH_SALT'));
+        define('LOGGED_IN_SALT', getenv('WORDPRESS_LOGGED_IN_SALT'));
+        define('NONCE_SALT', getenv('WORDPRESS_NONCE_SALT'));
+      WORDPRESS_AUTH_KEY: ${WORDPRESS_AUTH_KEY:?WORDPRESS_AUTH_KEY is required}
+      WORDPRESS_SECURE_AUTH_KEY: ${WORDPRESS_SECURE_AUTH_KEY:?WORDPRESS_SECURE_AUTH_KEY is required}
+      WORDPRESS_LOGGED_IN_KEY: ${WORDPRESS_LOGGED_IN_KEY:?WORDPRESS_LOGGED_IN_KEY is required}
+      WORDPRESS_NONCE_KEY: ${WORDPRESS_NONCE_KEY:?WORDPRESS_NONCE_KEY is required}
+      WORDPRESS_AUTH_SALT: ${WORDPRESS_AUTH_SALT:?WORDPRESS_AUTH_SALT is required}
+      WORDPRESS_SECURE_AUTH_SALT: ${WORDPRESS_SECURE_AUTH_SALT:?WORDPRESS_SECURE_AUTH_SALT is required}
+      WORDPRESS_LOGGED_IN_SALT: ${WORDPRESS_LOGGED_IN_SALT:?WORDPRESS_LOGGED_IN_SALT is required}
+      WORDPRESS_NONCE_SALT: ${WORDPRESS_NONCE_SALT:?WORDPRESS_NONCE_SALT is required}
+    volumes:
+      - wordpress_data:/var/www/html
+    depends_on:
+      wordpress-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit((int) ! @fsockopen('127.0.0.1', 9000));"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  wordpress-theme-sync:
+    <<: *wordpress
+    profiles: ["ops"]
+    restart: "no"
+    entrypoint: ["/usr/local/bin/vetoapp-wordpress-sync-theme"]
+    volumes:
+      - wordpress_data:/var/www/html
+    depends_on:
+      wordpress:
+        condition: service_healthy
+
+  wordpress-cli:
+    <<: *wordpress
+    profiles: ["ops"]
+    restart: "no"
+    entrypoint: ["wp"]
+    command: ["--info"]
+    working_dir: /var/www/html
+    environment:
+      WORDPRESS_DB_HOST: wordpress-db:3306
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:?WORDPRESS_DB_NAME is required}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:?WORDPRESS_DB_USER is required}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:?WORDPRESS_DB_PASSWORD is required}
+    volumes:
+      - wordpress_data:/var/www/html
+    depends_on:
+      wordpress-db:
+        condition: service_healthy
+
+  wordpress-backup:
+    <<: *wordpress
+    entrypoint: ["/usr/local/bin/vetoapp-wordpress-backup-loop"]
+    environment:
+      WORDPRESS_DB_HOST: wordpress-db
+      WORDPRESS_DB_PORT: 3306
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:?WORDPRESS_DB_NAME is required}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:?WORDPRESS_DB_USER is required}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:?WORDPRESS_DB_PASSWORD is required}
+      WORDPRESS_BACKUP_DIR: /backups
+      WORDPRESS_BACKUP_METRICS_DIR: /metrics
+      WORDPRESS_BACKUP_INTERVAL_SECONDS: ${WORDPRESS_BACKUP_INTERVAL_SECONDS:-86400}
+      WORDPRESS_BACKUP_RETENTION_DAYS: ${WORDPRESS_BACKUP_RETENTION_DAYS:-14}
+      WORDPRESS_BACKUP_ENCRYPTION_PASSPHRASE: ${WORDPRESS_BACKUP_ENCRYPTION_PASSPHRASE:-}
+      WORDPRESS_ROOT: /var/www/html
+    volumes:
+      - wordpress_data:/var/www/html:ro
+      - ${WORDPRESS_BACKUP_PATH:-./backups/wordpress}:/backups
+      - monitoring_metrics:/metrics
+    depends_on:
+      wordpress-db:
+        condition: service_healthy
+      wordpress:
+        condition: service_healthy
+
+  app:
+    <<: *app
+    command: ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord-app.conf"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit((int) ! @fsockopen('127.0.0.1', 9000));"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  nginx:
+    image: ${NGINX_IMAGE:-vetoapp-nginx}:${NGINX_TAG:-local}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.nginx
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?APP_DOMAIN is required}
+      WORDPRESS_DOMAIN: ${WORDPRESS_DOMAIN:?WORDPRESS_DOMAIN is required}
+      WORDPRESS_WWW_DOMAIN: ${WORDPRESS_WWW_DOMAIN:?WORDPRESS_WWW_DOMAIN is required}
+    depends_on:
+      app:
+        condition: service_healthy
+      wordpress:
+        condition: service_healthy
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - app_storage:/var/www/html/storage:ro
+      - wordpress_data:/var/www/wordpress:ro
+      - certbot_etc:/etc/letsencrypt:ro
+      - certbot_webroot:/var/www/certbot:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -T 5 -O /dev/null http://127.0.0.1/up"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - vetoapp
+
+  queue:
+    <<: *app
+    command: ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord-worker.conf"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "supervisorctl -c /etc/supervisor/supervisord-worker.conf status queue-worker | grep -q RUNNING"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  telegram-poller:
+    <<: *app
+    command: ["php", "artisan", "telegram:poll", "--no-interaction"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+  scheduler:
+    <<: *app
+    command: ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord-scheduler.conf"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "supervisorctl -c /etc/supervisor/supervisord-scheduler.conf status scheduler | grep -q RUNNING"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  migrate:
+    <<: *app
+    profiles: ["ops"]
+    restart: "no"
+    command: ["php", "artisan", "migrate", "--force", "--no-interaction"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+
+  seed:
+    <<: *app
+    profiles: ["ops"]
+    restart: "no"
+    command: ["php", "artisan", "db:seed", "--class=Database\\Seeders\\ProductionSeeder", "--force", "--no-interaction"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  backup:
+    <<: *app
+    command: ["/usr/local/bin/vetoapp-backup-loop"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ${BACKUP_PATH:-./backups}:/backups
+      - monitoring_metrics:/metrics
+
+  certbot:
+    image: certbot/certbot:latest
+    profiles: ["ops"]
+    entrypoint: ["certbot"]
+    command: ["--version"]
+    volumes:
+      - certbot_etc:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    networks:
+      - vetoapp
+
+  prometheus:
+    image: prom/prometheus:latest
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-15d}
+      - --web.enable-lifecycle
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./cfg/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./cfg/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - vetoapp
+
+  blackbox:
+    image: prom/blackbox-exporter:latest
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/blackbox_exporter/config.yml
+    volumes:
+      - ./cfg/prometheus/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    networks:
+      - vetoapp
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --path.rootfs=/rootfs
+      - --collector.textfile.directory=/textfile
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro,rslave
+      - monitoring_metrics:/textfile:ro
+    networks:
+      - vetoapp
+
+volumes:
+  app_storage:
+  certbot_etc:
+  certbot_webroot:
+  monitoring_metrics:
+  mysql_data:
+  prometheus_data:
+  valkey_data:
+  wordpress_data:
+  wordpress_db_data:
+
+networks:
+  vetoapp:
+    driver: bridge

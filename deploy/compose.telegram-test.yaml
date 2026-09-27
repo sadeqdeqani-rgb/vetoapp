@@ -1,0 +1,96 @@
+name: vetoapp-telegram-test
+
+x-app: &app
+  image: vetoapp-telegram-test:local
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile
+  env_file:
+    - .env.telegram-test
+  init: true
+  restart: unless-stopped
+  depends_on:
+    mysql:
+      condition: service_healthy
+    valkey:
+      condition: service_healthy
+  networks:
+    - telegram-test
+  volumes:
+    - telegram_test_storage:/var/www/html/storage
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?MYSQL_DATABASE is required}
+      MYSQL_USER: ${MYSQL_USER:?MYSQL_USER is required}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+00:00
+    volumes:
+      - telegram_test_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    networks:
+      - telegram-test
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    restart: unless-stopped
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:?VALKEY_PASSWORD is required}
+    command: ["valkey-server", "--appendonly", "yes", "--appendfsync", "everysec", "--requirepass", "${VALKEY_PASSWORD:?VALKEY_PASSWORD is required}"]
+    volumes:
+      - telegram_test_valkey:/data
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli --no-auth-warning -a \"$${VALKEY_PASSWORD}\" ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 10s
+    networks:
+      - telegram-test
+
+  api:
+    <<: *app
+    command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+    ports:
+      - "18080:8080"
+
+  queue:
+    <<: *app
+    command: ["php", "artisan", "queue:work", "redis", "--sleep=1", "--tries=3", "--timeout=90", "--no-interaction"]
+
+  telegram-poller:
+    <<: *app
+    command: ["php", "artisan", "telegram:poll", "--no-interaction"]
+
+  migrate:
+    <<: *app
+    profiles: ["ops"]
+    restart: "no"
+    command: ["php", "artisan", "migrate", "--force", "--no-interaction"]
+
+  seed:
+    <<: *app
+    profiles: ["ops"]
+    restart: "no"
+    command: ["php", "artisan", "db:seed", "--class=ProductionSeeder", "--force", "--no-interaction"]
+
+volumes:
+  telegram_test_mysql:
+  telegram_test_valkey:
+  telegram_test_storage:
+
+networks:
+  telegram-test:
+    name: vetoapp-telegram-test

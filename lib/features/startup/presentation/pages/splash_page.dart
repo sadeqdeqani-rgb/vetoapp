@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -16,24 +14,11 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage> {
   Timer? _navigationTimer;
-  AudioPlayer? _audioPlayer;
 
   @override
   void initState() {
     super.initState();
-    _playSplashSound();
     _startTimer();
-  }
-
-  void _playSplashSound() async {
-    try {
-      _audioPlayer = AudioPlayer();
-      await _audioPlayer?.play(AssetSource('audio/startup.wav'));
-    } catch (e) {
-      if (kDebugMode) {
-        print('Audio playback exception: $e');
-      }
-    }
   }
 
   void _startTimer() {
@@ -47,7 +32,6 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void dispose() {
     _navigationTimer?.cancel();
-    _audioPlayer?.dispose();
     super.dispose();
   }
 
@@ -76,45 +60,27 @@ class _SplashPageState extends State<SplashPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: const [
-                    Column(
-                      children: [
-                        Image(
-                          image: AssetImage('assets/images/vetoapp.png'),
-                          width: 110,
-                          height: 110,
-                          fit: BoxFit.contain,
+                    Expanded(
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image(
+                              image: AssetImage('assets/images/vetoapp.png'),
+                              width: 110,
+                              height: 110,
+                              fit: BoxFit.contain,
+                            ),
+                            SizedBox(height: 12),
+                            _OutlinedText(text: 'وِتواَپ', fontSize: 26),
+                            SizedBox(height: 6),
+                            _OutlinedText(
+                              text: 'همه پرسی . انتخابات . استیضاح',
+                              fontSize: 16,
+                            ),
+                          ],
                         ),
-                        SizedBox(height: 12),
-                        _OutlinedText(text: 'وِتواَپ', fontSize: 26),
-                        SizedBox(height: 6),
-                        _OutlinedText(
-                          text: 'همه پرسی . انتخابات . استیضاح',
-                          fontSize: 16,
-                        ),
-                      ],
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12.0),
-                      child: Image(
-                        image: AssetImage('assets/images/persianmap.png'),
-                        height: 220,
-                        fit: BoxFit.contain,
                       ),
-                    ),
-                    Column(
-                      children: [
-                        _OutlinedText(
-                          text: 'VetoApp',
-                          fontSize: 20,
-                          letterSpacing: 0.8,
-                        ),
-                        SizedBox(height: 6),
-                        _OutlinedText(
-                          text: 'Referendum. Election. Impeachment.',
-                          fontSize: 14,
-                          letterSpacing: 0.5,
-                        ),
-                      ],
                     ),
                   ],
                 ),
@@ -128,15 +94,10 @@ class _SplashPageState extends State<SplashPage> {
 }
 
 class _OutlinedText extends StatelessWidget {
-  const _OutlinedText({
-    required this.text,
-    required this.fontSize,
-    this.letterSpacing,
-  });
+  const _OutlinedText({required this.text, required this.fontSize});
 
   final String text;
   final double fontSize;
-  final double? letterSpacing;
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +105,6 @@ class _OutlinedText extends StatelessWidget {
       fontFamily: AppTheme.fontFamily,
       fontSize: fontSize,
       fontWeight: FontWeight.bold,
-      letterSpacing: letterSpacing,
     );
 
     return Stack(

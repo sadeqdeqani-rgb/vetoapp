@@ -7,12 +7,15 @@ abstract interface class OtpRepository {
   Future<Either<Failure, OtpChallenge>> request({
     required String phoneNumber,
     required OtpPurpose purpose,
+    String? registrationDraftId,
+    String? telegramIdentityId,
   });
 
   Future<Either<Failure, OtpChallenge>> verify({
     required String phoneNumber,
     required String code,
     required OtpPurpose purpose,
+    String? otpId,
   });
 
   Future<Either<Failure, void>> resetPassword({

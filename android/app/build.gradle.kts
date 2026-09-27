@@ -36,6 +36,24 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["cleartextTraffic"] = "false"
+        manifestPlaceholders["appLabel"] = "وِتواَپ"
+    }
+
+    flavorDimensions += "environment"
+    productFlavors {
+        create("telegramTest") {
+            dimension = "environment"
+            applicationIdSuffix = ".telegramtest"
+            versionNameSuffix = "-telegram-test"
+            manifestPlaceholders["cleartextTraffic"] = "true"
+            manifestPlaceholders["appLabel"] = "وِتواَپ تست"
+        }
+        create("production") {
+            dimension = "environment"
+            manifestPlaceholders["cleartextTraffic"] = "false"
+            manifestPlaceholders["appLabel"] = "وِتواَپ"
+        }
     }
 
     buildTypes {

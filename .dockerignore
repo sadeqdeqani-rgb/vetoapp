@@ -1,0 +1,37 @@
+# Git and editor metadata
+.git
+.gitignore
+.DS_Store
+.idea
+.vscode
+
+# Flutter client artifacts are not part of the Laravel production image.
+.dart_tool
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache
+.pub
+build
+android
+ios
+linux
+macos
+web
+lib
+assets
+test
+pubspec.lock
+pubspec.yaml
+
+# Application dependencies and local secrets are rebuilt or injected at runtime.
+app/vendor
+app/node_modules
+app/public/build
+app/.env
+app/.env.*
+!app/.env.example
+
+# Runtime deployment state must never become build context.
+deploy/.env.production
+deploy/backups
+deploy/cfg/monitoring/data

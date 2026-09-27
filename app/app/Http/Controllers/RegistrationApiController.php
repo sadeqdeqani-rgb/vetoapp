@@ -28,6 +28,16 @@ class RegistrationApiController extends Controller
             ]);
         }
 
+        if ($this->registrations->mobileAlreadyRegistered($mobile)) {
+            $message = 'این شماره موبایل قبلاً در اپ ثبت‌نام کرده است؛ شما نمی‌توانید با این شماره ثبت‌نام جدیدی انجام دهید.';
+
+            return response()->json([
+                'code' => 'mobile_already_registered',
+                'message' => $message,
+                'errors' => ['phone_number' => [$message]],
+            ], 409);
+        }
+
         $draft = $this->registrations->createDraft($mobile, $data['idempotency_key']);
         $nonce = $this->registrations->issueTelegramLinkNonce($draft);
 
@@ -43,20 +53,59 @@ class RegistrationApiController extends Controller
     public function selectDetails(Request $request, int $draft): JsonResponse
     {
         $data = $request->validate([
-            'national_code' => ['required', 'string'],
+            'national_code' => ['required', 'string', 'regex:/^[0-9۰-۹٠-٩]{10}$/'],
             'settlement_id' => ['required', 'integer', 'min:1'],
         ]);
 
-        $updated = $this->registrations->selectNationalIdAndSettlement(
-            RegistrationDraft::query()->findOrFail($draft),
-            $data['national_code'],
-            (int) $data['settlement_id'],
-        );
+        $record = RegistrationDraft::query()->findOrFail($draft);
+        $assessment = $this->registrations->validateNationalIdForDraft($record, $data['national_code']);
+        if (($assessment['valid'] ?? false) !== true) {
+            return $this->nationalCodeError($assessment);
+        }
+        $updated = $this->registrations->selectNationalIdAndSettlement($record, $data['national_code'], (int) $data['settlement_id']);
 
         return response()->json([
             'draft_id' => (string) $updated->registration_draft_id,
             'step' => $updated->step_code,
         ]);
+    }
+
+    public function validateDraftNationalCode(Request $request, int $draft): JsonResponse
+    {
+        $data = $request->validate(['national_code' => ['required', 'string', 'regex:/^[0-9۰-۹٠-٩]{10}$/']]);
+        $record = RegistrationDraft::query()->findOrFail($draft);
+        $assessment = $this->registrations->validateNationalIdForDraft($record, $data['national_code']);
+        return ($assessment['valid'] ?? false) === true
+            ? response()->json($assessment)
+            : $this->nationalCodeError($assessment);
+    }
+
+    public function submitAgeEligibilityReport(Request $request, int $draft): JsonResponse
+    {
+        $data = $request->validate([
+            'national_code' => ['required', 'string', 'regex:/^[0-9۰-۹٠-٩]{10}$/'],
+            'birth_date' => ['required', 'string', 'max:10'],
+        ]);
+        $assessment = $this->registrations->validateNationalIdForDraft($draft, $data['national_code']);
+        if (($assessment['code'] ?? null) !== 'national_id_area_ineligible') {
+            return response()->json(['message' => 'فقط گزارش خطای تشخیص سن قابل ثبت است.'], 422);
+        }
+        $reportId = $this->registrations->createAgeEligibilityReport($draft, $data['national_code'], $data['birth_date']);
+        return response()->json(['report_id' => $reportId, 'message' => 'گزارش برای بررسی ثبت شد.'], 201);
+    }
+
+    private function nationalCodeError(array $assessment): JsonResponse
+    {
+        $messages = [
+            'invalid_national_code' => 'این کد ملی نادرست است لطفا کد ملی درست و واقعی وارد کنید',
+            'national_code_already_registered' => 'این کد ملی قبلاً در اپ ثبت‌نام شده است.',
+            'national_id_area_ineligible' => 'سامانه شما را زیر ۱۸ سال تشخیص داده است و شما مجاز به ثبت نام نیستید.',
+        ];
+        $code = (string) ($assessment['code'] ?? 'invalid_national_code');
+        return response()->json([
+            ...$assessment,
+            'message' => $messages[$code] ?? $messages['invalid_national_code'],
+        ], $code === 'national_code_already_registered' ? 409 : 422);
     }
 
     public function status(Request $request, int $draft): JsonResponse

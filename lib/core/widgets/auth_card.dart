@@ -132,33 +132,7 @@ class AuthPageFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(20, 8, 20, 14),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'VetoApp',
-            style: TextStyle(
-              fontFamily: AppTheme.fontFamily,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          SizedBox(height: 2),
-          Text(
-            'Referendum. Election. Impeachment.',
-            style: TextStyle(
-              fontFamily: AppTheme.fontFamily,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
+    return const SizedBox(height: 14);
   }
 }
 

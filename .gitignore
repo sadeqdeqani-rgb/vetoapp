@@ -48,3 +48,9 @@ app.*.symbols
 # Local Android release signing credentials
 android/key.properties
 android/*.jks
+
+# Production deployment secrets and runtime data.
+deploy/.env.production
+deploy/.env.telegram-test
+deploy/backups/
+deploy/cfg/monitoring/data/

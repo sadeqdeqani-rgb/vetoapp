@@ -14,12 +14,10 @@ dependencies:
   freezed_annotation: ^3.0.0
   go_router: ^14.8.1
   flutter_svg: ^2.0.17
-  audioplayers: ^6.1.2
+  path_provider: ^2.1.5
   dartz: ^0.10.1
   dio: ^5.8.0+1
   get_it: ^8.0.3
-  vetoapp_demo:
-    path: /home/sadeq/workspace/VetoAppDemo
 
 dev_dependencies:
   flutter_test:
@@ -31,8 +29,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/designs/
     - assets/images/
-    - assets/audio/startup.wav
+    - assets/documents/
 
   fonts:
     - family: B Mitra

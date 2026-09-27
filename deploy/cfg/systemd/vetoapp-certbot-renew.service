@@ -1,0 +1,9 @@
+[Unit]
+Description=Renew VetoApp Let's Encrypt certificates
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/vetoapp/deploy
+ExecStart=/usr/bin/env bash /opt/vetoapp/deploy/scripts/renew-ssl.sh

@@ -19,7 +19,7 @@ class ImpeachmentScreen extends StatelessWidget {
           subtitle: 'درخواست استیضاح یک مسئول ملی یا محلی',
           icon: Icons.add_task_rounded,
           color: Color(0xFFC62828),
-          route: '/participation',
+          route: '/impeachment/request',
           emphasized: true,
         ),
         CivicSectionAction(
@@ -27,14 +27,14 @@ class ImpeachmentScreen extends StatelessWidget {
           subtitle: 'شرکت در فرآیند رأی اعتماد و ثبت رأی',
           icon: Icons.groups_outlined,
           color: Color(0xFFC62828),
-          route: '/participation',
+          route: '/impeachment/active',
         ),
         CivicSectionAction(
           title: 'مشاهده استیضاح‌های پایان‌یافته',
           subtitle: 'نتایج استیضاح‌های انجام‌شده و اطلاعات و آمار نهایی',
           icon: Icons.fact_check_outlined,
           color: Color(0xFFC62828),
-          route: '/participation',
+          route: '/impeachment/results',
         ),
       ],
     );

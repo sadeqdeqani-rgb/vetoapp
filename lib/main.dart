@@ -43,7 +43,7 @@ class VetoApp extends StatelessWidget {
         BlocProvider<ProfileCubit>(create: (_) => getIt<ProfileCubit>()),
       ],
       child: MaterialApp.router(
-        title: 'VetoApp',
+        title: 'وِتواَپ',
         debugShowCheckedModeBanner: false,
         showPerformanceOverlay: false,
         checkerboardRasterCacheImages: false,

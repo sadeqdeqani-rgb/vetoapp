@@ -4,5 +4,5 @@
 /// هرگز فعال نشود.
 const bool enableFrontendFakeAuth = bool.fromEnvironment(
   'VETO_ENABLE_FRONTEND_FAKE_AUTH',
-  defaultValue: true,
+  defaultValue: false,
 );

@@ -7,6 +7,8 @@ use App\Models\Settlement;
 use App\Models\UserAccount;
 use App\Models\UserProfile;
 use App\Models\UserTelegramIdentity;
+use App\Support\IranianNationalCodeValidator;
+use App\Support\TelegramContactMismatchException;
 use App\Support\MobileNumber;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +18,77 @@ use RuntimeException;
 
 class RegistrationTransactionService
 {
+    public function mobileAlreadyRegistered(string $mobile): bool
+    {
+        $mobile = MobileNumber::normalize($mobile);
+
+        return UserProfile::query()
+            ->where('mobile_hash', $this->hmac($mobile))
+            ->exists();
+    }
+
+    public function validateNationalIdForDraft(RegistrationDraft|int $draft, string $nationalId): array
+    {
+        $draft = $draft instanceof RegistrationDraft ? $draft : RegistrationDraft::query()->findOrFail($draft);
+        $nationalId = IranianNationalCodeValidator::normalize($nationalId);
+        if (! IranianNationalCodeValidator::isValid($nationalId)) {
+            return ['code' => 'invalid_national_code', 'valid' => false];
+        }
+
+        $hash = $this->hmac($nationalId);
+        $existing = UserProfile::query()->where('national_id_hash', $hash)->first();
+        if ($existing !== null) {
+            return [
+                'code' => 'national_code_already_registered',
+                'valid' => false,
+                'mobile_number' => $existing->mobile_encrypted === null
+                    ? ''
+                    : MobileNumber::normalize(Crypt::decryptString($existing->mobile_encrypted)),
+            ];
+        }
+
+        $prefix = (int) substr($nationalId, 0, 3);
+        $firstRangeValue = (int) substr($nationalId, 3, 3);
+        $secondRangeValue = (int) substr($nationalId, 6, 3);
+        $eligibility = DB::table('national_id_area_eligibilities')
+            ->where('national_id_prefix_3', $prefix)
+            ->first();
+        if (
+            $eligibility === null
+            || $firstRangeValue < (int) $eligibility->first_range_from
+            || $firstRangeValue > (int) $eligibility->first_range_to
+            || $secondRangeValue < (int) $eligibility->second_range_from
+            || $secondRangeValue > (int) $eligibility->second_range_to
+        ) {
+            return ['code' => 'national_id_area_ineligible', 'valid' => false];
+        }
+
+        return ['valid' => true, 'national_code' => $nationalId];
+    }
+
+    public function createAgeEligibilityReport(int $draftId, string $nationalId, string $birthDate): int
+    {
+        $draft = RegistrationDraft::query()->findOrFail($draftId);
+        $nationalId = $this->normalizeNationalId($nationalId);
+        if (! IranianNationalCodeValidator::isValid($nationalId)) {
+            throw new RuntimeException('Invalid national ID.');
+        }
+        $birthDate = trim(str_replace(['\\', '.'], '/', $birthDate));
+        if (! preg_match('/^\d{4}[\/-]\d{1,2}[\/-]\d{1,2}$/', $birthDate)) {
+            throw new RuntimeException('Invalid birth date.');
+        }
+
+        return (int) DB::table('national_id_age_eligibility_reports')->insertGetId([
+            'registration_draft_id' => $draft->registration_draft_id,
+            'national_id_hash' => $this->hmac($nationalId),
+            'national_id_encrypted' => Crypt::encryptString($nationalId),
+            'birth_date_encrypted' => Crypt::encryptString($birthDate),
+            'status_code' => 'Pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
     public function createDraft(string $mobile, string $idempotencyKey): RegistrationDraft
     {
         $mobile = MobileNumber::normalize($mobile);
@@ -36,8 +109,19 @@ class RegistrationTransactionService
                 ->lockForUpdate()
                 ->first();
 
-            if ($active !== null && $active->expires_at->isFuture()) {
-                return $active;
+            if ($active !== null) {
+                if ($active->expires_at->isFuture()) {
+                    return $active;
+                }
+
+                // Expired drafts still occupy the generated active_mobile_hash
+                // unique key while their state remains Initiated.
+                $active->forceFill([
+                    'state_code' => 'Expired',
+                    'telegram_link_nonce_hash' => null,
+                    'telegram_link_nonce_expires_at' => null,
+                    'telegram_link_nonce_used_at' => null,
+                ])->save();
             }
 
             return RegistrationDraft::query()->create([
@@ -101,7 +185,7 @@ class RegistrationTransactionService
                 throw new RuntimeException('Telegram Contact does not belong to the sender.');
             }
             if (! hash_equals($formMobile, $contactPhone)) {
-                throw new RuntimeException('Telegram Contact does not match the registration mobile.');
+                throw new TelegramContactMismatchException();
             }
 
             $identity = UserTelegramIdentity::query()
@@ -145,13 +229,17 @@ class RegistrationTransactionService
     public function selectNationalIdAndSettlement(
         RegistrationDraft|int $draft,
         string $nationalId,
-        int $settlementCode
+        int $settlementId
     ): RegistrationDraft {
-        return DB::transaction(function () use ($draft, $nationalId, $settlementCode): RegistrationDraft {
+        return DB::transaction(function () use ($draft, $nationalId, $settlementId): RegistrationDraft {
             $draft = $this->lockDraft($draft);
             $this->assertDraftOpen($draft);
-            $settlement = $this->validSettlementByCode($settlementCode);
+            $settlement = $this->validSettlementById($settlementId);
             $nationalId = $this->normalizeNationalId($nationalId);
+            $eligibility = $this->validateNationalIdForDraft($draft, $nationalId);
+            if (($eligibility['valid'] ?? false) !== true) {
+                throw new RuntimeException((string) ($eligibility['code'] ?? 'Invalid national ID.'));
+            }
 
             $draft->forceFill([
                 'national_id_hash' => $this->hmac($nationalId),
@@ -291,8 +379,8 @@ class RegistrationTransactionService
 
     private function normalizeNationalId(string $nationalId): string
     {
-        $nationalId = preg_replace('/\D+/', '', $nationalId) ?? '';
-        if (strlen($nationalId) !== 10) {
+        $nationalId = IranianNationalCodeValidator::normalize($nationalId);
+        if (! preg_match('/^\d{10}$/', $nationalId) || ! IranianNationalCodeValidator::isValid($nationalId)) {
             throw new RuntimeException('Invalid national ID.');
         }
 

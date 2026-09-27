@@ -12,5 +12,12 @@ class RequestOtpUseCase {
   Future<Either<Failure, OtpChallenge>> call({
     required String phoneNumber,
     required OtpPurpose purpose,
-  }) => _repository.request(phoneNumber: phoneNumber, purpose: purpose);
+    String? registrationDraftId,
+    String? telegramIdentityId,
+  }) => _repository.request(
+    phoneNumber: phoneNumber,
+    purpose: purpose,
+    registrationDraftId: registrationDraftId,
+    telegramIdentityId: telegramIdentityId,
+  );
 }

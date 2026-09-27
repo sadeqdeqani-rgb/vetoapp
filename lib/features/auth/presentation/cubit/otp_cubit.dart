@@ -56,9 +56,16 @@ class OtpCubit extends Cubit<OtpState> {
   Future<void> request({
     required String phoneNumber,
     required OtpPurpose purpose,
+    String? registrationDraftId,
+    String? telegramIdentityId,
   }) async {
     emit(const OtpLoading());
-    final result = await _requestOtp(phoneNumber: phoneNumber, purpose: purpose);
+    final result = await _requestOtp(
+      phoneNumber: phoneNumber,
+      purpose: purpose,
+      registrationDraftId: registrationDraftId,
+      telegramIdentityId: telegramIdentityId,
+    );
     result.fold(
       (failure) => emit(OtpError(failure.message)),
       (challenge) => emit(OtpRequested(challenge)),
@@ -69,12 +76,14 @@ class OtpCubit extends Cubit<OtpState> {
     required String phoneNumber,
     required String code,
     required OtpPurpose purpose,
+    String? otpId,
   }) async {
     emit(const OtpLoading());
     final result = await _verifyOtp(
       phoneNumber: phoneNumber,
       code: code,
       purpose: purpose,
+      otpId: otpId,
     );
     result.fold(
       (failure) => emit(OtpError(failure.message)),

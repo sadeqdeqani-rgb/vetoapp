@@ -14,12 +14,16 @@ class OtpRepositoryImpl implements OtpRepository {
   Future<Either<Failure, OtpChallenge>> request({
     required String phoneNumber,
     required OtpPurpose purpose,
+    String? registrationDraftId,
+    String? telegramIdentityId,
   }) async {
     try {
       return Right(
         await _remoteDataSource.request(
           phoneNumber: phoneNumber,
           purpose: purpose,
+          registrationDraftId: registrationDraftId,
+          telegramIdentityId: telegramIdentityId,
         ),
       );
     } on Failure catch (failure) {
@@ -34,6 +38,7 @@ class OtpRepositoryImpl implements OtpRepository {
     required String phoneNumber,
     required String code,
     required OtpPurpose purpose,
+    String? otpId,
   }) async {
     try {
       return Right(
@@ -41,6 +46,7 @@ class OtpRepositoryImpl implements OtpRepository {
           phoneNumber: phoneNumber,
           code: code,
           purpose: purpose,
+          otpId: otpId,
         ),
       );
     } on Failure catch (failure) {
