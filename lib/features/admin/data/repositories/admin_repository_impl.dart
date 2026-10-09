@@ -14,6 +14,56 @@ class AdminRepositoryImpl implements AdminRepository {
   final Dio _dio;
   final SecureStorageService _storage;
 
+  @override
+  Future<List<Map<String, dynamic>>> homeSections() async {
+    final response = await _dio.get(
+      '/api/admin/home/sections',
+      options: await _authorizedOptions(),
+    );
+    return _rows(
+      response,
+    ).whereType<Map>().map((row) => Map<String, dynamic>.from(row)).toList();
+  }
+
+  @override
+  Future<void> saveHomeSection(String key, Map<String, dynamic> data) async {
+    await _dio.put(
+      '/api/admin/home/sections/$key',
+      data: data,
+      options: await _authorizedOptions(),
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>> homeState() async {
+    final response = await _dio.get(
+      '/api/admin/home/state',
+      options: await _authorizedOptions(),
+    );
+    return Map<String, dynamic>.from(response.data['data'] as Map? ?? {});
+  }
+
+  @override
+  Future<Map<String, dynamic>> changeHomeState(int stateValue) async {
+    final response = await _dio.post(
+      '/api/admin/home/state',
+      data: {'state_value': stateValue},
+      options: await _authorizedOptions(),
+    );
+    return Map<String, dynamic>.from(response.data['data'] as Map? ?? {});
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> homeEvents() async {
+    final response = await _dio.get(
+      '/api/admin/home/events',
+      options: await _authorizedOptions(),
+    );
+    return _rows(
+      response,
+    ).whereType<Map>().map((row) => Map<String, dynamic>.from(row)).toList();
+  }
+
   Future<Options> _authorizedOptions() async {
     final token = await _storage.read(key: _tokenKey);
     if (token == null || token.isEmpty) {
@@ -82,6 +132,14 @@ class AdminRepositoryImpl implements AdminRepository {
           ),
         )
         .toList();
+  }
+
+  @override
+  Future<void> publishTerms(int id) async {
+    await _dio.post(
+      '/api/admin/terms/$id/publish',
+      options: await _authorizedOptions(),
+    );
   }
 
   @override
@@ -162,6 +220,45 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
+  Future<List<NationalIdAgeEligibilityReport>>
+  nationalIdAgeEligibilityReports() async {
+    final response = await _dio.get(
+      '/api/admin/national-id-age-eligibility-reports',
+      options: await _authorizedOptions(),
+    );
+    return _rows(response)
+        .whereType<Map>()
+        .map(
+          (row) => NationalIdAgeEligibilityReport(
+            id: _int(row['report_id']) ?? 0,
+            registrationDraftId: _int(row['registration_draft_id']) ?? 0,
+            nationalId: '${row['national_id'] ?? ''}',
+            birthDate: '${row['birth_date'] ?? ''}',
+            statusCode: '${row['status_code'] ?? 'Pending'}',
+            adminNote: row['admin_note']?.toString(),
+            createdAt:
+                _date(row['created_at']) ??
+                DateTime.fromMillisecondsSinceEpoch(0),
+            updatedAt: _date(row['updated_at']),
+          ),
+        )
+        .toList();
+  }
+
+  @override
+  Future<void> reviewNationalIdAgeEligibilityReport(
+    int id,
+    String statusCode,
+    String? adminNote,
+  ) async {
+    await _dio.patch(
+      '/api/admin/national-id-age-eligibility-reports/$id',
+      data: {'status_code': statusCode, 'admin_note': adminNote},
+      options: await _authorizedOptions(),
+    );
+  }
+
+  @override
   Future<List<AdminGeoCooldownPolicy>> geoCooldownPolicies() async {
     final response = await _dio.get(
       '/api/admin/geo-cooldown-policies',
@@ -181,7 +278,8 @@ class AdminRepositoryImpl implements AdminRepository {
             cooldownDays: _int(row['cooldown_days']) ?? 0,
             isActive: row['is_active'] == true || row['is_active'] == 1,
             effectiveFrom:
-                _date(row['effective_from']) ?? DateTime.fromMillisecondsSinceEpoch(0),
+                _date(row['effective_from']) ??
+                DateTime.fromMillisecondsSinceEpoch(0),
             effectiveTo: _date(row['effective_to']),
           ),
         )
@@ -208,11 +306,47 @@ class AdminRepositoryImpl implements AdminRepository {
             triggerScope: '${row['trigger_scope'] ?? 'account_closure'}',
             isActive: row['is_active'] == true || row['is_active'] == 1,
             effectiveFrom:
-                _date(row['effective_from']) ?? DateTime.fromMillisecondsSinceEpoch(0),
+                _date(row['effective_from']) ??
+                DateTime.fromMillisecondsSinceEpoch(0),
             effectiveTo: _date(row['effective_to']),
           ),
         )
         .toList();
+  }
+
+  @override
+  Future<List<AdminProcessLifecyclePolicy>> processLifecyclePolicies() async {
+    final response = await _dio.get(
+      '/api/admin/process-lifecycle-policies',
+      options: await _authorizedOptions(),
+    );
+    return _rows(response).whereType<Map>().map((row) {
+      final supportSeconds = _int(row['support_period_seconds']) ?? 0;
+      final waitingSeconds = _int(row['waiting_period_seconds']) ?? 0;
+      final votingSeconds = _int(row['voting_period_seconds']) ?? 0;
+      final publicationSeconds = _int(row['publication_delay_seconds']) ?? 0;
+      return AdminProcessLifecyclePolicy(
+        id: _int(row['process_lifecycle_policy_version_id']) ?? 0,
+        versionNumber: _int(row['version_number']) ?? 0,
+        thresholdRatePpm: _int(row['threshold_rate_ppm']) ?? 200000,
+        minSupportCount: _int(row['min_support_count']) ?? 0,
+        supportPeriodDays: supportSeconds ~/ 86400,
+        waitingPeriodDays: waitingSeconds ~/ 86400,
+        votingPeriodDays: votingSeconds ~/ 86400,
+        publicationDelayHours: publicationSeconds ~/ 3600,
+        isActive: row['is_active'] == true || row['is_active'] == 1,
+        effectiveFrom: _date(row['effective_from']),
+      );
+    }).toList();
+  }
+
+  @override
+  Future<void> createProcessLifecyclePolicy(Map<String, dynamic> data) async {
+    await _dio.post(
+      '/api/admin/process-lifecycle-policies',
+      data: data,
+      options: await _authorizedOptions(),
+    );
   }
 
   @override

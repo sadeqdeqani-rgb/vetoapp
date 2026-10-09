@@ -1,8 +1,6 @@
-import 'dart:math';
-
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dio/dio.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
@@ -10,125 +8,364 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 
+String persianCount(Object? value) {
+  final text = '${value ?? 0}'.replaceAllMapped(
+    RegExp(r'(?=(\d{3})+(?!\d))'),
+    (_) => ',',
+  );
+  return text.replaceAllMapped(
+    RegExp(r'\d'),
+    (m) => String.fromCharCode(m[0]!.codeUnitAt(0) + 1728),
+  );
+}
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
   @override
-  Widget build(BuildContext context) {
-    final isGuest = context.select<AuthCubit, bool>(
-      (cubit) => cubit.state is Guest,
-    );
-    return isGuest ? const _PreviewHomeScreen() : const _ServerHomeScreen();
-  }
+  Widget build(BuildContext context) =>
+      context.select<AuthCubit, bool>((c) => c.state is Guest)
+          ? const _PreviewHome()
+          : const _LiveHome();
 }
 
-class _ServerHomeScreen extends StatefulWidget {
-  const _ServerHomeScreen();
-
+class _LiveHome extends StatefulWidget {
+  const _LiveHome();
   @override
-  State<_ServerHomeScreen> createState() => _ServerHomeScreenState();
+  State<_LiveHome> createState() => _LiveHomeState();
 }
 
-class _ServerHomeScreenState extends State<_ServerHomeScreen> {
-  late Future<Map<String, dynamic>> _summary;
-
-  @override
-  void initState() {
-    super.initState();
-    _summary = _loadSummary();
-  }
-
-  Future<Map<String, dynamic>> _loadSummary() async {
-    final response = await getIt<Dio>().get<Map<String, dynamic>>(
+class _LiveHomeState extends State<_LiveHome> {
+  late Future<Map<String, dynamic>> _summary = _load();
+  Future<Map<String, dynamic>> _load() async {
+    final result = await getIt<Dio>().get<Map<String, dynamic>>(
       '/api/v1/dashboard/summary',
     );
-    final data = response.data?['data'];
+    final data = result.data?['data'];
     if (data is! Map<String, dynamic>) {
-      throw const FormatException('پاسخ نمای کلی سامانه معتبر نیست.');
+      throw const FormatException('پاسخ سرور معتبر نیست.');
     }
     return data;
   }
 
-  String _persianNumber(Object? value) {
-    final text = (value is num ? value.toInt() : 0).toString();
-    final grouped = text.replaceAllMapped(
-      RegExp(r'(?=(\d{3})+(?!\d))'),
-      (_) => '٬',
+  @override
+  Widget build(BuildContext context) => Directionality(
+    textDirection: TextDirection.rtl,
+    child: RefreshIndicator(
+      onRefresh: () async {
+        final future = _load();
+        setState(() => _summary = future);
+        try {
+          await future;
+        } catch (_) {
+          /* Error shown in the page. */
+        }
+      },
+      child: FutureBuilder<Map<String, dynamic>>(
+        future: _summary,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData) {
+            return ListView(
+              children: [
+                _Card(
+                  title: 'دریافت اطلاعات خانه انجام نشد',
+                  child: FilledButton(
+                    onPressed: () => setState(() => _summary = _load()),
+                    child: const Text('تلاش دوباره'),
+                  ),
+                ),
+              ],
+            );
+          }
+          final data = snapshot.data!;
+          final state = Map<String, dynamic>.from(
+            data['system_state'] as Map? ?? {},
+          );
+          final code = (state['code'] as num?)?.toInt() ?? 1;
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+            children: [
+              const _IntroductionWidget(),
+              const SizedBox(height: 14),
+              _SystemStateCard(
+                title: code == 1 ? '' : '${state['title'] ?? ''}',
+                registeredUsers: data['active_user_count'],
+                remainingUsers: code == 1 ? state['remaining_users'] : null,
+              ),
+              const SizedBox(height: 14),
+              _GeoWidget(
+                geography: Map<String, dynamic>.from(
+                  data['geography'] as Map? ?? {},
+                ),
+                total: data['active_user_count'],
+              ),
+              const SizedBox(height: 14),
+              const _EventsWidget(),
+            ],
+          );
+        },
+      ),
+    ),
+  );
+}
+
+class _PreviewHome extends StatefulWidget {
+  const _PreviewHome();
+  @override
+  State<_PreviewHome> createState() => _PreviewHomeState();
+}
+
+class _PreviewHomeState extends State<_PreviewHome> {
+  late Future<_PreviewHomeData> _previewData = _loadPreviewData();
+
+  Future<_PreviewHomeData> _loadPreviewData() async {
+    final dio = getIt<Dio>();
+    final results = await Future.wait([
+      dio.get<Map<String, dynamic>>('/api/v1/public/active-users'),
+      dio.get<Map<String, dynamic>>(
+        '/api/v1/public/geography-user-counts',
+        queryParameters: {'level': 'province'},
+      ),
+    ]);
+    final countData = results[0].data?['data'];
+    final activeCount =
+        countData is Map ? countData['active_user_count'] : null;
+    if (activeCount is! num) {
+      throw const FormatException('تعداد کاربران از سرور دریافت نشد.');
+    }
+
+    final provinces = _decodeAreas(results[1].data);
+    return _PreviewHomeData(
+      activeUsers: activeCount.toInt(),
+      geography: {'provinces': provinces},
     );
-    return grouped.replaceAllMapped(RegExp(r'\d'), (match) {
-      return String.fromCharCode(match.group(0)!.codeUnitAt(0) + 1728);
-    });
+  }
+
+  Future<List<Map<String, dynamic>>> _loadGeographyChildren(
+    String level,
+    int parentId,
+  ) async {
+    final type = switch (level) {
+      'provinces' => 'province',
+      'counties' => 'county',
+      _ => 'settlement',
+    };
+    final response = await getIt<Dio>().get<Map<String, dynamic>>(
+      '/api/v1/public/geography-user-counts',
+      queryParameters: {
+        'level': type,
+        if (type != 'province') 'parent_id': parentId,
+      },
+    );
+    return _decodeAreas(response.data);
+  }
+
+  List<Map<String, dynamic>> _decodeAreas(Object? response) {
+    final data = response is Map ? response['data'] : null;
+    if (data is! List) {
+      throw const FormatException('پاسخ حوزه‌های جغرافیایی معتبر نیست.');
+    }
+    return data
+        .whereType<Map>()
+        .map((item) {
+          final row = Map<String, dynamic>.from(item);
+          return {
+            ...row,
+            'active_user_count':
+                (row['active_user_count'] as num?)?.toInt() ?? 0,
+          };
+        })
+        .toList(growable: false);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: RefreshIndicator(
-        onRefresh: () async => setState(() => _summary = _loadSummary()),
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
+  Widget build(BuildContext context) => Directionality(
+    textDirection: TextDirection.rtl,
+    child: FutureBuilder<_PreviewHomeData>(
+      future: _previewData,
+      builder: (context, snapshot) {
+        final children = <Widget>[
+          const _IntroductionWidget(),
+          const SizedBox(height: 14),
+        ];
+        if (snapshot.hasError) {
+          children.add(
+            _Card(
+              title: 'دریافت تعداد کاربران انجام نشد',
+              child: TextButton.icon(
+                onPressed:
+                    () => setState(() => _previewData = _loadPreviewData()),
+                icon: const Icon(Icons.refresh),
+                label: const Text('تلاش دوباره'),
+              ),
+            ),
+          );
+        } else if (!snapshot.hasData) {
+          children.add(
+            const _Card(
+              title: 'تعداد کاربران ثبت‌نام‌شده',
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        } else {
+          final preview = snapshot.data!;
+          final total = preview.activeUsers;
+          children
+            ..add(
+              _SystemStateCard(
+                title: '',
+                registeredUsers: total,
+                remainingUsers: (44000000 - total).clamp(0, 44000000),
+              ),
+            )
+            ..add(const SizedBox(height: 14))
+            ..add(
+              _GeoWidget(
+                geography: preview.geography,
+                total: total,
+                loadChildren: _loadGeographyChildren,
+              ),
+            )
+            ..add(const SizedBox(height: 14))
+            ..add(const _EventsWidget());
+        }
+
+        return ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-          children: [
-            Text('نمای کلی سامانه', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            FutureBuilder<Map<String, dynamic>>(
-              future: _summary,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Padding(
-                    padding: EdgeInsets.all(28),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                if (snapshot.hasError || !snapshot.hasData) {
-                  return _ServerDashboardCard(
-                    icon: Icons.cloud_off_outlined,
-                    title: 'دریافت آمار از سرور انجام نشد',
-                    message: 'اتصال را بررسی کنید و صفحه را دوباره به‌روزرسانی کنید.',
-                    child: OutlinedButton.icon(
-                      onPressed: () => setState(() => _summary = _loadSummary()),
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('تلاش دوباره'),
-                    ),
-                  );
-                }
-                return _ServerDashboardCard(
-                  icon: Icons.people_alt_outlined,
-                  title: 'کاربران فعال ثبت‌نام‌شده',
-                  message: '${_persianNumber(snapshot.data!['active_user_count'])} نفر',
-                  child: const SizedBox.shrink(),
-                );
-              },
-            ),
-            const SizedBox(height: 14),
-            const _ServerDashboardCard(
-              icon: Icons.info_outline_rounded,
-              title: 'همه‌پرسی، انتخابات و استیضاح',
-              message:
-                  'اطلاعات رویدادهای زنده هنوز در سرویس سرور ثبت و ارائه نمی‌شود. با آماده‌شدن این بخش، رویدادهای واقعی همین‌جا نمایش داده می‌شوند.',
-              child: SizedBox.shrink(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+          children: children,
+        );
+      },
+    ),
+  );
 }
 
-class _ServerDashboardCard extends StatelessWidget {
-  const _ServerDashboardCard({
-    required this.icon,
+class _IntroductionWidget extends StatelessWidget {
+  const _IntroductionWidget();
+  @override
+  Widget build(BuildContext context) => Card(
+    clipBehavior: Clip.antiAlias,
+    child: ListTile(
+      leading: const Icon(Icons.menu_book_outlined, color: AppTheme.primary),
+      title: const Text('معرفی وِتواَپ'),
+      trailing: const Icon(Icons.chevron_left),
+      onTap: () => context.go('/about'),
+    ),
+  );
+}
+
+class _PreviewHomeData {
+  const _PreviewHomeData({required this.activeUsers, required this.geography});
+  final int activeUsers;
+  final Map<String, dynamic> geography;
+}
+
+class _SystemStateCard extends StatelessWidget {
+  const _SystemStateCard({
     required this.title,
-    required this.message,
-    required this.child,
+    required this.registeredUsers,
+    required this.remainingUsers,
   });
-
-  final IconData icon;
   final String title;
-  final String message;
-  final Widget child;
+  final Object? registeredUsers;
+  final Object? remainingUsers;
 
+  static const int _activationThreshold = 44000000;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: AppTheme.primaryDark,
+      borderRadius: BorderRadius.circular(22),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (title.trim().isNotEmpty) ...[
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              height: 1.6,
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+        _countRow(
+          'تعداد کاربران مورد نیاز برای شروع به کار سامانه',
+          '${persianCount(_activationThreshold)} نفر',
+          Colors.white,
+        ),
+        const Divider(color: Color(0x55FFFFFF), height: 18),
+        _countRow(
+          'تعداد کاربران ثبت‌نام‌شده تا این لحظه',
+          '${persianCount(registeredUsers)} نفر',
+          Colors.black,
+          outlined: true,
+        ),
+        if (remainingUsers != null) ...[
+          const Divider(color: Color(0x55FFFFFF), height: 18),
+          _countRow(
+            'تعداد کاربران باقی‌مانده برای شروع به کار سامانه',
+            '${persianCount(remainingUsers)} نفر',
+            Colors.white,
+          ),
+        ],
+      ],
+    ),
+  );
+
+  Widget _countRow(
+    String label,
+    String value,
+    Color color, {
+    bool outlined = false,
+  }) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+          height: 1.45,
+          shadows: outlined ? _whiteOutline : null,
+        ),
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: 2),
+      Text(
+        value,
+        style: TextStyle(
+          color: color,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          height: 1.4,
+          shadows: outlined ? _whiteOutline : null,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    ],
+  );
+
+  static const _whiteOutline = <Shadow>[
+    Shadow(color: Colors.white, offset: Offset(-1, 0), blurRadius: 1),
+    Shadow(color: Colors.white, offset: Offset(1, 0), blurRadius: 1),
+    Shadow(color: Colors.white, offset: Offset(0, -1), blurRadius: 1),
+    Shadow(color: Colors.white, offset: Offset(0, 1), blurRadius: 1),
+  ];
+}
+
+class _Card extends StatelessWidget {
+  const _Card({required this.title, required this.child});
+  final String title;
+  final Widget child;
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(18),
@@ -140,115 +377,248 @@ class _ServerDashboardCard extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            Icon(icon, color: AppTheme.primary),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(title, style: Theme.of(context).textTheme.titleMedium),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Text(message, style: Theme.of(context).textTheme.bodyLarge),
-        if (child is! SizedBox) ...[const SizedBox(height: 12), child],
+        Text(title, style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 12),
+        child,
       ],
     ),
   );
 }
 
-class _PreviewHomeScreen extends StatefulWidget {
-  const _PreviewHomeScreen();
-
+class _GeoWidget extends StatefulWidget {
+  const _GeoWidget({
+    required this.geography,
+    required this.total,
+    this.loadChildren,
+  });
+  final Map<String, dynamic> geography;
+  final Object? total;
+  final Future<List<Map<String, dynamic>>> Function(String, int)? loadChildren;
   @override
-  State<_PreviewHomeScreen> createState() => _HomeScreenState();
+  State<_GeoWidget> createState() => _GeoWidgetState();
 }
 
-class _HomeScreenState extends State<_PreviewHomeScreen> {
-  final _random = Random();
-  late final String _countryCount;
-  late final Map<String, String> _provinceCounts;
-  late final Map<String, String> _countyCounts;
-  late final Map<String, String> _settlementCounts;
-  String _province = 'اصفهان';
-
-  static const _counties = {
-    'اصفهان': 'شهرضا',
-    'فارس': 'نورآباد ممسنی',
-    'یزد': 'یزد',
-  };
-  static const _settlements = {
-    'اصفهان': 'منظریه',
-    'فارس': 'دهگپ محمودی',
-    'یزد': 'یزد',
-  };
-
-  @override
-  void initState() {
-    super.initState();
-    _countryCount = _number(10000, 90000);
-    _provinceCounts = {
-      'اصفهان': _number(900, 9000),
-      'فارس': _number(900, 9000),
-      'یزد': _number(900, 9000),
-    };
-    _countyCounts = {
-      'اصفهان': _number(120, 2200),
-      'فارس': _number(120, 2200),
-      'یزد': _number(120, 2200),
-    };
-    _settlementCounts = {
-      'اصفهان': _number(20, 900),
-      'فارس': _number(20, 900),
-      'یزد': _number(20, 900),
-    };
+class _GeoWidgetState extends State<_GeoWidget> {
+  late final Map<String, dynamic> _geography = Map.of(widget.geography);
+  final Set<String> _loading = {};
+  int? provinceId, countyId, settlementId;
+  List<Map<String, dynamic>> _rows(String key, [int? parent]) =>
+      (_geography[key] as List? ?? [])
+          .whereType<Map>()
+          .map((r) => Map<String, dynamic>.from(r))
+          .where(
+            (r) =>
+                parent == null || (r['parent_id'] as num?)?.toInt() == parent,
+          )
+          .toList();
+  Widget _choice(
+    String label,
+    String key,
+    List<Map<String, dynamic>> rows,
+    int? selected,
+    ValueChanged<int?> changed, {
+    int? parentId,
+  }) {
+    if (rows.isEmpty && (widget.loadChildren == null || parentId == null)) {
+      return const SizedBox.shrink();
+    }
+    Map<String, dynamic>? selectedRow;
+    for (final row in rows) {
+      if ((row['id'] as num).toInt() == selected) {
+        selectedRow = row;
+        break;
+      }
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () async {
+          var available = rows;
+          final cacheKey = '$key:$parentId';
+          if (available.isEmpty &&
+              widget.loadChildren != null &&
+              parentId != null) {
+            setState(() => _loading.add(cacheKey));
+            try {
+              final loaded = await widget.loadChildren!(key, parentId);
+              final existing =
+                  (_geography[key] as List? ?? []).whereType<Map>().toList();
+              final knownIds = existing.map((row) => row['id']).toSet();
+              _geography[key] = [
+                ...existing,
+                ...loaded.where((row) => !knownIds.contains(row['id'])),
+              ];
+              available = _rows(key, parentId);
+            } catch (_) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('دریافت فهرست $label انجام نشد.')),
+                );
+              }
+            } finally {
+              if (mounted) setState(() => _loading.remove(cacheKey));
+            }
+          }
+          if (!mounted || available.isEmpty) return;
+          final value = await showModalBottomSheet<int>(
+            context: context,
+            isScrollControlled: true,
+            useSafeArea: true,
+            builder: (_) => _GeoSearchSheet(label: label, rows: available),
+          );
+          if (value != null) changed(value);
+        },
+        child: InputDecorator(
+          decoration: InputDecoration(
+            labelText: label,
+            border: const OutlineInputBorder(),
+            suffixIcon:
+                _loading.contains('$key:$parentId')
+                    ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                    : const Icon(Icons.search),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  selectedRow == null
+                      ? 'انتخاب $label'
+                      : '${selectedRow['name']}  (${persianCount(selectedRow['active_user_count'])} نفر)',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const Icon(Icons.arrow_drop_down),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
-  String _number(int min, int max) => (min + _random.nextInt(max - min))
-      .toString()
-      .replaceAllMapped(RegExp(r'(?=(\d{3})+(?!\d))'), (_) => '٬');
+  @override
+  Widget build(BuildContext context) => _Card(
+    title: 'گستره کاربران',
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('ایران: ${persianCount(widget.total)} نفر'),
+        _choice(
+          'استان',
+          'provinces',
+          _rows('provinces'),
+          provinceId,
+          (value) => setState(() {
+            provinceId = value;
+            countyId = null;
+            settlementId = null;
+          }),
+        ),
+        if (provinceId != null)
+          _choice(
+            'شهرستان',
+            'counties',
+            _rows('counties', provinceId),
+            countyId,
+            (value) => setState(() {
+              countyId = value;
+              settlementId = null;
+            }),
+            parentId: provinceId,
+          ),
+        if (countyId != null)
+          _choice(
+            'شهر / روستا',
+            'settlements',
+            _rows('settlements', countyId),
+            settlementId,
+            (value) => setState(() => settlementId = value),
+            parentId: countyId,
+          ),
+      ],
+    ),
+  );
+}
+
+class _GeoSearchSheet extends StatefulWidget {
+  const _GeoSearchSheet({required this.label, required this.rows});
+  final String label;
+  final List<Map<String, dynamic>> rows;
+
+  @override
+  State<_GeoSearchSheet> createState() => _GeoSearchSheetState();
+}
+
+class _GeoSearchSheetState extends State<_GeoSearchSheet> {
+  String _query = '';
 
   @override
   Widget build(BuildContext context) {
+    String normalize(String value) => value
+        .trim()
+        .toLowerCase()
+        .replaceAll('ي', 'ی')
+        .replaceAll('ك', 'ک')
+        .replaceAll('\u200c', ' ');
+
+    final normalizedQuery = normalize(_query);
+    final matches =
+        normalizedQuery.isEmpty
+            ? widget.rows
+            : widget.rows
+                .where(
+                  (row) =>
+                      normalize('${row['name']}').contains(normalizedQuery),
+                )
+                .toList(growable: false);
+
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.82,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const _SystemIntroduction(),
-            const SizedBox(height: 16),
-            const _UserCountCard(),
-            const SizedBox(height: 12),
-            _LocationFilter(
-              province: _province,
-              countryCount: '$_countryCount نفر',
-              provinceCount: '${_provinceCounts[_province]} نفر',
-              countyCount: '${_countyCounts[_province]} نفر',
-              settlementCount: '${_settlementCounts[_province]} نفر',
-              county: _counties[_province]!,
-              settlement: _settlements[_province]!,
-              onProvinceChanged: (value) {
-                if (value != null) setState(() => _province = value);
-              },
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+              child: TextField(
+                autofocus: true,
+                onChanged: (value) => setState(() => _query = value),
+                decoration: InputDecoration(
+                  labelText: 'جست‌وجوی ${widget.label}',
+                  hintText: 'نام ${widget.label} را وارد کنید',
+                  prefixIcon: const Icon(Icons.search),
+                  border: const OutlineInputBorder(),
+                ),
+              ),
             ),
-            const SizedBox(height: 20),
-            Text(
-              'آخرین رویدادهای وِتواَپ',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 12),
-            const _ActivityRow(
-              icon: Icons.how_to_vote_outlined,
-              title: '۳ همه‌پرسی در حال برگزاری',
-              color: AppTheme.success,
-            ),
-            const SizedBox(height: 10),
-            const _ActivityRow(
-              icon: Icons.ballot_outlined,
-              title: '۲ انتخابات در حال رأی‌گیری',
-              color: AppTheme.election,
+            Expanded(
+              child:
+                  matches.isEmpty
+                      ? const Center(child: Text('موردی پیدا نشد.'))
+                      : ListView.builder(
+                        itemCount: matches.length,
+                        itemBuilder: (context, index) {
+                          final row = matches[index];
+                          return ListTile(
+                            title: Text('${row['name']}'),
+                            trailing: Text(
+                              '${persianCount(row['active_user_count'])} نفر',
+                              textAlign: TextAlign.left,
+                            ),
+                            onTap:
+                                () => Navigator.of(
+                                  context,
+                                ).pop((row['id'] as num).toInt()),
+                          );
+                        },
+                      ),
             ),
           ],
         ),
@@ -257,238 +627,44 @@ class _HomeScreenState extends State<_PreviewHomeScreen> {
   }
 }
 
-class _SystemIntroduction extends StatelessWidget {
-  const _SystemIntroduction();
+class _EventsWidget extends StatelessWidget {
+  const _EventsWidget();
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(18),
-    decoration: BoxDecoration(
-      color: AppTheme.surface,
-      borderRadius: BorderRadius.circular(24),
-      border: Border.all(color: AppTheme.divider),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'معرفی سامانه',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 22),
-        ),
-        const SizedBox(height: 6),
-        const Text(
-          'برای آشنایی با هدف و سازندگان سامانه، یکی از بخش‌های زیر را انتخاب کنید.',
-        ),
-        const SizedBox(height: 14),
-        OutlinedButton.icon(
-          onPressed: () => context.go('/about?tab=goals'),
-          icon: const Icon(Icons.flag_outlined),
-          label: const Text('اهداف سامانه'),
-        ),
-        const SizedBox(height: 8),
-        OutlinedButton.icon(
-          onPressed: () => context.go('/about?tab=creators'),
-          icon: const Icon(Icons.people_outline_rounded),
-          label: const Text('سازندگان سامانه'),
-        ),
-      ],
-    ),
-  );
-}
-
-class _UserCountCard extends StatelessWidget {
-  const _UserCountCard();
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-    decoration: BoxDecoration(
-      gradient: const LinearGradient(
-        colors: [AppTheme.primary, AppTheme.primaryDark],
+  Widget build(BuildContext context) {
+    const types = <String, (String, String, IconData, Color)>{
+      'referendum': (
+        'آخرین همه‌پرسی‌های در حال برگزاری',
+        '/referendum/active',
+        Icons.how_to_vote_outlined,
+        AppTheme.success,
       ),
-      borderRadius: BorderRadius.circular(28),
-    ),
-    child: Row(
-      children: [
-        const Icon(Icons.people_alt_outlined, color: Colors.white, size: 30),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'تعداد کاربران مورد نیاز برای فعال شدن بخش همه پرسی:',
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '۴۴۰۰۰۰۰۰ نفر',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _LocationFilter extends StatelessWidget {
-  const _LocationFilter({
-    required this.province,
-    required this.countryCount,
-    required this.provinceCount,
-    required this.county,
-    required this.countyCount,
-    required this.settlement,
-    required this.settlementCount,
-    required this.onProvinceChanged,
-  });
-  final String province;
-  final String countryCount;
-  final String provinceCount;
-  final String county;
-  final String countyCount;
-  final String settlement;
-  final String settlementCount;
-  final ValueChanged<String?> onProvinceChanged;
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: AppTheme.surface,
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: AppTheme.divider),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text('گسترهٔ کاربران', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 10),
-        _LocationRow(label: 'کشور', value: 'ایران', count: countryCount),
-        const SizedBox(height: 8),
-        _LocationDropdown(
-          key: ValueKey(province),
-          label: 'استان',
-          value: province,
-          count: provinceCount,
-          items: const ['اصفهان', 'فارس', 'یزد'],
-          onChanged: onProvinceChanged,
-        ),
-        const SizedBox(height: 8),
-        _LocationDropdown(
-          key: ValueKey('$province-county'),
-          label: 'شهرستان',
-          value: county,
-          count: countyCount,
-          items: [county],
-          onChanged: (_) {},
-        ),
-        const SizedBox(height: 8),
-        _LocationDropdown(
-          key: ValueKey('$province-settlement'),
-          label: 'شهر / روستا',
-          value: settlement,
-          count: settlementCount,
-          items: [settlement],
-          onChanged: (_) {},
-        ),
-      ],
-    ),
-  );
-}
-
-class _LocationRow extends StatelessWidget {
-  const _LocationRow({
-    required this.label,
-    required this.value,
-    required this.count,
-  });
-  final String label;
-  final String value;
-  final String count;
-  @override
-  Widget build(BuildContext context) => DecoratedBox(
-    decoration: BoxDecoration(
-      color: AppTheme.primaryLight.withValues(alpha: 0.55),
-      borderRadius: BorderRadius.circular(14),
-    ),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              '$label: $value',
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-            ),
-          ),
-          Text(count, style: const TextStyle(color: AppTheme.textSecondary)),
-        ],
+      'election': (
+        'آخرین انتخابات‌های در حال برگزاری',
+        '/elections/live',
+        Icons.ballot_outlined,
+        AppTheme.election,
       ),
-    ),
-  );
-}
-
-class _LocationDropdown extends StatelessWidget {
-  const _LocationDropdown({
-    super.key,
-    required this.label,
-    required this.value,
-    required this.count,
-    required this.items,
-    required this.onChanged,
-  });
-  final String label;
-  final String value;
-  final String count;
-  final List<String> items;
-  final ValueChanged<String?> onChanged;
-
-  @override
-  Widget build(BuildContext context) => DropdownButtonFormField<String>(
-    initialValue: value,
-    isExpanded: true,
-    items:
-        items
-            .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-            .toList(),
-    onChanged: onChanged,
-    decoration: InputDecoration(
-      labelText: '$label: $value',
-      suffixText: count,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-    ),
-  );
-}
-
-class _ActivityRow extends StatelessWidget {
-  const _ActivityRow({
-    required this.icon,
-    required this.title,
-    required this.color,
-  });
-  final IconData icon;
-  final String title;
-  final Color color;
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: AppTheme.surface,
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: AppTheme.divider),
-    ),
-    child: Row(
-      children: [
-        Icon(icon, color: color),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(title, style: Theme.of(context).textTheme.bodyMedium),
-        ),
-      ],
-    ),
-  );
+      'impeachment': (
+        'آخرین استیضاح‌های در حال برگزاری',
+        '/impeachment/active',
+        Icons.gavel_outlined,
+        AppTheme.danger,
+      ),
+    };
+    return _Card(
+      title: 'آخرین رویدادهای وِتواَپ',
+      child: Column(
+        children:
+            types.entries.map((entry) {
+              return ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(entry.value.$3, color: entry.value.$4),
+                title: Text(entry.value.$1),
+                trailing: const Icon(Icons.chevron_left),
+                onTap: () => context.go(entry.value.$2),
+              );
+            }).toList(),
+      ),
+    );
+  }
 }

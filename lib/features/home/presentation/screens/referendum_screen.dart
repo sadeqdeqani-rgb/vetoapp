@@ -8,10 +8,8 @@ class ReferendumScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CivicSectionScreen(
-      title: 'همه‌پرسی',
       description:
           'موضوعات کلان کشور و محلی را برای همه‌پرسی پیشنهاد دهید، از طرح موضوعات حمایت کنید و رأی خود را به صندوق بیندازید.',
-      icon: Icons.how_to_vote_outlined,
       accent: const Color(0xFF2E7D32),
       activeCountLabel: '۲ همه‌پرسی در حال برگزاری است',
       actions: const [
@@ -31,18 +29,11 @@ class ReferendumScreen extends StatelessWidget {
           route: '/referendum/supported',
         ),
         CivicSectionAction(
-          title: 'شرکت در همه‌پرسی',
-          subtitle: 'مشاهده و ثبت رأی در موضوعات فعال',
-          icon: Icons.how_to_vote_outlined,
+          title: 'همه‌پرسی، زمان‌بندی، رأی‌دهی و نتایج',
+          subtitle: 'مرور برنامه‌ها، شرکت در رأی‌گیری و مشاهدهٔ نتایج',
+          icon: Icons.ballot_outlined,
           color: Color(0xFF2E7D32),
-          route: '/referendum/active',
-        ),
-        CivicSectionAction(
-          title: 'نتایج همه‌پرسی‌های پایان‌یافته',
-          subtitle: 'بررسی نتایج و سوابق قبلی',
-          icon: Icons.bar_chart_rounded,
-          color: Color(0xFF2E7D32),
-          route: '/referendum/results',
+          route: '/referendum/voting',
         ),
       ],
     );

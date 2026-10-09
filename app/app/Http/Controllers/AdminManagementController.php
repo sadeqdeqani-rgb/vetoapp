@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Crypt;
 
 class AdminManagementController extends Controller
 {
@@ -321,6 +322,76 @@ class AdminManagementController extends Controller
         }
 
         return response()->json($query->paginate(100));
+    }
+
+    public function ageEligibilityReports(Request $request): JsonResponse
+    {
+        $query = DB::table('national_id_age_eligibility_reports')->orderByDesc('created_at');
+        if ($request->filled('status')) {
+            $request->validate(['status' => ['string', 'in:Pending,Reviewed,Rejected']]);
+            $query->where('status_code', (string) $request->input('status'));
+        }
+
+        $reports = $query->paginate(50);
+        $reports->getCollection()->transform(static function (object $report): array {
+            return [
+                'report_id' => (int) $report->report_id,
+                'registration_draft_id' => (int) $report->registration_draft_id,
+                'national_id' => Crypt::decryptString($report->national_id_encrypted),
+                'birth_date' => Crypt::decryptString($report->birth_date_encrypted),
+                'status_code' => $report->status_code,
+                'admin_note' => $report->admin_note,
+                'created_at' => $report->created_at,
+                'updated_at' => $report->updated_at,
+            ];
+        });
+
+        return response()->json(['data' => $reports]);
+    }
+
+    public function updateAgeEligibilityReport(Request $request, int $reportId): JsonResponse
+    {
+        $data = $request->validate([
+            'status_code' => ['required', 'string', 'in:Pending,Reviewed,Rejected'],
+            'admin_note' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $report = DB::transaction(function () use ($request, $reportId, $data): object {
+            $before = DB::table('national_id_age_eligibility_reports')
+                ->where('report_id', $reportId)
+                ->lockForUpdate()
+                ->first();
+            abort_if($before === null, 404);
+
+            DB::table('national_id_age_eligibility_reports')->where('report_id', $reportId)->update([
+                'status_code' => $data['status_code'],
+                'admin_note' => $data['admin_note'] ?? null,
+                'updated_at' => now(),
+            ]);
+            $after = DB::table('national_id_age_eligibility_reports')->where('report_id', $reportId)->first();
+            $this->audit->record(
+                $request,
+                $this->admin($request),
+                'review_national_id_age_report',
+                'national_id_age_eligibility_reports',
+                $reportId,
+                ['status_code' => $before->status_code, 'admin_note' => $before->admin_note],
+                ['status_code' => $after->status_code, 'admin_note' => $after->admin_note],
+            );
+
+            return $after;
+        });
+
+        return response()->json(['data' => [
+            'report_id' => (int) $report->report_id,
+            'registration_draft_id' => (int) $report->registration_draft_id,
+            'national_id' => Crypt::decryptString($report->national_id_encrypted),
+            'birth_date' => Crypt::decryptString($report->birth_date_encrypted),
+            'status_code' => $report->status_code,
+            'admin_note' => $report->admin_note,
+            'created_at' => $report->created_at,
+            'updated_at' => $report->updated_at,
+        ]]);
     }
 
     public function storeNationalIdRange(Request $request, int $prefix): JsonResponse

@@ -63,12 +63,21 @@ services:
   api:
     <<: *app
     command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+    networks:
+      telegram-test: {}
+      counter-link:
+        aliases:
+          - vetoapp-counter-api
     ports:
       - "18080:8080"
 
   queue:
     <<: *app
     command: ["php", "artisan", "queue:work", "redis", "--sleep=1", "--tries=3", "--timeout=90", "--no-interaction"]
+
+  scheduler:
+    <<: *app
+    command: ["php", "artisan", "schedule:work", "--no-interaction"]
 
   telegram-poller:
     <<: *app
@@ -94,3 +103,6 @@ volumes:
 networks:
   telegram-test:
     name: vetoapp-telegram-test
+  counter-link:
+    external: true
+    name: vetoapp-counter-link

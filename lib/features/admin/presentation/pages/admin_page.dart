@@ -14,20 +14,21 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage> {
   static const _sections = <String>[
-    'معرفی وتواپ',
-    'قوانین و مقررات',
-    'فیلم معرفی',
     'استان‌ها',
     'شهرستان‌ها',
     'شهرها',
     'روستاها',
     'محدوده کد ملی',
+    'گزارش‌های کد ملی و سن',
     'سیاست تغییرات جغرافیایی',
     'جریمه بستن حساب',
     'کاربر ادمین',
+    'سیاست چرخهٔ فرایندها',
+    'محتوای خانه و وضعیت سامانه',
   ];
 
   int _selectedSection = 0;
+  bool _confirmingExit = false;
 
   @override
   void initState() {
@@ -38,6 +39,42 @@ class _AdminPageState extends State<AdminPage> {
   Future<void> _ensureSession() async {
     if (!await GetIt.I<AdminRepository>().hasSession() && mounted) {
       context.go('/admin/login');
+    }
+  }
+
+  Future<void> _confirmAdminExit() async {
+    if (_confirmingExit || !mounted) return;
+    _confirmingExit = true;
+    try {
+      final accepted = await showDialog<bool>(
+        context: context,
+        builder:
+            (dialogContext) => AlertDialog(
+              title: const Text('خروج از پنل مدیریت'),
+              content: const Text(
+                'از پنل ادمین خارج شوید و به صفحهٔ ورود بروید؟',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('ادامهٔ کار'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: const Text('خروج'),
+                ),
+              ],
+            ),
+      );
+      if (accepted != true || !mounted) return;
+      try {
+        await GetIt.I<AdminRepository>().logout();
+      } catch (_) {
+        // The repository clears the local admin session even when the API fails.
+      }
+      if (mounted) context.go('/admin/login');
+    } finally {
+      _confirmingExit = false;
     }
   }
 
@@ -62,54 +99,62 @@ class _AdminPageState extends State<AdminPage> {
       data: adminTheme,
       child: Directionality(
         textDirection: TextDirection.rtl,
-        child: Scaffold(
-          appBar: AppBar(title: const Text('مدیریت سامانه')),
-          body: LayoutBuilder(
-            builder: (context, constraints) {
-              final compact = constraints.maxWidth < 800;
-              return Row(
-                children: [
-                  if (!compact)
-                    SizedBox(
-                      width: 180,
-                      height: constraints.maxHeight,
-                      child: _AdminNavigation(
-                        sections: _sections,
-                        selectedIndex: _selectedSection,
-                        compact: false,
-                        onSelected:
-                            (index) => setState(() => _selectedSection = index),
+        child: PopScope<void>(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) _confirmAdminExit();
+          },
+          child: Scaffold(
+            appBar: AppBar(title: const Text('مدیریت سامانه')),
+            body: LayoutBuilder(
+              builder: (context, constraints) {
+                final compact = constraints.maxWidth < 800;
+                return Row(
+                  children: [
+                    if (!compact)
+                      SizedBox(
+                        width: 180,
+                        height: constraints.maxHeight,
+                        child: _AdminNavigation(
+                          sections: _sections,
+                          selectedIndex: _selectedSection,
+                          compact: false,
+                          onSelected:
+                              (index) =>
+                                  setState(() => _selectedSection = index),
+                        ),
                       ),
-                    ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (compact)
-                            _AdminNavigation(
-                              sections: _sections,
-                              selectedIndex: _selectedSection,
-                              compact: true,
-                              onSelected:
-                                  (index) =>
-                                      setState(() => _selectedSection = index),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (compact)
+                              _AdminNavigation(
+                                sections: _sections,
+                                selectedIndex: _selectedSection,
+                                compact: true,
+                                onSelected:
+                                    (index) => setState(
+                                      () => _selectedSection = index,
+                                    ),
+                              ),
+                            if (compact) const SizedBox(height: 16),
+                            Text(
+                              _sections[_selectedSection],
+                              style: Theme.of(context).textTheme.headlineSmall,
                             ),
-                          if (compact) const SizedBox(height: 16),
-                          Text(
-                            _sections[_selectedSection],
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
-                          const SizedBox(height: 16),
-                          _sectionBody(),
-                        ],
+                            const SizedBox(height: 16),
+                            _sectionBody(),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -118,17 +163,17 @@ class _AdminPageState extends State<AdminPage> {
 
   Widget _sectionBody() {
     return switch (_selectedSection) {
-      0 => const _ContentEditor(kind: _ContentKind.introduction),
-      1 => const _ContentEditor(kind: _ContentKind.terms),
-      2 => const _VideoEditor(),
-      3 => const _GeographyEditor(type: 'province', label: 'استان'),
-      4 => const _GeographyEditor(type: 'county', label: 'شهرستان'),
-      5 => const _GeographyEditor(type: 'city', label: 'شهر'),
-      6 => const _GeographyEditor(type: 'village', label: 'روستا'),
-      7 => const _NationalIdEditor(),
-      8 => const _GeoPolicyEditor(),
-      9 => const _ClosurePolicyEditor(),
-      _ => const _AdminUserEditor(),
+      0 => const _GeographyEditor(type: 'province', label: 'استان'),
+      1 => const _GeographyEditor(type: 'county', label: 'شهرستان'),
+      2 => const _GeographyEditor(type: 'city', label: 'شهر'),
+      3 => const _GeographyEditor(type: 'village', label: 'روستا'),
+      4 => const _NationalIdEditor(),
+      5 => const _AgeEligibilityReportsEditor(),
+      6 => const _GeoPolicyEditor(),
+      7 => const _ClosurePolicyEditor(),
+      8 => const _AdminUserEditor(),
+      9 => const _ProcessLifecyclePolicyEditor(),
+      _ => const _HomeManagementEditor(),
     };
   }
 }
@@ -223,12 +268,8 @@ class _AdminNavigation extends StatelessWidget {
   }
 }
 
-enum _ContentKind { introduction, terms }
-
 class _ContentEditor extends StatefulWidget {
-  const _ContentEditor({required this.kind});
-
-  final _ContentKind kind;
+  const _ContentEditor();
 
   @override
   State<_ContentEditor> createState() => _ContentEditorState();
@@ -238,6 +279,9 @@ class _ContentEditorState extends State<_ContentEditor> {
   final _title = TextEditingController();
   final _body = TextEditingController();
   bool _isActive = false;
+  bool _isSaving = false;
+  late Future<List<AdminContentRecord>> _recordsFuture =
+      GetIt.I<AdminRepository>().termsRecords();
 
   @override
   void dispose() {
@@ -257,12 +301,65 @@ class _ContentEditorState extends State<_ContentEditor> {
       isActive: _isActive,
     );
     final repository = GetIt.I<AdminRepository>();
-    if (widget.kind == _ContentKind.introduction) {
-      await repository.saveIntroduction(draft);
-    } else {
+    setState(() => _isSaving = true);
+    try {
       await repository.saveTerms(draft);
+      final records = await repository.termsRecords();
+      if (!mounted) return;
+      setState(() => _recordsFuture = Future.value(records));
+      AdminContentRecord? savedRecord;
+      for (final record in records) {
+        if (record.title == draft.title && record.body == draft.body) {
+          savedRecord = record;
+          break;
+        }
+      }
+      if (draft.isActive &&
+          (savedRecord == null ||
+              !savedRecord.isActive ||
+              savedRecord.publishedAt == null)) {
+        _message(
+          'نسخه ذخیره شد، اما انتشار آن تأیید نشد. از «انتشار در اپ» استفاده کنید.',
+        );
+      } else if (draft.isActive) {
+        _message('نسخهٔ قوانین و مقررات در اپ منتشر شد.');
+      } else {
+        _message('نسخه به‌صورت پیش‌نویس ذخیره شد.');
+      }
+    } catch (_) {
+      if (mounted) {
+        _message('ذخیرهٔ قوانین ناموفق بود؛ اتصال پنل به سرور را بررسی کنید.');
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
-    _message('نسخه به‌صورت آزمایشی ثبت شد.');
+  }
+
+  Future<void> _publish(AdminContentRecord record) async {
+    final repository = GetIt.I<AdminRepository>();
+    setState(() => _isSaving = true);
+    try {
+      await repository.publishTerms(record.id);
+      final records = await repository.termsRecords();
+      if (!mounted) return;
+      setState(() => _recordsFuture = Future.value(records));
+      final published = records.where((item) => item.id == record.id);
+      if (published.isNotEmpty &&
+          published.first.isActive &&
+          published.first.publishedAt != null) {
+        _message('نسخهٔ ${record.versionNumber} در اپ منتشر شد.');
+      } else {
+        _message('سرور انتشار نسخه را تأیید نکرد.');
+      }
+    } catch (_) {
+      if (mounted) {
+        _message(
+          'انتشار نسخه ناموفق بود؛ نشست ادمین یا اتصال سرور را بررسی کنید.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   void _message(String value) {
@@ -282,128 +379,40 @@ class _ContentEditorState extends State<_ContentEditor> {
           children: [
             TextField(
               controller: _title,
-              decoration: const InputDecoration(labelText: 'عنوان'),
+              decoration: const InputDecoration(
+                labelText: 'عنوان قوانین و مقررات',
+              ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _body,
               minLines: 10,
               maxLines: 18,
-              decoration: const InputDecoration(labelText: 'متن کامل'),
+              decoration: const InputDecoration(
+                labelText: 'متن قوانین و مقررات',
+              ),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('فعال‌سازی نسخه'),
+              title: const Text('انتشار این نسخه در اپ'),
               value: _isActive,
-              onChanged: (value) => setState(() => _isActive = value),
+              onChanged:
+                  _isSaving
+                      ? null
+                      : (value) => setState(() => _isActive = value),
             ),
             FilledButton.icon(
-              onPressed: _save,
+              onPressed: _isSaving ? null : _save,
               icon: const Icon(Icons.save_outlined),
-              label: const Text('ذخیره نسخه'),
+              label: Text(_isSaving ? 'در حال ذخیره…' : 'ذخیره نسخهٔ قوانین'),
             ),
           ],
         ),
         const SizedBox(height: 16),
         _ContentRecordsList(
-          title: 'نسخه‌های موجود',
-          future:
-              widget.kind == _ContentKind.introduction
-                  ? GetIt.I<AdminRepository>().introductionRecords()
-                  : GetIt.I<AdminRepository>().termsRecords(),
-        ),
-      ],
-    );
-  }
-}
-
-class _VideoEditor extends StatefulWidget {
-  const _VideoEditor();
-
-  @override
-  State<_VideoEditor> createState() => _VideoEditorState();
-}
-
-class _VideoEditorState extends State<_VideoEditor> {
-  final _title = TextEditingController();
-  final _videoUrl = TextEditingController();
-  final _posterUrl = TextEditingController();
-  bool _isActive = false;
-
-  @override
-  void dispose() {
-    _title.dispose();
-    _videoUrl.dispose();
-    _posterUrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save() async {
-    if (_title.text.trim().isEmpty ||
-        !_videoUrl.text.trim().startsWith('https://')) {
-      _message('عنوان و URL معتبر HTTPS را وارد کنید.');
-      return;
-    }
-    await GetIt.I<AdminRepository>().saveIntroductionVideo(
-      AdminVideoDraft(
-        title: _title.text.trim(),
-        videoUrl: _videoUrl.text.trim(),
-        posterUrl: _posterUrl.text.trim(),
-        isActive: _isActive,
-      ),
-    );
-    _message('اطلاعات ویدئو به‌صورت آزمایشی ثبت شد.');
-  }
-
-  void _message(String value) {
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(value)));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _EditorCard(
-          children: [
-            TextField(
-              controller: _title,
-              decoration: const InputDecoration(labelText: 'عنوان ویدئو'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _videoUrl,
-              keyboardType: TextInputType.url,
-              decoration: const InputDecoration(labelText: 'URL ویدئو (HTTPS)'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _posterUrl,
-              keyboardType: TextInputType.url,
-              decoration: const InputDecoration(
-                labelText: 'URL تصویر پوستر (اختیاری)',
-              ),
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('فعال‌سازی نسخه'),
-              value: _isActive,
-              onChanged: (value) => setState(() => _isActive = value),
-            ),
-            FilledButton.icon(
-              onPressed: _save,
-              icon: const Icon(Icons.video_library_outlined),
-              label: const Text('ذخیره ویدئو'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        _VideoRecordsList(
-          future: GetIt.I<AdminRepository>().introductionVideoRecords(),
+          title: 'نسخه‌های قوانین و مقررات',
+          future: _recordsFuture,
+          onPublish: _isSaving ? null : _publish,
         ),
       ],
     );
@@ -623,6 +632,163 @@ class _NationalIdEditorState extends State<_NationalIdEditor> {
   }
 }
 
+class _AgeEligibilityReportsEditor extends StatefulWidget {
+  const _AgeEligibilityReportsEditor();
+
+  @override
+  State<_AgeEligibilityReportsEditor> createState() =>
+      _AgeEligibilityReportsEditorState();
+}
+
+class _AgeEligibilityReportsEditorState
+    extends State<_AgeEligibilityReportsEditor> {
+  late Future<List<NationalIdAgeEligibilityReport>> _reports =
+      GetIt.I<AdminRepository>().nationalIdAgeEligibilityReports();
+
+  void _reload() => setState(() {
+    _reports = GetIt.I<AdminRepository>().nationalIdAgeEligibilityReports();
+  });
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      const _EditorCard(
+        children: [
+          Text('گزارش‌های ثبت‌شده برای بررسی کد ملی و تاریخ تولد'),
+          SizedBox(height: 8),
+          Text(
+            'اطلاعات هویتی کامل فقط در این بخش احراز هویت‌شدهٔ پنل ادمین نمایش داده می‌شود. اصلاح محدوده‌ها را پس از بررسی، دستی در بخش «محدوده کد ملی» انجام دهید.',
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      _AsyncRecordsCard<NationalIdAgeEligibilityReport>(
+        title: 'گزارش‌های ثبت‌نام',
+        future: _reports,
+        emptyText: 'گزارشی ثبت نشده است.',
+        itemBuilder:
+            (context, report) => _AgeEligibilityReportTile(
+              key: ValueKey(report.id),
+              report: report,
+              onSaved: _reload,
+            ),
+      ),
+    ],
+  );
+}
+
+class _AgeEligibilityReportTile extends StatefulWidget {
+  const _AgeEligibilityReportTile({
+    super.key,
+    required this.report,
+    required this.onSaved,
+  });
+  final NationalIdAgeEligibilityReport report;
+  final VoidCallback onSaved;
+
+  @override
+  State<_AgeEligibilityReportTile> createState() =>
+      _AgeEligibilityReportTileState();
+}
+
+class _AgeEligibilityReportTileState extends State<_AgeEligibilityReportTile> {
+  late final TextEditingController _note = TextEditingController(
+    text: widget.report.adminNote ?? '',
+  );
+  late String _status = widget.report.statusCode;
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _note.dispose();
+    super.dispose();
+  }
+
+  String _statusLabel(String value) => switch (value) {
+    'Reviewed' => 'بررسی‌شده',
+    'Rejected' => 'ردشده',
+    _ => 'در انتظار',
+  };
+
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    try {
+      await GetIt.I<AdminRepository>().reviewNationalIdAgeEligibilityReport(
+        widget.report.id,
+        _status,
+        _note.text.trim().isEmpty ? null : _note.text.trim(),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('بررسی گزارش ذخیره شد.')));
+      widget.onSaved();
+    } catch (error) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('ذخیرهٔ گزارش ناموفق بود: $error')),
+        );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => ExpansionTile(
+    leading: const Icon(Icons.badge_outlined),
+    title: Text('گزارش ${widget.report.id} — ${_statusLabel(_status)}'),
+    subtitle: Text(
+      'ثبت: ${widget.report.createdAt.toLocal()} | پیش‌شماره: ${widget.report.nationalId.substring(0, widget.report.nationalId.length >= 3 ? 3 : widget.report.nationalId.length)}',
+    ),
+    childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+    children: [
+      SelectableText(
+        'کد ملی: ${widget.report.nationalId}',
+        style: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+      const SizedBox(height: 8),
+      SelectableText('تاریخ تولد ثبت‌شده: ${widget.report.birthDate}'),
+      const SizedBox(height: 12),
+      DropdownButtonFormField<String>(
+        initialValue: _status,
+        decoration: const InputDecoration(labelText: 'وضعیت بررسی'),
+        items: const [
+          DropdownMenuItem(value: 'Pending', child: Text('در انتظار')),
+          DropdownMenuItem(value: 'Reviewed', child: Text('بررسی‌شده')),
+          DropdownMenuItem(value: 'Rejected', child: Text('ردشده')),
+        ],
+        onChanged:
+            _saving
+                ? null
+                : (value) {
+                  if (value != null) setState(() => _status = value);
+                },
+      ),
+      const SizedBox(height: 12),
+      TextField(
+        controller: _note,
+        minLines: 2,
+        maxLines: 5,
+        decoration: const InputDecoration(labelText: 'یادداشت ادمین'),
+      ),
+      const SizedBox(height: 12),
+      FilledButton.icon(
+        onPressed: _saving ? null : _save,
+        icon:
+            _saving
+                ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+                : const Icon(Icons.save_outlined),
+        label: const Text('ذخیرهٔ بررسی'),
+      ),
+    ],
+  );
+}
+
 class _AdminUserEditor extends StatefulWidget {
   const _AdminUserEditor();
 
@@ -703,10 +869,15 @@ class _AdminUserEditorState extends State<_AdminUserEditor> {
 }
 
 class _ContentRecordsList extends StatelessWidget {
-  const _ContentRecordsList({required this.title, required this.future});
+  const _ContentRecordsList({
+    required this.title,
+    required this.future,
+    this.onPublish,
+  });
 
   final String title;
   final Future<List<AdminContentRecord>> future;
+  final Future<void> Function(AdminContentRecord record)? onPublish;
 
   @override
   Widget build(BuildContext context) {
@@ -733,33 +904,19 @@ class _ContentRecordsList extends StatelessWidget {
                   child: SelectableText(item.body),
                 ),
               ),
+              if (!item.isActive && onPublish != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton.icon(
+                      onPressed: () => onPublish!(item),
+                      icon: const Icon(Icons.publish_outlined),
+                      label: const Text('انتشار این نسخه در اپ'),
+                    ),
+                  ),
+                ),
             ],
-          ),
-    );
-  }
-}
-
-class _VideoRecordsList extends StatelessWidget {
-  const _VideoRecordsList({required this.future});
-
-  final Future<List<AdminVideoRecord>> future;
-
-  @override
-  Widget build(BuildContext context) {
-    return _AsyncRecordsCard<AdminVideoRecord>(
-      title: 'ویدئوهای موجود',
-      future: future,
-      emptyText: 'هیچ ویدئویی ثبت نشده است.',
-      itemBuilder:
-          (context, item) => ListTile(
-            leading: Icon(
-              item.isActive ? Icons.play_circle : Icons.video_library_outlined,
-              color: item.isActive ? Colors.green : null,
-            ),
-            title: Text('${item.title} — نسخه ${item.versionNumber}'),
-            subtitle: Text(
-              'شناسه: ${item.id} | ${item.isActive ? 'فعال' : 'غیرفعال'}\n${item.videoUrl}',
-            ),
           ),
     );
   }
@@ -865,7 +1022,7 @@ class _GeoPolicyEditorState extends State<_GeoPolicyEditor> {
         stage == null ||
         stage < 1 ||
         cooldown == null ||
-        cooldown < 1 ||
+        cooldown < 0 ||
         DateTime.tryParse(_effectiveFrom.text.trim()) == null ||
         (_effectiveTo.text.trim().isNotEmpty &&
             DateTime.tryParse(_effectiveTo.text.trim()) == null)) {
@@ -887,14 +1044,53 @@ class _GeoPolicyEditorState extends State<_GeoPolicyEditor> {
           _effectiveTo.text.trim().isEmpty ? null : _effectiveTo.text.trim(),
     };
     final repository = GetIt.I<AdminRepository>();
-    if (_editingId == null) {
-      await repository.createGeoCooldownPolicy(data);
-    } else {
-      await repository.updateGeoCooldownPolicy(_editingId!, data);
+    try {
+      if (_editingId == null) {
+        await repository.createGeoCooldownPolicy(data);
+      } else {
+        await repository.updateGeoCooldownPolicy(_editingId!, data);
+      }
+      _clear();
+      setState(() => _refresh++);
+      _message('سیاست تغییرات جغرافیایی ذخیره شد.');
+    } catch (error) {
+      _message('ذخیرهٔ سیاست تغییرات جغرافیایی ناموفق بود: $error');
     }
-    _clear();
-    setState(() => _refresh++);
-    _message('سیاست تغییرات جغرافیایی ذخیره شد.');
+  }
+
+  Future<void> _enableTrialPolicy() async {
+    final now = DateTime.now().toUtc().toIso8601String();
+    final repository = GetIt.I<AdminRepository>();
+    final data = <String, dynamic>{
+      'policy_code': 'geo_reassignment_trial',
+      'policy_name': 'سیاست آزمایشی تغییر نامحدود حوزه',
+      'description':
+          'برای آزمایش اپ؛ تغییر حوزه بدون دوره انتظار و محدودیت دفعات.',
+      'policy_stage': 1,
+      'max_changes_allowed': null,
+      'window_days': null,
+      'cooldown_days': 0,
+      'is_active': true,
+      'effective_from': now,
+      'effective_to': null,
+    };
+    try {
+      final matches =
+          (await repository.geoCooldownPolicies())
+              .where((item) => item.policyCode == 'geo_reassignment_trial')
+              .toList();
+      final existing = matches.isEmpty ? null : matches.first;
+      if (existing == null) {
+        await repository.createGeoCooldownPolicy(data);
+      } else {
+        await repository.updateGeoCooldownPolicy(existing.id, data);
+      }
+      if (!mounted) return;
+      setState(() => _refresh++);
+      _message('سیاست آزمایشی تغییر حوزه فعال شد.');
+    } catch (error) {
+      _message('ایجاد سیاست آزمایشی تغییر حوزه ناموفق بود: $error');
+    }
   }
 
   int? _nullableInt(TextEditingController controller) =>
@@ -921,6 +1117,20 @@ class _GeoPolicyEditorState extends State<_GeoPolicyEditor> {
     await GetIt.I<AdminRepository>().deleteGeoCooldownPolicy(item.id);
     setState(() => _refresh++);
     _message('سیاست حذف شد.');
+  }
+
+  Future<void> _setActive(AdminGeoCooldownPolicy item, bool value) async {
+    try {
+      await GetIt.I<AdminRepository>().updateGeoCooldownPolicy(item.id, {
+        'is_active': value,
+      });
+      if (!mounted) return;
+      setState(() => _refresh++);
+      _message(value ? 'سیاست فعال شد.' : 'سیاست غیرفعال شد.');
+    } catch (error) {
+      _message('تغییر وضعیت سیاست ذخیره نشد: $error');
+      if (mounted) setState(() => _refresh++);
+    }
   }
 
   void _clear() {
@@ -957,6 +1167,12 @@ class _GeoPolicyEditorState extends State<_GeoPolicyEditor> {
       children: [
         _EditorCard(
           children: [
+            OutlinedButton.icon(
+              onPressed: _enableTrialPolicy,
+              icon: const Icon(Icons.science_outlined),
+              label: const Text('ایجاد و فعال‌سازی سیاست آزمایشی نامحدود'),
+            ),
+            const SizedBox(height: 12),
             TextField(
               controller: _code,
               decoration: const InputDecoration(labelText: 'کد سیاست'),
@@ -1033,6 +1249,8 @@ class _GeoPolicyEditorState extends State<_GeoPolicyEditor> {
                   '${item.isActive ? 'فعال' : 'غیرفعال'}',
                 ),
                 trailing: _PolicyActions(
+                  isActive: item.isActive,
+                  onActiveChanged: (value) => _setActive(item, value),
                   onEdit: () => _edit(item),
                   onDelete: () => _delete(item),
                 ),
@@ -1094,7 +1312,7 @@ class _ClosurePolicyEditorState extends State<_ClosurePolicyEditor> {
         stage == null ||
         stage < 1 ||
         hours == null ||
-        hours < 1 ||
+        hours < 0 ||
         DateTime.tryParse(_effectiveFrom.text.trim()) == null ||
         (_effectiveTo.text.trim().isNotEmpty &&
             DateTime.tryParse(_effectiveTo.text.trim()) == null)) {
@@ -1116,14 +1334,53 @@ class _ClosurePolicyEditorState extends State<_ClosurePolicyEditor> {
           _effectiveTo.text.trim().isEmpty ? null : _effectiveTo.text.trim(),
     };
     final repository = GetIt.I<AdminRepository>();
-    if (_editingId == null) {
-      await repository.createClosurePenaltyPolicy(data);
-    } else {
-      await repository.updateClosurePenaltyPolicy(_editingId!, data);
+    try {
+      if (_editingId == null) {
+        await repository.createClosurePenaltyPolicy(data);
+      } else {
+        await repository.updateClosurePenaltyPolicy(_editingId!, data);
+      }
+      _clear();
+      setState(() => _refresh++);
+      _message('سیاست جریمه بستن حساب ذخیره شد.');
+    } catch (error) {
+      _message('ذخیرهٔ سیاست جریمه بستن حساب ناموفق بود: $error');
     }
-    _clear();
-    setState(() => _refresh++);
-    _message('سیاست جریمه بستن حساب ذخیره شد.');
+  }
+
+  Future<void> _enableTrialPolicy() async {
+    final now = DateTime.now().toUtc().toIso8601String();
+    final repository = GetIt.I<AdminRepository>();
+    final data = <String, dynamic>{
+      'policy_family_code': 'account_closure',
+      'policy_code': 'account_closure_trial',
+      'policy_name': 'سیاست آزمایشی بستن حساب بدون انتظار',
+      'description':
+          'برای آزمایش اپ؛ ثبت‌نام تازه بلافاصله پس از بستن حساب مجاز است.',
+      'penalty_stage': 1,
+      'penalty_hours': 0,
+      'trigger_scope': 'account_closure',
+      'is_active': true,
+      'effective_from': now,
+      'effective_to': null,
+    };
+    try {
+      final matches =
+          (await repository.closurePenaltyPolicies())
+              .where((item) => item.policyCode == 'account_closure_trial')
+              .toList();
+      final existing = matches.isEmpty ? null : matches.first;
+      if (existing == null) {
+        await repository.createClosurePenaltyPolicy(data);
+      } else {
+        await repository.updateClosurePenaltyPolicy(existing.id, data);
+      }
+      if (!mounted) return;
+      setState(() => _refresh++);
+      _message('سیاست آزمایشی بستن حساب فعال شد.');
+    } catch (error) {
+      _message('ایجاد سیاست آزمایشی بستن حساب ناموفق بود: $error');
+    }
   }
 
   void _edit(AdminClosurePenaltyPolicy item) {
@@ -1145,6 +1402,20 @@ class _ClosurePolicyEditorState extends State<_ClosurePolicyEditor> {
     await GetIt.I<AdminRepository>().deleteClosurePenaltyPolicy(item.id);
     setState(() => _refresh++);
     _message('سیاست حذف شد.');
+  }
+
+  Future<void> _setActive(AdminClosurePenaltyPolicy item, bool value) async {
+    try {
+      await GetIt.I<AdminRepository>().updateClosurePenaltyPolicy(item.id, {
+        'is_active': value,
+      });
+      if (!mounted) return;
+      setState(() => _refresh++);
+      _message(value ? 'سیاست جریمه فعال شد.' : 'سیاست جریمه غیرفعال شد.');
+    } catch (error) {
+      _message('تغییر وضعیت سیاست جریمه ذخیره نشد: $error');
+      if (mounted) setState(() => _refresh++);
+    }
   }
 
   void _clear() {
@@ -1176,6 +1447,12 @@ class _ClosurePolicyEditorState extends State<_ClosurePolicyEditor> {
       children: [
         _EditorCard(
           children: [
+            OutlinedButton.icon(
+              onPressed: _enableTrialPolicy,
+              icon: const Icon(Icons.science_outlined),
+              label: const Text('ایجاد و فعال‌سازی سیاست آزمایشی بدون انتظار'),
+            ),
+            const SizedBox(height: 12),
             TextField(
               controller: _familyCode,
               decoration: const InputDecoration(labelText: 'کد خانواده سیاست'),
@@ -1254,6 +1531,8 @@ class _ClosurePolicyEditorState extends State<_ClosurePolicyEditor> {
                   '${item.isActive ? 'فعال' : 'غیرفعال'}',
                 ),
                 trailing: _PolicyActions(
+                  isActive: item.isActive,
+                  onActiveChanged: (value) => _setActive(item, value),
                   onEdit: () => _edit(item),
                   onDelete: () => _delete(item),
                 ),
@@ -1280,8 +1559,15 @@ Widget _dateField(String label, TextEditingController controller) {
 }
 
 class _PolicyActions extends StatelessWidget {
-  const _PolicyActions({required this.onEdit, required this.onDelete});
+  const _PolicyActions({
+    required this.isActive,
+    required this.onActiveChanged,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
+  final bool isActive;
+  final ValueChanged<bool> onActiveChanged;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -1290,6 +1576,7 @@ class _PolicyActions extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        Switch(value: isActive, onChanged: onActiveChanged),
         IconButton(
           tooltip: 'ویرایش',
           onPressed: onEdit,
@@ -1378,4 +1665,571 @@ class _EditorCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ProcessLifecyclePolicyEditor extends StatefulWidget {
+  const _ProcessLifecyclePolicyEditor();
+
+  @override
+  State<_ProcessLifecyclePolicyEditor> createState() =>
+      _ProcessLifecyclePolicyEditorState();
+}
+
+class _ProcessLifecyclePolicyEditorState
+    extends State<_ProcessLifecyclePolicyEditor> {
+  final _thresholdPercent = TextEditingController(text: '20');
+  final _minSupportCount = TextEditingController(text: '0');
+  final _supportDays = TextEditingController(text: '30');
+  final _waitingDays = TextEditingController(text: '30');
+  final _votingDays = TextEditingController(text: '7');
+  final _publicationHours = TextEditingController(text: '24');
+  late Future<List<AdminProcessLifecyclePolicy>> _policies =
+      GetIt.I<AdminRepository>().processLifecyclePolicies();
+  bool _loaded = false;
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _thresholdPercent.dispose();
+    _minSupportCount.dispose();
+    _supportDays.dispose();
+    _waitingDays.dispose();
+    _votingDays.dispose();
+    _publicationHours.dispose();
+    super.dispose();
+  }
+
+  void _loadActive(List<AdminProcessLifecyclePolicy> policies) {
+    if (_loaded) return;
+    _loaded = true;
+    AdminProcessLifecyclePolicy? active;
+    for (final policy in policies) {
+      if (policy.isActive) {
+        active = policy;
+        break;
+      }
+    }
+    if (active == null) return;
+    final wholePercent = active.thresholdRatePpm ~/ 10000;
+    final fraction = (active.thresholdRatePpm % 10000)
+        .toString()
+        .padLeft(4, '0')
+        .replaceFirst(RegExp(r'0+$'), '');
+    _thresholdPercent.text =
+        fraction.isEmpty ? '$wholePercent' : '$wholePercent.$fraction';
+    _minSupportCount.text = '${active.minSupportCount}';
+    _supportDays.text = '${active.supportPeriodDays}';
+    _waitingDays.text = '${active.waitingPeriodDays}';
+    _votingDays.text = '${active.votingPeriodDays}';
+    _publicationHours.text = '${active.publicationDelayHours}';
+  }
+
+  int? _value(TextEditingController controller) =>
+      int.tryParse(controller.text.trim());
+
+  int? _thresholdPpm() {
+    final match = RegExp(
+      r'^(\d{1,3})(?:\.(\d{1,4}))?$',
+    ).firstMatch(_thresholdPercent.text.trim());
+    if (match == null) return null;
+    final whole = int.parse(match.group(1)!);
+    final fraction = int.parse((match.group(2) ?? '').padRight(4, '0'));
+    return whole * 10000 + fraction;
+  }
+
+  void _message(String text) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+    }
+  }
+
+  Future<void> _save() async {
+    final thresholdPpm = _thresholdPpm();
+    final minimum = _value(_minSupportCount);
+    final supportDays = _value(_supportDays);
+    final waitingDays = _value(_waitingDays);
+    final votingDays = _value(_votingDays);
+    final publicationHours = _value(_publicationHours);
+    if (thresholdPpm == null ||
+        minimum == null ||
+        supportDays == null ||
+        waitingDays == null ||
+        votingDays == null ||
+        publicationHours == null) {
+      _message('همهٔ فیلدها باید عدد صحیح باشند.');
+      return;
+    }
+    if (thresholdPpm < 1 ||
+        thresholdPpm > 1000000 ||
+        minimum < 0 ||
+        supportDays < 1 ||
+        waitingDays < 1 ||
+        votingDays < 1 ||
+        publicationHours < 1) {
+      _message(
+        'درصد حدنصاب باید از ۰٫۰۰۰۱ تا ۱۰۰ و حداکثر چهار رقم اعشار باشد؛ مدت‌ها نیز باید مثبت باشند.',
+      );
+      return;
+    }
+    final accepted = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('ثبت نسخهٔ تازهٔ سیاست'),
+            content: const Text(
+              'این تنظیمات به‌صورت نسخهٔ تازه فعال می‌شوند. نسخه‌های پیشین برای فرایندهایی که با آن‌ها آغاز شده‌اند حفظ می‌شوند.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('بازگشت'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('ثبت و فعال‌سازی'),
+              ),
+            ],
+          ),
+    );
+    if (accepted != true || !mounted) return;
+    setState(() => _saving = true);
+    try {
+      await GetIt.I<AdminRepository>().createProcessLifecyclePolicy({
+        'threshold_rate_ppm': thresholdPpm,
+        'min_support_count': minimum,
+        'support_period_days': supportDays,
+        'waiting_period_days': waitingDays,
+        'voting_period_days': votingDays,
+        'publication_delay_hours': publicationHours,
+      });
+      _loaded = false;
+      setState(
+        () => _policies = GetIt.I<AdminRepository>().processLifecyclePolicies(),
+      );
+      _message('نسخهٔ تازهٔ سیاست چرخه فعال شد.');
+    } catch (error) {
+      _message('ذخیرهٔ سیاست انجام نشد: $error');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) => FutureBuilder<List<AdminProcessLifecyclePolicy>>(
+    future: _policies,
+    builder: (context, snapshot) {
+      if (snapshot.hasData) _loadActive(snapshot.data!);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _EditorCard(
+            children: [
+              Text(
+                'این اعداد پارامترهای چرخهٔ همه‌پرسی، انتخابات و استیضاح هستند. هر بار ذخیره، نسخهٔ تازه‌ای می‌سازد و سیاست فرایندهای آغازشده را تغییر نمی‌دهد.',
+              ),
+              SizedBox(height: 12),
+              Text(
+                'حدنصاب حمایت با گردکردن رو به بالا محاسبه می‌شود. مهلت هر مرحله از زمان ورود همان فرایند به آن مرحله شروع می‌شود.',
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _EditorCard(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _thresholdPercent,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'حدنصاب حمایت (درصد؛ نمونه: 20)',
+                        suffixText: '%',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              _numberField(
+                'حداقل تعداد حمایت (۰ یعنی بدون حداقل جداگانه)',
+                _minSupportCount,
+              ),
+              _numberField('مهلت کسب حدنصاب (روز)', _supportDays),
+              _numberField('مدت انتظار پس از کسب حدنصاب (روز)', _waitingDays),
+              _numberField('مدت رأی‌گیری (روز)', _votingDays),
+              _numberField(
+                'فاصلهٔ پایان رأی‌گیری تا انتشار صندوق (ساعت)',
+                _publicationHours,
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: _saving || snapshot.hasError ? null : _save,
+                icon:
+                    _saving
+                        ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                        : const Icon(Icons.save_outlined),
+                label: const Text('ایجاد نسخه و فعال‌سازی'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _AsyncRecordsCard<AdminProcessLifecyclePolicy>(
+            title: 'نسخه‌های ثبت‌شدهٔ سیاست چرخه',
+            future: _policies,
+            emptyText: 'هنوز نسخه‌ای ثبت نشده است.',
+            itemBuilder:
+                (context, policy) => ListTile(
+                  leading: Icon(
+                    policy.isActive ? Icons.check_circle : Icons.history,
+                    color: policy.isActive ? Colors.green : null,
+                  ),
+                  title: Text(
+                    'نسخهٔ ${policy.versionNumber}${policy.isActive ? ' — فعال' : ''}',
+                  ),
+                  subtitle: Text(
+                    'حدنصاب ${_formatLifecyclePercent(policy.thresholdRatePpm)} | '
+                    'حمایت ${policy.supportPeriodDays} روز | انتظار ${policy.waitingPeriodDays} روز | '
+                    'رأی‌گیری ${policy.votingPeriodDays} روز | انتشار ${policy.publicationDelayHours} ساعت',
+                  ),
+                ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+String _formatLifecyclePercent(int ratePpm) {
+  final whole = ratePpm ~/ 10000;
+  final fraction = (ratePpm % 10000)
+      .toString()
+      .padLeft(4, '0')
+      .replaceFirst(RegExp(r'0+$'), '');
+  return fraction.isEmpty ? '$whole%' : '$whole.$fraction%';
+}
+
+class _HomeManagementEditor extends StatefulWidget {
+  const _HomeManagementEditor();
+  @override
+  State<_HomeManagementEditor> createState() => _HomeManagementEditorState();
+}
+
+class _HomeManagementEditorState extends State<_HomeManagementEditor> {
+  static const sections = <String, String>{
+    'goals': 'اهداف وتواپ',
+    'identity': 'مکانیسم احراز هویت',
+    'activation': 'نحوه فعال سازی سامانه',
+    'validation': 'فرآیند اعتبارسنجی سامانه',
+    'technical': 'زیرساخت فنی',
+    'creators': 'هویت سازندگان',
+  };
+  static const states = [
+    'در حال کسب نصاب برای فعالسازی بخش همه‌پرسی',
+    'بخش همه‌پرسی فعال است',
+    'بخش‌های همه‌پرسی و انتخابات فعال است',
+    'بخش‌های همه‌پرسی، انتخابات و استیضاح فعال هستند',
+  ];
+  final body = TextEditingController();
+  String sectionKey = 'goals';
+  bool published = true;
+  late Future<List<Map<String, dynamic>>> sectionData =
+      GetIt.I<AdminRepository>().homeSections();
+  late Future<Map<String, dynamic>> stateData =
+      GetIt.I<AdminRepository>().homeState();
+  late Future<List<Map<String, dynamic>>> eventData =
+      GetIt.I<AdminRepository>().homeEvents();
+
+  @override
+  void dispose() {
+    body.dispose();
+    super.dispose();
+  }
+
+  void message(String value) {
+    if (mounted)
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(value)));
+  }
+
+  Future<void> selectSection(String key) async {
+    final rows = await GetIt.I<AdminRepository>().homeSections();
+    Map<String, dynamic>? match;
+    for (final row in rows) {
+      if (row['section_key'] == key) match = row;
+    }
+    if (!mounted) return;
+    setState(() {
+      sectionKey = key;
+      body.text = match == null ? '' : match['body_text'].toString();
+      published =
+          match == null ||
+          match['is_published'] == true ||
+          match['is_published'] == 1;
+    });
+  }
+
+  Future<bool> confirm(String title, String text, String accept) async =>
+      await showDialog<bool>(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: Text(title),
+              content: Text(text),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('بازگشت'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: Text(accept),
+                ),
+              ],
+            ),
+      ) ==
+      true;
+
+  Future<void> saveSection() async {
+    if (body.text.trim().isEmpty) {
+      message('متن بخش را وارد کنید.');
+      return;
+    }
+    if (!await confirm(
+      'ذخیرهٔ محتوای معرفی',
+      'متن ' + sections[sectionKey]! + ' ذخیره شود؟',
+      'ذخیره',
+    ))
+      return;
+    await GetIt.I<AdminRepository>().saveHomeSection(sectionKey, {
+      'title': sections[sectionKey],
+      'body_text': body.text.trim(),
+      'is_published': published,
+    });
+    if (!mounted) return;
+    setState(() => sectionData = GetIt.I<AdminRepository>().homeSections());
+    message('متن معرفی ذخیره شد.');
+  }
+
+  Future<void> advance(int current) async {
+    if (current < 2) return;
+    final next = current + 1;
+    if (!await confirm(
+      'تأیید انتقال وضعیت',
+      'وضعیت از «' +
+          states[current - 1] +
+          '» به «' +
+          states[next - 1] +
+          '» تغییر کند؟ اقدام در گزارش مدیر ثبت می‌شود.',
+      'تأیید انتقال',
+    ))
+      return;
+    try {
+      await GetIt.I<AdminRepository>().changeHomeState(next);
+      if (!mounted) return;
+      setState(() => stateData = GetIt.I<AdminRepository>().homeState());
+      message('وضعیت سامانه تغییر کرد.');
+    } catch (_) {
+      message(
+        current == 1
+            ? 'نصاب ۴۴ میلیون کاربر هنوز تکمیل نشده است.'
+            : 'انتقال وضعیت انجام نشد.',
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      DefaultTabController(
+        length: 2,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _EditorCard(
+              children: [
+                const Text('محتوای خانه و وضعیت سامانه'),
+                const TabBar(
+                  isScrollable: true,
+                  tabs: [
+                    Tab(text: 'محتوای معرفی'),
+                    Tab(text: 'قوانین و مقررات'),
+                  ],
+                ),
+              ],
+            ),
+            Builder(
+              builder: (context) {
+                final tabController = DefaultTabController.of(context);
+                return AnimatedBuilder(
+                  animation: tabController,
+                  builder: (context, _) {
+                    if (tabController.index == 1) {
+                      return const _ContentEditor();
+                    }
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 12),
+                        _EditorCard(
+                          children: [
+                            DropdownButtonFormField<String>(
+                              value: sectionKey,
+                              decoration: const InputDecoration(
+                                labelText: 'بخش معرفی',
+                              ),
+                              items:
+                                  sections.entries
+                                      .map(
+                                        (entry) => DropdownMenuItem(
+                                          value: entry.key,
+                                          child: Text(entry.value),
+                                        ),
+                                      )
+                                      .toList(),
+                              onChanged: (value) {
+                                if (value != null) selectSection(value);
+                              },
+                            ),
+                            TextField(
+                              controller: body,
+                              minLines: 4,
+                              maxLines: 10,
+                              decoration: const InputDecoration(
+                                labelText: 'متن بخش',
+                              ),
+                            ),
+                            SwitchListTile(
+                              value: published,
+                              onChanged:
+                                  (value) => setState(() => published = value),
+                              title: const Text('نمایش در اپ'),
+                            ),
+                            FilledButton(
+                              onPressed: saveSection,
+                              child: const Text('ذخیرهٔ متن'),
+                            ),
+                            FutureBuilder<List<Map<String, dynamic>>>(
+                              future: sectionData,
+                              builder:
+                                  (context, snapshot) => Wrap(
+                                    spacing: 8,
+                                    children:
+                                        (snapshot.data ?? [])
+                                            .map(
+                                              (row) => ActionChip(
+                                                label: Text(
+                                                  row['title'].toString(),
+                                                ),
+                                                onPressed:
+                                                    () => selectSection(
+                                                      row['section_key']
+                                                          .toString(),
+                                                    ),
+                                              ),
+                                            )
+                                            .toList(),
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 12),
+      _EditorCard(
+        children: [
+          const Text('وضعیت سامانه'),
+          FutureBuilder<Map<String, dynamic>>(
+            future: stateData,
+            builder: (context, snapshot) {
+              final current =
+                  ((snapshot.data?['state_value'] as num?)?.toInt() ?? 1).clamp(
+                    1,
+                    4,
+                  );
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'وضعیت ' + current.toString() + ': ' + states[current - 1],
+                  ),
+                  if (current == 1)
+                    const Text(
+                      'انتقال به وضعیت همه‌پرسی با رسیدن شمار کاربران فعال به نصاب، خودکار انجام می‌شود.',
+                    ),
+                  if (current >= 2 && current < 4)
+                    OutlinedButton(
+                      onPressed: () => advance(current),
+                      child: Text(
+                        'انتقال به وضعیت ' + (current + 1).toString(),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      _EditorCard(
+        children: [
+          const Text('رویدادهای فعال دریافت‌شده از سامانه'),
+          FutureBuilder<List<Map<String, dynamic>>>(
+            future: eventData,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              final events = snapshot.data ?? const [];
+              if (events.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Text('در حال حاضر رویداد فعالی از سامانه دریافت نشد.'),
+                );
+              }
+              return Column(
+                children:
+                    events.map((event) {
+                      final kind = '${event['kind'] ?? ''}';
+                      final (label, icon) = switch (kind) {
+                        'referendum' => (
+                          'همه‌پرسی',
+                          Icons.how_to_vote_outlined,
+                        ),
+                        'election' => ('انتخابات', Icons.ballot_outlined),
+                        'impeachment' => ('استیضاح', Icons.gavel_outlined),
+                        _ => ('رویداد', Icons.event_outlined),
+                      };
+                      return ListTile(
+                        leading: Icon(icon),
+                        title: Text('${event['title'] ?? label}'),
+                        subtitle: Text(label),
+                      );
+                    }).toList(),
+              );
+            },
+          ),
+        ],
+      ),
+    ],
+  );
 }

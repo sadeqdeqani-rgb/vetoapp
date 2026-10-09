@@ -24,6 +24,9 @@ class FakeAuthRepository implements AuthRepository {
   const FakeAuthRepository();
 
   @override
+  Future<void> logout() async {}
+
+  @override
   Future<Either<Failure, AuthResult>> login({
     required String phoneNumber,
     required String password,

@@ -13,10 +13,13 @@ import '../../features/auth/data/repositories/auth_session_repository_impl.dart'
 import '../../features/auth/data/repositories/fake_auth_repository.dart';
 import '../../features/auth/data/repositories/otp_repository_impl.dart';
 import '../../features/auth/data/repositories/registration_repository_impl.dart';
+import '../../features/auth/data/repositories/telegram_password_recovery_repository_impl.dart';
+import '../../features/auth/data/services/biometric_auth_service.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/repositories/auth_session_repository.dart';
 import '../../features/auth/domain/repositories/otp_repository.dart';
 import '../../features/auth/domain/repositories/registration_repository.dart';
+import '../../features/auth/domain/repositories/telegram_password_recovery_repository.dart';
 import '../../features/auth/domain/usecases/check_auth_session_usecase.dart';
 import '../../features/auth/domain/usecases/clear_auth_session_usecase.dart';
 import '../../features/auth/domain/usecases/load_geographical_children.dart';
@@ -36,12 +39,17 @@ import '../../features/profile/domain/repositories/profile_repository.dart';
 import '../../features/profile/domain/usecases/close_account.dart';
 import '../../features/profile/domain/usecases/get_profile.dart';
 import '../../features/profile/presentation/cubit/profile_cubit.dart';
+import '../../features/referendum/data/repositories/referendum_proposal_repository.dart';
+import '../../features/referendum/data/repositories/referendum_voting_repository.dart';
+import '../../features/election/data/election_voting_repository.dart';
+import '../../features/impeachment/data/impeachment_repository.dart';
 import '../../features/admin/data/repositories/admin_repository_impl.dart';
 import '../../features/admin/domain/repositories/admin_repository.dart';
 import '../../features/content/data/repositories/public_content_repository_impl.dart';
 import '../../features/content/domain/repositories/public_content_repository.dart';
 import '../../features/content/domain/usecases/get_public_content.dart';
 import '../storage/secure_storage_service.dart';
+import '../biometric/device_biometric_key_store.dart';
 import '../network/dio_client.dart';
 import '../network/auth_session_events.dart';
 import '../validation/frontend_test_config.dart';
@@ -50,7 +58,9 @@ final getIt = GetIt.instance;
 
 void configureDependencies() {
   if (!getIt.isRegistered<SecureStorageService>()) {
-    getIt.registerLazySingleton<SecureStorageService>(SecureStorageService.new);
+    getIt.registerLazySingleton<SecureStorageService>(
+      () => SecureStorageService(storage: getIt<FlutterSecureStorage>()),
+    );
   }
   if (!getIt.isRegistered<AuthSessionExpiredNotifier>()) {
     getIt.registerLazySingleton<AuthSessionExpiredNotifier>(
@@ -79,6 +89,44 @@ void configureDependencies() {
   if (!getIt.isRegistered<FlutterSecureStorage>()) {
     getIt.registerLazySingleton<FlutterSecureStorage>(
       () => const FlutterSecureStorage(),
+    );
+  }
+  if (!getIt.isRegistered<DeviceBiometricKeyStore>()) {
+    getIt.registerLazySingleton<DeviceBiometricKeyStore>(
+      DeviceBiometricKeyStore.new,
+    );
+  }
+  if (!getIt.isRegistered<BiometricAuthService>()) {
+    getIt.registerLazySingleton<BiometricAuthService>(
+      () => BiometricAuthService(
+        dio: getIt<Dio>(),
+        storage: getIt<SecureStorageService>(),
+        keyStore: getIt<DeviceBiometricKeyStore>(),
+      ),
+    );
+  }
+  if (!getIt.isRegistered<ReferendumProposalRepository>()) {
+    getIt.registerLazySingleton<ReferendumProposalRepository>(
+      () => ReferendumProposalRepository(
+        dio: getIt<Dio>(),
+        biometricAuth: getIt<BiometricAuthService>(),
+        storage: getIt<SecureStorageService>(),
+      ),
+    );
+  }
+  if (!getIt.isRegistered<ReferendumVotingRepository>()) {
+    getIt.registerLazySingleton<ReferendumVotingRepository>(
+      () => ReferendumVotingRepository(dio: getIt<Dio>(), biometricAuth: getIt<BiometricAuthService>(), storage: getIt<SecureStorageService>()),
+    );
+  }
+  if (!getIt.isRegistered<ElectionVotingRepository>()) {
+    getIt.registerLazySingleton<ElectionVotingRepository>(
+      () => ElectionVotingRepository(dio: getIt<Dio>(), biometricAuth: getIt<BiometricAuthService>(), storage: getIt<SecureStorageService>()),
+    );
+  }
+  if (!getIt.isRegistered<ImpeachmentRepository>()) {
+    getIt.registerLazySingleton<ImpeachmentRepository>(
+      () => ImpeachmentRepository(dio: getIt<Dio>(), biometricAuth: getIt<BiometricAuthService>(), storage: getIt<SecureStorageService>()),
     );
   }
 
@@ -137,6 +185,11 @@ void configureDependencies() {
       ),
     );
   }
+  if (!getIt.isRegistered<TelegramPasswordRecoveryRepository>()) {
+    getIt.registerLazySingleton<TelegramPasswordRecoveryRepository>(
+      () => TelegramPasswordRecoveryRepositoryImpl(getIt<Dio>()),
+    );
+  }
 
   if (!getIt.isRegistered<ProfileRemoteDataSource>()) {
     getIt.registerLazySingleton<ProfileRemoteDataSource>(
@@ -183,19 +236,19 @@ void configureDependencies() {
       () => GetPublicTermsUseCase(getIt<PublicContentRepository>()),
     )
     ..registerLazySingleton(
-      () => GetPublicIntroductionVideoUseCase(
-        getIt<PublicContentRepository>(),
-      ),
+      () => GetPublicIntroductionVideoUseCase(getIt<PublicContentRepository>()),
     );
 
   if (!getIt.isRegistered<AuthCubit>()) {
     getIt.registerLazySingleton(
       () => AuthCubit(
         checkSession: getIt<CheckAuthSessionUseCase>(),
+        authRepository: getIt<AuthRepository>(),
         loginUseCase: getIt<LoginUseCase>(),
         saveAuthenticatedSession: getIt<SaveAuthenticatedSessionUseCase>(),
         saveGuestSession: getIt<SaveGuestSessionUseCase>(),
         clearSession: getIt<ClearAuthSessionUseCase>(),
+        biometricAuth: getIt<BiometricAuthService>(),
       ),
     );
   }

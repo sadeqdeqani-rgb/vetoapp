@@ -57,7 +57,7 @@ class _GatewayPageState extends State<GatewayPage> {
           const SizedBox(height: 12),
           GatewayActionButton(
             title: 'ورود کاربر',
-            onTap: () => context.go('/login'),
+            onTap: () => context.push('/login'),
           ),
           const SizedBox(height: 12),
           GatewayActionButton(

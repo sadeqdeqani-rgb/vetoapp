@@ -16,7 +16,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(VetoAppLookupSeeder::class);
+        $this->call(ProcessDomainLookupSeeder::class);
         $this->call(IranGeographySeeder::class);
+        $this->call(HomeStateSeeder::class);
+        $this->call(HomeContentSeeder::class);
         $this->call(NationalIdAreaEligibilitySeeder::class);
 
         // User::factory(10)->create();

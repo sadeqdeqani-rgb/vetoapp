@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/auth_card.dart';
+import '../../../../core/widgets/app_message_dialog.dart';
+import '../../../../core/widgets/biometric_device_check_option.dart';
 import '../../../../core/validation/digit_normalizer.dart';
+import '../../../../core/validation/iranian_mobile_input_formatter.dart';
+import '../../../../core/validation/iranian_mobile_number.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
 
@@ -23,7 +26,7 @@ class _LoginCredentialsPageState extends State<LoginCredentialsPage> {
   late final TextEditingController _phoneController;
   late final TextEditingController _passwordController;
 
-  static final RegExp _phoneRegex = RegExp(r'^09\d{9}$');
+  static final RegExp _phoneRegex = RegExp(r'^9\d{9}$');
 
   @override
   void initState() {
@@ -47,7 +50,7 @@ class _LoginCredentialsPageState extends State<LoginCredentialsPage> {
     }
 
     if (!_phoneRegex.hasMatch(phone)) {
-      return 'شماره موبایل باید ۱۱ رقم و با 09 شروع شود.';
+      return '۱۰ رقم شمارهٔ همراه را پس از پیش‌شمارهٔ +۹۸ وارد کنید.';
     }
 
     return null;
@@ -74,8 +77,9 @@ class _LoginCredentialsPageState extends State<LoginCredentialsPage> {
       return;
     }
 
+    final phoneNumber = normalizeIranianMobileNumber(_phoneController.text);
     context.read<AuthCubit>().login(
-      username: normalizeDigits(_phoneController.text.trim()),
+      username: phoneNumber,
       password: normalizeDigits(_passwordController.text),
     );
   }
@@ -83,7 +87,6 @@ class _LoginCredentialsPageState extends State<LoginCredentialsPage> {
   @override
   Widget build(BuildContext context) {
     return AuthScaffold(
-      showBackButton: false,
       maxWidth: 520,
       child: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
@@ -95,9 +98,19 @@ class _LoginCredentialsPageState extends State<LoginCredentialsPage> {
               context.go('/');
             },
             error: (message) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text('خطا: $message')));
+              showAppMessageDialog<void>(
+                context: context,
+                message: 'خطا: $message',
+                tone: AppMessageTone.error,
+                actions: [
+                  appDialogButton(
+                    context,
+                    label: 'متوجه شدم',
+                    primary: true,
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              );
             },
           );
         },
@@ -123,24 +136,24 @@ class _LoginCredentialsPageState extends State<LoginCredentialsPage> {
                       ).textTheme.titleMedium?.copyWith(color: textColor),
                     ),
                     const SizedBox(height: 24),
-                    TextFormField(
-                      controller: _phoneController,
-                      enabled: !isLoading,
-                      keyboardType: TextInputType.phone,
-                      textInputAction: TextInputAction.next,
-                      textAlign: TextAlign.right,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                          RegExp(r'[0-9۰-۹٠-٩]'),
+                    Directionality(
+                      textDirection: TextDirection.ltr,
+                      child: TextFormField(
+                        controller: _phoneController,
+                        enabled: !isLoading,
+                        keyboardType: TextInputType.phone,
+                        textInputAction: TextInputAction.next,
+                        textAlign: TextAlign.left,
+                        textDirection: TextDirection.ltr,
+                        inputFormatters: [IranianMobileInputFormatter()],
+                        validator: _validatePhone,
+                        decoration: InputDecoration(
+                          labelText: 'شماره موبایل خود را وارد کنید:',
+                          hintText: '۹xxxxxxxxx',
+                          prefixText: '+۹۸ ',
+                          filled: true,
+                          fillColor: AppTheme.surface.withValues(alpha: 0.85),
                         ),
-                        LengthLimitingTextInputFormatter(11),
-                      ],
-                      validator: _validatePhone,
-                      decoration: InputDecoration(
-                        labelText: 'شماره موبایل خود را وارد کنید:',
-                        hintText: '09xxxxxxxxx',
-                        filled: true,
-                        fillColor: AppTheme.surface.withValues(alpha: 0.85),
                       ),
                     ),
                     const SizedBox(height: 18),
@@ -210,6 +223,8 @@ class _LoginCredentialsPageState extends State<LoginCredentialsPage> {
                       onPressed: isLoading ? null : _submit,
                       loading: isLoading,
                     ),
+                    const SizedBox(height: 12),
+                    const BiometricDeviceCheckOption(),
                   ],
                 ),
               ),

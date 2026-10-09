@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/auth_card.dart';
+import '../../../../core/widgets/app_message_dialog.dart';
 import '../../../../core/validation/digit_normalizer.dart';
 import '../../domain/entities/otp_challenge.dart';
 import '../cubit/otp_cubit.dart';
@@ -107,13 +108,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
   void _resendOtp() {
     _startTimer();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'کد تأیید مجدداً به ${widget.phoneNumber} ارسال خواهد شد.',
-        ),
-      ),
-    );
+    showAppMessageDialog<void>(context: context, message: 'کد تأیید مجدداً به ${widget.phoneNumber} ارسال خواهد شد.', tone: AppMessageTone.info, actions: [appDialogButton(context, label: 'متوجه شدم', primary: true, onPressed: () => Navigator.of(context).pop())]);
   }
 
   @override
@@ -125,7 +120,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         : 'تأیید کد ورود';
 
     final description = widget.isPasswordRecovery
-        ? 'کد بازیابی ارسال‌شده به شمارهٔ زیر را وارد کنید.'
+        ? 'کد بازیابی ارسال‌شده در گفت‌وگوی ربات تلگرام وتواپ را وارد کنید.'
         : widget.isRegistration
         ? 'کد تأیید ارسال‌شده به شمارهٔ زیر را وارد کنید.'
         : 'کد تأیید ارسال‌شده به شمارهٔ زیر را وارد کنید.';
@@ -158,8 +153,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             }
           } else if (state is OtpError && mounted) {
             setState(() => _isLoading = false);
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(state.message)));
+            showAppMessageDialog<void>(context: context, message: state.message, tone: AppMessageTone.error, actions: [appDialogButton(context, label: 'متوجه شدم', primary: true, onPressed: () => Navigator.of(context).pop())]);
           }
         },
         child: AuthFormCard(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/app_back_handler_registry.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_background.dart';
 
@@ -22,12 +23,16 @@ class MainScreen extends StatelessWidget {
 
   int _selectedIndex(BuildContext context) {
     final index = _locations.indexOf(
-      _parentLocation(GoRouterState.of(context).uri.path),
+      _parentLocation(_currentLocation(context)),
     );
     return index == -1 ? 0 : index;
   }
 
+  String _currentLocation(BuildContext context) =>
+      GoRouter.of(context).routeInformationProvider.value.uri.path;
+
   String _parentLocation(String location) {
+    if (location.startsWith('/about')) return '/';
     if (location.startsWith('/referendum')) return '/referendum';
     if (location.startsWith('/elections')) return '/elections';
     if (location.startsWith('/impeachment')) return '/impeachment';
@@ -45,8 +50,17 @@ class MainScreen extends StatelessWidget {
     };
   }
 
+  Color _accentForLocation(String location) {
+    if (location.startsWith('/referendum')) return AppTheme.success;
+    if (location.startsWith('/elections')) return AppTheme.election;
+    if (location.startsWith('/impeachment')) return AppTheme.danger;
+    if (location.startsWith('/profile')) return AppTheme.profile;
+    return AppTheme.primary;
+  }
+
   void _handleBack(BuildContext context) {
-    final location = GoRouterState.of(context).uri.path;
+    if (AppBackHandlerRegistry.handle()) return;
+    final location = _currentLocation(context);
     if (location == '/') {
       SystemNavigator.pop(animated: true);
       return;
@@ -57,123 +71,174 @@ class MainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedIndex = _selectedIndex(context);
-    final colors = Theme.of(context).colorScheme;
-
-    return PopScope<void>(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _handleBack(context);
-      },
-      child: Scaffold(
-        backgroundColor: colors.surface,
-        body: AppBackground(
-          child: SafeArea(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-                  child: Image.asset(
-                    AppTheme.appLogo,
-                    height: AppTheme.authLogoSize * 0.78,
-                    fit: BoxFit.contain,
-                    semanticLabel: 'وِتواَپ',
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-                    padding: const EdgeInsets.only(top: 4),
-                    clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(
-                      color: colors.surface.withValues(alpha: 0.92),
-                      borderRadius: BorderRadius.circular(AppTheme.cardRadius),
-                      border: Border.all(
-                        color: AppTheme.primary.withValues(alpha: 0.24),
-                        width: 1.6,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: colors.shadow.withValues(alpha: 0.10),
-                          blurRadius: 18,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: child,
-                  ),
-                ),
-              ],
+    final router = GoRouter.of(context);
+    return AnimatedBuilder(
+      animation: router.routeInformationProvider,
+      builder: (context, _) {
+        final location = _currentLocation(context);
+        final selectedIndex = _selectedIndex(context);
+        final colors = Theme.of(context).colorScheme;
+        final accent = _accentForLocation(location);
+        final sectionTheme = Theme.of(context).copyWith(
+          colorScheme: colors.copyWith(
+            primary: accent,
+            primaryContainer: accent.withValues(alpha: 0.14),
+          ),
+          filledButtonTheme: FilledButtonThemeData(
+            style: FilledButton.styleFrom(
+              backgroundColor: accent,
+              foregroundColor: AppTheme.surface,
             ),
           ),
-        ),
-        bottomNavigationBar: SafeArea(
-          minimum: const EdgeInsets.fromLTRB(18, 0, 18, 16),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(32),
-            child: BackdropFilter(
-              filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-              child: Container(
-                height: 72,
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 7),
-                decoration: BoxDecoration(
-                  color: colors.surface.withValues(alpha: 0.92),
-                  borderRadius: BorderRadius.circular(32),
-                  border: Border.all(
-                    color: AppTheme.primary.withValues(alpha: 0.46),
-                    width: 2.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colors.shadow.withValues(alpha: 0.14),
-                      blurRadius: 24,
-                      spreadRadius: 1,
-                      offset: const Offset(0, 8),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: accent,
+              foregroundColor: AppTheme.surface,
+            ),
+          ),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: accent,
+              side: BorderSide(color: accent.withValues(alpha: 0.72)),
+            ),
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(foregroundColor: accent),
+          ),
+          inputDecorationTheme: Theme.of(context).inputDecorationTheme.copyWith(
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: accent, width: 1.6),
+              borderRadius: BorderRadius.circular(AppTheme.inputRadius),
+            ),
+            floatingLabelStyle: TextStyle(color: accent),
+          ),
+          chipTheme: Theme.of(context).chipTheme.copyWith(
+            selectedColor: accent.withValues(alpha: 0.18),
+            secondarySelectedColor: accent.withValues(alpha: 0.18),
+            side: BorderSide(color: accent.withValues(alpha: 0.48)),
+          ),
+        );
+        return PopScope<void>(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) _handleBack(context);
+          },
+          child: Scaffold(
+            backgroundColor: colors.surface,
+            body: AppBackground(
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                      child: Image.asset(
+                        AppTheme.appLogo,
+                        height: AppTheme.authLogoSize * 0.78,
+                        fit: BoxFit.contain,
+                        semanticLabel: 'وِتواَپ',
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                        padding: const EdgeInsets.only(top: 4),
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          color: colors.surface.withValues(alpha: 0.92),
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.cardRadius,
+                          ),
+                          border: Border.all(
+                            color: AppTheme.primary.withValues(alpha: 0.24),
+                            width: 1.6,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: colors.shadow.withValues(alpha: 0.10),
+                              blurRadius: 18,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Theme(data: sectionTheme, child: child),
+                      ),
                     ),
                   ],
                 ),
-                child: Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: Row(
-                    children: List.generate(_locations.length, (index) {
-                      final isSelected = index == selectedIndex;
-                      final icon = switch (index) {
-                        0 => Icons.home_outlined,
-                        1 => Icons.how_to_vote_outlined,
-                        2 => Icons.ballot_outlined,
-                        3 => Icons.gavel_outlined,
-                        _ => Icons.person_outline,
-                      };
-                      final label = switch (index) {
-                        0 => 'خانه',
-                        1 => 'همه‌پرسی',
-                        2 => 'انتخابات',
-                        3 => 'استیضاح',
-                        _ => 'کاربری',
-                      };
-
-                      return Expanded(
-                        child: Semantics(
-                          button: true,
-                          selected: isSelected,
-                          label: label,
-                          child: _NavigationTab(
-                            icon: icon,
-                            label: label,
-                            selected: isSelected,
-                            color: _tabColor(index),
-                            onTap: () => context.go(_locations[index]),
-                          ),
+              ),
+            ),
+            bottomNavigationBar: SafeArea(
+              minimum: const EdgeInsets.fromLTRB(18, 0, 18, 16),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(32),
+                child: BackdropFilter(
+                  filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                  child: Container(
+                    height: 72,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors.surface.withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(32),
+                      border: Border.all(
+                        color: AppTheme.primary.withValues(alpha: 0.46),
+                        width: 2.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colors.shadow.withValues(alpha: 0.14),
+                          blurRadius: 24,
+                          spreadRadius: 1,
+                          offset: const Offset(0, 8),
                         ),
-                      );
-                    }),
+                      ],
+                    ),
+                    child: Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: Row(
+                        children: List.generate(_locations.length, (index) {
+                          final isSelected = index == selectedIndex;
+                          final icon = switch (index) {
+                            0 => Icons.home_outlined,
+                            1 => Icons.how_to_vote_outlined,
+                            2 => Icons.ballot_outlined,
+                            3 => Icons.gavel_outlined,
+                            _ => Icons.person_outline,
+                          };
+                          final label = switch (index) {
+                            0 => 'خانه',
+                            1 => 'همه‌پرسی',
+                            2 => 'انتخابات',
+                            3 => 'استیضاح',
+                            _ => 'کاربری',
+                          };
+
+                          return Expanded(
+                            child: Semantics(
+                              button: true,
+                              selected: isSelected,
+                              label: label,
+                              child: _NavigationTab(
+                                icon: icon,
+                                label: label,
+                                selected: isSelected,
+                                color: _tabColor(index),
+                                onTap: () => context.go(_locations[index]),
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -202,18 +267,14 @@ class _NavigationTabState extends State<_NavigationTab> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final foreground =
-        widget.selected
-            ? Color.lerp(widget.color, colors.surface, 0.68)!
-            : widget.color;
-    final background =
-        widget.selected
-            ? widget.color.withValues(alpha: _pressed ? 0.16 : 0.08)
-            : (_pressed
-                ? widget.color.withValues(alpha: 0.16)
-                : Colors.transparent);
-
+    final foreground = widget.color.withValues(
+      alpha:
+          _pressed
+              ? 0.16
+              : widget.selected
+              ? 0.3
+              : 1,
+    );
     return GestureDetector(
       onTap: widget.onTap,
       onTapDown: (_) => setState(() => _pressed = true),
@@ -223,10 +284,6 @@ class _NavigationTabState extends State<_NavigationTab> {
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: background,
-          borderRadius: BorderRadius.circular(28),
-        ),
         child: AnimatedScale(
           scale: _pressed ? 0.96 : 1,
           duration: const Duration(milliseconds: 120),
@@ -234,11 +291,7 @@ class _NavigationTabState extends State<_NavigationTab> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                widget.icon,
-                size: widget.selected ? 23 : 25,
-                color: foreground,
-              ),
+              Icon(widget.icon, size: 25, color: foreground),
               const SizedBox(height: 1),
               Text(
                 widget.label,
@@ -247,7 +300,8 @@ class _NavigationTabState extends State<_NavigationTab> {
                 style: TextStyle(
                   fontFamily: AppTheme.fontFamily,
                   fontSize: 17,
-                  fontWeight: FontWeight.w700,
+                  fontWeight:
+                      widget.selected ? FontWeight.w600 : FontWeight.w700,
                   color: foreground,
                 ),
               ),

@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/auth_card.dart';
+import '../../../../core/widgets/app_message_dialog.dart';
 import '../../../../core/validation/digit_normalizer.dart';
 import '../../domain/entities/registration_draft.dart';
+import '../../data/services/biometric_auth_service.dart';
+import '../cubit/auth_cubit.dart';
 import '../cubit/registration_cubit.dart';
 
 class RegistrationPasswordPage extends StatefulWidget {
@@ -43,6 +47,19 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
   bool _obscurePassword = true;
   bool _obscureConfirmation = true;
   bool _isLoading = false;
+  bool _skipBiometricSetup = true;
+  bool _biometricAvailable = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometricAvailability();
+  }
+
+  Future<void> _checkBiometricAvailability() async {
+    final available = await getIt<BiometricAuthService>().canAuthenticate;
+    if (mounted) setState(() => _biometricAvailable = available);
+  }
 
   bool get _passwordReady =>
       normalizeDigits(_passwordController.text).length >= 8 &&
@@ -112,12 +129,48 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
       child: BlocListener<RegistrationCubit, RegistrationState>(
         listener: (context, state) async {
           if (state is RegistrationSaved && mounted) {
+            final authCubit = context.read<AuthCubit>();
+            final router = GoRouter.of(context);
             setState(() => _isLoading = false);
-            if (context.mounted) context.go('/register/success');
+            String? biometricMessage;
+            if (!_skipBiometricSetup) {
+              final signedIn = await authCubit.login(
+                username: widget.phoneNumber,
+                password: normalizeDigits(_passwordController.text),
+              );
+              if (signedIn) {
+                try {
+                  await getIt<BiometricAuthService>().enable(
+                    widget.phoneNumber,
+                  );
+                  biometricMessage = 'ورود با اثر انگشت در این دستگاه فعال شد.';
+                } catch (_) {
+                  biometricMessage =
+                      'ثبت‌نام انجام شد، اما فعال‌سازی اثر انگشت کامل نشد. بعداً از بخش کاربری دوباره تلاش کنید.';
+                }
+              } else {
+                biometricMessage =
+                    'ثبت‌نام انجام شد، اما ورود بیومتریک تنظیم نشد. با رمز عبور وارد شوید و بعداً از بخش کاربری فعالش کنید.';
+              }
+            }
+            if (mounted) {
+              router.go('/register/success', extra: biometricMessage);
+            }
           } else if (state is RegistrationError && mounted) {
             setState(() => _isLoading = false);
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(state.message)));
+            showAppMessageDialog<void>(
+              context: context,
+              message: state.message,
+              tone: AppMessageTone.error,
+              actions: [
+                appDialogButton(
+                  context,
+                  label: 'متوجه شدم',
+                  primary: true,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            );
           }
         },
         child: AuthFormCard(
@@ -154,9 +207,8 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                     labelText: 'رمز عبور',
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
-                      tooltip: _obscurePassword
-                          ? 'نمایش رمز'
-                          : 'پنهان کردن رمز',
+                      tooltip:
+                          _obscurePassword ? 'نمایش رمز' : 'پنهان کردن رمز',
                       onPressed: () {
                         setState(() => _obscurePassword = !_obscurePassword);
                       },
@@ -181,9 +233,8 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                     labelText: 'تکرار رمز عبور',
                     prefixIcon: const Icon(Icons.lock_reset),
                     suffixIcon: IconButton(
-                      tooltip: _obscureConfirmation
-                          ? 'نمایش رمز'
-                          : 'پنهان کردن رمز',
+                      tooltip:
+                          _obscureConfirmation ? 'نمایش رمز' : 'پنهان کردن رمز',
                       onPressed: () {
                         setState(
                           () => _obscureConfirmation = !_obscureConfirmation,
@@ -206,6 +257,28 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                     fontSize: 13,
                   ),
                 ),
+                if (_biometricAvailable) ...[
+                  const SizedBox(height: 10),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    value: _skipBiometricSetup,
+                    onChanged:
+                        _isLoading
+                            ? null
+                            : (value) => setState(
+                              () => _skipBiometricSetup = value ?? true,
+                            ),
+                    title: const Text(
+                      'بعداً مشخصات بیومتریک را تعریف می‌کنم',
+                      textAlign: TextAlign.right,
+                    ),
+                    subtitle: const Text(
+                      'با برداشتن این تیک، پس از ثبت‌نام ورود با اثر انگشت این گوشی تنظیم می‌شود.',
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 20),
                 AuthActionButton(
                   label: 'ثبت رمز و ادامه',

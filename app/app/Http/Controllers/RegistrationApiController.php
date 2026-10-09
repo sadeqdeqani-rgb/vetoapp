@@ -38,6 +38,17 @@ class RegistrationApiController extends Controller
             ], 409);
         }
 
+        $cooldownUntil = $this->registrations->registrationCooldownForMobile($mobile);
+        if ($cooldownUntil !== null) {
+            $message = 'مهلت جریمهٔ بستن حساب هنوز تمام نشده است. زمان مجاز ثبت‌نام: '.$cooldownUntil->timezone(config('app.timezone'))->format('Y-m-d H:i');
+
+            return response()->json([
+                'code' => 'account_registration_cooldown',
+                'message' => $message,
+                'cooldown_until' => $cooldownUntil->toISOString(),
+            ], 409);
+        }
+
         $draft = $this->registrations->createDraft($mobile, $data['idempotency_key']);
         $nonce = $this->registrations->issueTelegramLinkNonce($draft);
 
@@ -99,13 +110,14 @@ class RegistrationApiController extends Controller
         $messages = [
             'invalid_national_code' => 'این کد ملی نادرست است لطفا کد ملی درست و واقعی وارد کنید',
             'national_code_already_registered' => 'این کد ملی قبلاً در اپ ثبت‌نام شده است.',
+            'account_registration_cooldown' => 'مهلت جریمهٔ بستن حساب هنوز تمام نشده است. پس از پایان مهلت می‌توانید ثبت‌نام جدید انجام دهید.',
             'national_id_area_ineligible' => 'سامانه شما را زیر ۱۸ سال تشخیص داده است و شما مجاز به ثبت نام نیستید.',
         ];
         $code = (string) ($assessment['code'] ?? 'invalid_national_code');
         return response()->json([
             ...$assessment,
             'message' => $messages[$code] ?? $messages['invalid_national_code'],
-        ], $code === 'national_code_already_registered' ? 409 : 422);
+        ], in_array($code, ['national_code_already_registered', 'account_registration_cooldown'], true) ? 409 : 422);
     }
 
     public function status(Request $request, int $draft): JsonResponse

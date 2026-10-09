@@ -60,7 +60,8 @@ RUN composer install \
 
 COPY app/ ./
 
-RUN composer dump-autoload \
+RUN mkdir -p bootstrap/cache \
+    && composer dump-autoload \
     --no-dev \
     --classmap-authoritative \
     --no-interaction

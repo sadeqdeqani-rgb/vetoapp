@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/auth_card.dart';
+import '../../../../core/widgets/app_message_dialog.dart';
 import '../cubit/otp_cubit.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
@@ -70,12 +71,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     }
 
     if (widget.verificationToken.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('نشست بازیابی رمز معتبر نیست. دوباره تلاش کنید.'),
-        ),
-      );
-      context.go('/forgot-password');
+      await showAppMessageDialog<void>(context: context, message: 'نشست بازیابی رمز معتبر نیست. دوباره تلاش کنید.', tone: AppMessageTone.error, actions: [appDialogButton(context, label: 'متوجه شدم', primary: true, onPressed: () => Navigator.of(context).pop())]);
+      if (mounted) context.go('/forgot-password');
       return;
     }
 
@@ -96,20 +93,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       maxWidth: 520,
       onBack: _isLoading ? null : () => context.pop(),
       child: BlocListener<OtpCubit, OtpState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is OtpPasswordReset && mounted) {
             setState(() => _isLoading = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('رمز عبور با موفقیت تغییر کرد. اکنون وارد شوید.'),
-              ),
-            );
-            context.go('/login');
+            await showAppMessageDialog<void>(context: context, message: 'رمز عبور با موفقیت تغییر کرد. اکنون وارد شوید.', tone: AppMessageTone.success, actions: [appDialogButton(context, label: 'ورود', primary: true, onPressed: () => Navigator.of(context).pop())]);
+            if (mounted) context.go('/login');
           } else if (state is OtpError && mounted) {
             setState(() => _isLoading = false);
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            showAppMessageDialog<void>(context: context, message: state.message, tone: AppMessageTone.error, actions: [appDialogButton(context, label: 'متوجه شدم', primary: true, onPressed: () => Navigator.of(context).pop())]);
           }
         },
         child: AuthFormCard(

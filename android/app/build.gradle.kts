@@ -89,6 +89,7 @@ flutter {
 
 dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.biometric:biometric:1.1.0")
     // Flutter Embedding uses WindowMetricsCalculator and WindowInfoTracker.
     // Keep this dependency explicit as a safety net when a local Flutter
     // Maven mirror has incomplete metadata.

@@ -14,7 +14,10 @@ class ProductionSeeder extends Seeder
     {
         $this->call([
             VetoAppLookupSeeder::class,
+            ProcessDomainLookupSeeder::class,
             IranGeographySeeder::class,
+            HomeStateSeeder::class,
+            HomeContentSeeder::class,
             NationalIdAreaEligibilitySeeder::class,
         ]);
     }

@@ -87,8 +87,15 @@ class OtpService
         return DB::transaction(function () use ($userId, $telegramIdentityId, $purpose): Otp {
             $profile = UserProfile::query()
                 ->whereKey($userId)
-                ->where('is_active', true)
                 ->firstOrFail();
+            if (! $profile->is_active) {
+                $ledger = DB::table('national_id_cooldown_ledgers')
+                    ->where('national_id_hash', $profile->national_id_hash)->first();
+                if ($purpose !== 'password_reset' || $profile->account?->account_status !== 'Closed'
+                    || $ledger === null || now()->lessThan($ledger->cooldown_until)) {
+                    throw new RuntimeException('Account cannot be reopened yet.');
+                }
+            }
             $identity = UserTelegramIdentity::query()
                 ->whereKey($telegramIdentityId)
                 ->where('user_id', $userId)

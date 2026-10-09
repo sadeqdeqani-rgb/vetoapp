@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class OtpApiController extends Controller
@@ -47,7 +48,6 @@ class OtpApiController extends Controller
         } else {
             $profile = UserProfile::query()
                 ->where('mobile_hash', MobileIdentity::hash($mobile))
-                ->where('is_active', true)
                 ->first();
             if ($profile === null || $identityId <= 0) {
                 throw ValidationException::withMessages([
@@ -113,27 +113,51 @@ class OtpApiController extends Controller
             'verification_token' => ['required', 'string'],
             'new_password' => ['required', 'string', 'min:8', 'max:255'],
         ]);
-        $payload = json_decode(Crypt::decryptString($data['verification_token']), true);
+        try {
+            $payload = json_decode(Crypt::decryptString($data['verification_token']), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\Throwable) {
+            throw ValidationException::withMessages(['verification_token' => ['نشست بازیابی معتبر نیست.']]);
+        }
+        if (! is_array($payload) || ($payload['purpose'] ?? null) !== 'password_reset'
+            || ! isset($payload['verified_at'])
+            || (int) $payload['verified_at'] < now()->subMinutes(10)->timestamp) {
+            throw ValidationException::withMessages(['verification_token' => ['نشست بازیابی منقضی یا نامعتبر است.']]);
+        }
         $mobile = $this->mobile($data['phone_number']);
-        $profile = UserProfile::query()
-            ->where('mobile_hash', MobileIdentity::hash($mobile))
-            ->whereKey((int) ($payload['user_id'] ?? 0))
-            ->firstOrFail();
-        $otp = Otp::query()
-            ->whereKey((int) ($payload['otp_id'] ?? 0))
-            ->where('user_id', $profile->user_id)
-            ->where('purpose', 'password_reset')
-            ->where('state', 'Verified')
-            ->firstOrFail();
-
-        $profile->account()->update([
-            'password_hash' => Hash::make($data['new_password']),
-            'password_reset_completed_at' => now(),
-            'password_changed_at' => now(),
-            'failed_login_count' => 0,
-            'locked_until' => null,
-            'updated_at' => now(),
-        ]);
+        DB::transaction(function () use ($payload, $mobile, $data): void {
+            $profile = UserProfile::query()
+                ->where('mobile_hash', MobileIdentity::hash($mobile))
+                ->whereKey((int) ($payload['user_id'] ?? 0))
+                ->lockForUpdate()->firstOrFail();
+            $otp = Otp::query()
+                ->whereKey((int) ($payload['otp_id'] ?? 0))
+                ->where('user_id', $profile->user_id)
+                ->where('purpose', 'password_reset')
+                ->where('state', 'Verified')
+                ->lockForUpdate()->firstOrFail();
+            if ($otp->verified_at === null || $otp->verified_at->lt(now()->subMinutes(10))) {
+                throw ValidationException::withMessages(['verification_token' => ['نشست بازیابی منقضی شده است.']]);
+            }
+            $account = $profile->account;
+            if (! $profile->is_active) {
+                $ledger = DB::table('national_id_cooldown_ledgers')
+                    ->where('national_id_hash', $profile->national_id_hash)->lockForUpdate()->first();
+                if ($account?->account_status !== 'Closed' || $ledger === null
+                    || now()->lessThan($ledger->cooldown_until)) {
+                    throw ValidationException::withMessages(['phone_number' => ['زمان مجاز بازگشت حساب هنوز فرا نرسیده است.']]);
+                }
+                $profile->forceFill(['is_active' => true])->save();
+            }
+            $account->forceFill([
+                'account_status' => 'Active',
+                'password_hash' => Hash::make($data['new_password']),
+                'password_reset_completed_at' => now(),
+                'password_changed_at' => now(),
+                'failed_login_count' => 0,
+                'locked_until' => null,
+            ])->save();
+            $otp->forceFill(['state' => 'Expired'])->save();
+        });
 
         return response()->json(['message' => 'رمز عبور با موفقیت تغییر کرد.']);
     }

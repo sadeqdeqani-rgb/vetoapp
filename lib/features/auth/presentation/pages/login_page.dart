@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/validation/digit_normalizer.dart';
+import '../../../../core/validation/iranian_mobile_number.dart';
+import '../../../../core/validation/iranian_mobile_input_formatter.dart';
 import '../../../../core/widgets/auth_card.dart';
+import '../../../../core/widgets/biometric_device_check_option.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key, this.isPasswordRecovery = false});
@@ -20,7 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
 
-  static final _iranPhoneRegex = RegExp(r'^09\d{9}$');
+  static final _iranPhoneRegex = RegExp(r'^9\d{9}$');
 
   @override
   void dispose() {
@@ -36,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     if (!_iranPhoneRegex.hasMatch(phoneNumber)) {
-      return 'شماره موبایل باید ۱۱ رقم و با 09 شروع شود.';
+      return '۱۰ رقم شمارهٔ همراه را پس از پیش‌شمارهٔ +۹۸ وارد کنید.';
     }
 
     return null;
@@ -49,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    final phoneNumber = _phoneController.text.trim();
+    final phoneNumber = normalizeIranianMobileNumber(_phoneController.text);
 
     /// در گام بعد، OtpVerificationPage این داده را دریافت می‌کند.
     ///
@@ -94,23 +96,25 @@ class _LoginPageState extends State<LoginPage> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 28),
-              TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                textInputAction: TextInputAction.done,
-                textAlign: TextAlign.left,
-                autofocus: true,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(11),
-                ],
-                validator: _validatePhoneNumber,
-                onFieldSubmitted: (_) => _requestOtp(),
-                decoration: const InputDecoration(
-                  labelText: 'شماره تلفن همراه',
-                  hintText: '09123456789',
-                  prefixIcon: Icon(Icons.phone_outlined),
-                  border: OutlineInputBorder(),
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: TextFormField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.done,
+                  textAlign: TextAlign.left,
+                  textDirection: TextDirection.ltr,
+                  autofocus: true,
+                  inputFormatters: [IranianMobileInputFormatter()],
+                  validator: _validatePhoneNumber,
+                  onFieldSubmitted: (_) => _requestOtp(),
+                  decoration: const InputDecoration(
+                    labelText: 'شماره تلفن همراه',
+                    hintText: '۹xxxxxxxxx',
+                    prefixIcon: Icon(Icons.phone_outlined),
+                    prefixText: '+۹۸ ',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -121,6 +125,10 @@ class _LoginPageState extends State<LoginPage> {
                         ? 'دریافت کد بازیابی رمز'
                         : 'دریافت کد تأیید',
               ),
+              if (!isPasswordRecovery) ...[
+                const SizedBox(height: 12),
+                const BiometricDeviceCheckOption(showErrors: true),
+              ],
 
               /// در فلو بازیابی رمز، این لینک ضرورتی ندارد.
               if (!isPasswordRecovery) ...[

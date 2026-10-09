@@ -6,7 +6,9 @@ import '../../../../core/widgets/auth_card.dart';
 
 /// صفحهٔ مستقل پایان موفق ثبت‌نام.
 class RegistrationSuccessPage extends StatelessWidget {
-  const RegistrationSuccessPage({super.key});
+  const RegistrationSuccessPage({super.key, this.biometricMessage});
+
+  final String? biometricMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +33,20 @@ class RegistrationSuccessPage extends StatelessWidget {
               'اکنون می‌توانید وارد خانه شوید و از امکانات وِتواَپ استفاده کنید.',
               textAlign: TextAlign.center,
             ),
+            if (biometricMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                biometricMessage!,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color:
+                      biometricMessage!.startsWith('ورود با اثر انگشت')
+                          ? Colors.green.shade800
+                          : AppTheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
             AuthActionButton(
               label: 'متوجه شدم',

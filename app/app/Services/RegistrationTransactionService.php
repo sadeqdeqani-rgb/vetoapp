@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 use RuntimeException;
 
 class RegistrationTransactionService
@@ -24,7 +25,22 @@ class RegistrationTransactionService
 
         return UserProfile::query()
             ->where('mobile_hash', $this->hmac($mobile))
+            ->where('is_active', true)
             ->exists();
+    }
+
+    public function registrationCooldownForMobile(string $mobile): ?Carbon
+    {
+        $cooldownUntil = DB::table('user_profiles')
+            ->join('user_accounts', 'user_accounts.user_id', '=', 'user_profiles.user_id')
+            ->join('national_id_cooldown_ledgers', 'national_id_cooldown_ledgers.national_id_hash', '=', 'user_profiles.national_id_hash')
+            ->where('user_profiles.mobile_hash', $this->hmac(MobileNumber::normalize($mobile)))
+            ->where('user_profiles.is_active', false)
+            ->where('user_accounts.account_status', 'Closed')
+            ->where('national_id_cooldown_ledgers.cooldown_until', '>', now())
+            ->max('national_id_cooldown_ledgers.cooldown_until');
+
+        return $cooldownUntil === null ? null : Carbon::parse($cooldownUntil);
     }
 
     public function validateNationalIdForDraft(RegistrationDraft|int $draft, string $nationalId): array
@@ -36,7 +52,10 @@ class RegistrationTransactionService
         }
 
         $hash = $this->hmac($nationalId);
-        $existing = UserProfile::query()->where('national_id_hash', $hash)->first();
+        $existing = UserProfile::query()
+            ->where('national_id_hash', $hash)
+            ->where('is_active', true)
+            ->first();
         if ($existing !== null) {
             return [
                 'code' => 'national_code_already_registered',
@@ -44,6 +63,17 @@ class RegistrationTransactionService
                 'mobile_number' => $existing->mobile_encrypted === null
                     ? ''
                     : MobileNumber::normalize(Crypt::decryptString($existing->mobile_encrypted)),
+            ];
+        }
+
+        $cooldownUntil = DB::table('national_id_cooldown_ledgers')
+            ->where('national_id_hash', $hash)
+            ->value('cooldown_until');
+        if ($cooldownUntil !== null && now()->lessThan($cooldownUntil)) {
+            return [
+                'code' => 'account_registration_cooldown',
+                'valid' => false,
+                'cooldown_until' => Carbon::parse($cooldownUntil)->toISOString(),
             ];
         }
 
@@ -200,8 +230,12 @@ class RegistrationTransactionService
             if ($chatIdentity !== null && ($identity === null || $chatIdentity->telegram_identity_id !== $identity->telegram_identity_id)) {
                 throw new RuntimeException('Telegram chat is already linked to another identity.');
             }
-            if ($identity !== null && ($identity->user_id !== null || $identity->registration_draft_id !== null)
+            if ($identity !== null && $identity->registration_draft_id !== null
                 && $identity->registration_draft_id !== $draft->registration_draft_id) {
+                throw new RuntimeException('Telegram identity is already linked.');
+            }
+            if ($identity !== null && $identity->user_id !== null
+                && ! $this->canReassignClosedAccountIdentity($identity, $draft)) {
                 throw new RuntimeException('Telegram identity is already linked.');
             }
 
@@ -318,6 +352,8 @@ class RegistrationTransactionService
                 'telegram_link_nonce_used_at' => null,
             ])->save();
 
+            app(SystemStateService::class)->activateReferendumAtThreshold();
+
             return compact('draft', 'profile', 'account', 'identity');
         });
     }
@@ -385,6 +421,28 @@ class RegistrationTransactionService
         }
 
         return $nationalId;
+    }
+
+    private function canReassignClosedAccountIdentity(
+        UserTelegramIdentity $identity,
+        RegistrationDraft $draft,
+    ): bool {
+        $profile = UserProfile::query()
+            ->with('account')
+            ->whereKey($identity->user_id)
+            ->where('is_active', false)
+            ->first();
+        if ($profile === null || $profile->account?->account_status !== 'Closed'
+            || ! is_string($profile->mobile_hash)
+            || ! hash_equals($profile->mobile_hash, $draft->mobile_hash)) {
+            return false;
+        }
+
+        $cooldownUntil = DB::table('national_id_cooldown_ledgers')
+            ->where('national_id_hash', $profile->national_id_hash)
+            ->value('cooldown_until');
+
+        return $cooldownUntil !== null && ! now()->lessThan($cooldownUntil);
     }
 
     private function hmac(string $value): string

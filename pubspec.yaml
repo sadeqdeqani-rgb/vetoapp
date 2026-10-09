@@ -1,13 +1,15 @@
 name: vetoapp
 description: "VetoApp National Portal"
 publish_to: 'none'
-version: 1.4.0
+version: 1.4.2+8
 
 environment:
   sdk: ^3.7.0
 
 dependencies:
   flutter:
+    sdk: flutter
+  flutter_web_plugins:
     sdk: flutter
   flutter_bloc: ^9.1.0
   flutter_secure_storage: ^9.2.4
@@ -18,6 +20,7 @@ dependencies:
   dartz: ^0.10.1
   dio: ^5.8.0+1
   get_it: ^8.0.3
+  local_auth: 2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -31,7 +34,6 @@ flutter:
   assets:
     - assets/designs/
     - assets/images/
-    - assets/documents/
 
   fonts:
     - family: B Mitra

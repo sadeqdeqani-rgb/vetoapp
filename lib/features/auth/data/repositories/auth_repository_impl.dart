@@ -12,6 +12,9 @@ class AuthRepositoryImpl implements AuthRepository {
   const AuthRepositoryImpl(this._remoteDataSource);
 
   @override
+  Future<void> logout() => _remoteDataSource.logout();
+
+  @override
   Future<Either<Failure, AuthResult>> login({
     required String phoneNumber,
     required String password,
@@ -39,9 +42,10 @@ class AuthRepositoryImpl implements AuthRepository {
         AuthResult(
           sessionToken: sessionToken,
           userId: userId,
-          expiresAt: expiresAtValue is String
-              ? DateTime.tryParse(expiresAtValue)
-              : null,
+          expiresAt:
+              expiresAtValue is String
+                  ? DateTime.tryParse(expiresAtValue)
+                  : null,
         ),
       );
     } on Failure catch (failure) {

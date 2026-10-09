@@ -8,5 +8,5 @@ class CloseAccountUseCase {
 
   final ProfileRepository _repository;
 
-  Future<Either<Failure, void>> call() => _repository.closeAccount();
+  Future<Either<Failure, void>> call(String password) => _repository.closeAccount(password);
 }

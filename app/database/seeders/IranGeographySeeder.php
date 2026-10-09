@@ -17,15 +17,19 @@ class IranGeographySeeder extends Seeder
 
         $cityRows = $this->parseMarkdown($citiesFile);
         $villageRows = $this->parseMarkdown($villagesFile);
+        $zeroPopulationKeys = $this->zeroPopulationKeys();
 
         if ($cityRows === [] || $villageRows === []) {
             throw new RuntimeException('Geography source files must contain at least one settlement.');
         }
 
-        DB::transaction(function () use ($cityRows, $villageRows): void {
+        DB::transaction(function () use ($cityRows, $villageRows, $zeroPopulationKeys): void {
             if (filter_var(env('GEOGRAPHY_RESEED_RESET', false), FILTER_VALIDATE_BOOL)) {
                 $this->resetGeography();
             }
+            $settlementActiveStates = DB::table('settlements')
+                ->pluck('is_active', 'settlement_code')
+                ->all();
 
             DB::table('countries')->updateOrInsert(
                 ['country_code' => self::DEFAULT_COUNTRY_CODE],
@@ -70,19 +74,27 @@ class IranGeographySeeder extends Seeder
             }
 
             $settlementLocalOrders = [];
-            foreach ([$cityRows, $villageRows] as $rows) {
+            foreach ([[$cityRows, false], [$villageRows, true]] as [$rows, $isVillageSource]) {
                 foreach ($rows as $row) {
                     $key = $row['province']."\0".$row['county'];
                     $settlementLocalOrders[$key] = ($settlementLocalOrders[$key] ?? 0) + 1;
                     $settlementCode = ($provinceCodes[$row['province']] * 1_000_000)
                         + ($countyLocalCodes[$key] * 10_000)
                         + $settlementLocalOrders[$key];
+                    $zeroPopulationKey = implode("\0", array_map(
+                        fn (string $value): string => $this->normalizeGeographyName($value),
+                        [$row['province'], $row['settlement']],
+                    ));
                     DB::table('settlements')->updateOrInsert(
                         ['settlement_code' => $settlementCode],
                         [
                         'county_id' => $countyIds[$key],
                         'name_fa' => $row['settlement'],
-                        'is_active' => true,
+                        'is_active' => $this->seededSettlementActiveState(
+                            $settlementCode,
+                            $isVillageSource && isset($zeroPopulationKeys[$zeroPopulationKey]),
+                            $settlementActiveStates,
+                        ),
                         'created_at' => now(),
                         'updated_at' => now(),
                         ]
@@ -151,5 +163,57 @@ class IranGeographySeeder extends Seeder
             }
         }
         return $result;
+    }
+
+    private function zeroPopulationKeys(): array
+    {
+        $path = database_path('seed_data/zero_population_province_targets_1395.tsv');
+        if (! is_file($path)) {
+            throw new RuntimeException("Zero-population settlement source file not found: {$path}");
+        }
+
+        $keys = [];
+        foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $index => $line) {
+            if ($index === 0) {
+                continue;
+            }
+            $columns = str_getcsv($line, "\t");
+            if (count($columns) < 2) {
+                continue;
+            }
+            $key = implode("\0", array_map(
+                fn (string $value): string => $this->normalizeGeographyName($value),
+                array_slice($columns, 0, 2),
+            ));
+            $keys[$key] = true;
+        }
+
+        return $keys;
+    }
+
+    private function normalizeGeographyName(string $value): string
+    {
+        $value = strtr(trim($value), [
+            'ي' => 'ی', 'ى' => 'ی', 'ك' => 'ک',
+            "\u{200c}" => ' ', "\u{200f}" => '',
+        ]);
+
+        return preg_replace('/\s+/u', ' ', $value) ?? $value;
+    }
+
+    private function seededSettlementActiveState(
+        int $settlementCode,
+        bool $zeroPopulationVillage,
+        array $existingStates,
+    ): bool {
+        if ($zeroPopulationVillage) {
+            return false;
+        }
+
+        if (array_key_exists($settlementCode, $existingStates)) {
+            return (bool) $existingStates[$settlementCode];
+        }
+
+        return true;
     }
 }

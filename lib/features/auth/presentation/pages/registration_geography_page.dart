@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/auth_card.dart';
+import '../../../../core/widgets/app_message_dialog.dart';
 import '../../domain/entities/geographical_area.dart';
 import '../cubit/registration_cubit.dart';
 
@@ -107,9 +108,7 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
         _province == null ||
         _county == null ||
         _locality == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('لطفاً همهٔ سطوح حوزه را انتخاب کنید.')),
-      );
+      showAppMessageDialog<void>(context: context, message: 'لطفاً همهٔ سطوح حوزه را انتخاب کنید.', tone: AppMessageTone.warning, actions: [appDialogButton(context, label: 'متوجه شدم', primary: true, onPressed: () => Navigator.of(context).pop())]);
       return;
     }
 
@@ -154,8 +153,7 @@ class _RegistrationGeographyPageState extends State<RegistrationGeographyPage> {
           if (state is RegistrationGeographyLoaded) {
             _onGeographyLoaded(state);
           } else if (state is RegistrationError) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(state.message)));
+            showAppMessageDialog<void>(context: context, message: state.message, tone: AppMessageTone.error, actions: [appDialogButton(context, label: 'متوجه شدم', primary: true, onPressed: () => Navigator.of(context).pop())]);
           }
         },
         child: AuthFormCard(
@@ -333,11 +331,18 @@ class _SearchableAreaSelector extends StatelessWidget {
       onTap: enabled && items.isNotEmpty ? () => _openPicker(context) : null,
       borderRadius: BorderRadius.circular(14),
       child: InputDecorator(
-        isEmpty: value == null,
-        decoration: InputDecoration(
-          labelText: label,
-          enabled: enabled,
-          suffixIcon: const Icon(Icons.search),
+        isEmpty: false,
+      decoration: InputDecoration(
+        labelText: label,
+        enabled: enabled,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 16,
+        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+        suffixIcon: const Icon(Icons.search),
           helperText: items.isEmpty && enabled ? 'فهرست آماده نیست' : null,
         ),
         child: Row(

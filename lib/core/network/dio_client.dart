@@ -30,19 +30,33 @@ Dio createDioClient([
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final token = await storage.read(key: 'auth_session_token');
-          if (token != null && token.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $token';
+          // Login, registration, OTP, and public content must not depend on
+          // secure storage being readable. In particular, Android Keystore
+          // failures must not prevent the login request from reaching Laravel.
+          if (_requiresUserSession(options.path)) {
+            try {
+              final token = await storage.read(key: 'auth_session_token');
+              if (token != null && token.isNotEmpty) {
+                options.headers['Authorization'] = 'Bearer $token';
+              }
+            } catch (_) {
+              options.headers.remove('Authorization');
+            }
           }
           handler.next(options);
         },
         onError: (error, handler) async {
-          if (error.response?.statusCode == 401) {
-            await Future.wait([
-              storage.delete(key: 'auth_session_mode'),
-              storage.delete(key: 'auth_session_token'),
-              storage.delete(key: 'auth_user_id'),
-            ]);
+          if (error.response?.statusCode == 401 &&
+              _requiresUserSession(error.requestOptions.path)) {
+            try {
+              await Future.wait([
+                storage.delete(key: 'auth_session_mode'),
+                storage.delete(key: 'auth_session_token'),
+                storage.delete(key: 'auth_user_id'),
+              ]);
+            } catch (_) {
+              // Preserve the original HTTP 401 response if local storage fails.
+            }
             sessionEvents?.expire();
           }
           handler.next(error);
@@ -52,4 +66,20 @@ Dio createDioClient([
   }
 
   return dio;
+}
+
+bool _requiresUserSession(String path) {
+  final normalizedPath = path.startsWith('/') ? path : '/$path';
+  return normalizedPath == '/api/v1/dashboard/summary' ||
+      normalizedPath == '/api/v1/auth/logout' ||
+      normalizedPath == '/api/v1/auth/session/heartbeat' ||
+      normalizedPath == '/api/v1/auth/biometric/status' ||
+      normalizedPath == '/api/v1/auth/biometric/enrollment-challenge' ||
+      normalizedPath == '/api/v1/auth/biometric/enroll' ||
+      normalizedPath == '/api/v1/auth/biometric/credential' ||
+      normalizedPath == '/api/v1/profile' ||
+      normalizedPath.startsWith('/api/v1/profile/') ||
+      normalizedPath.startsWith('/api/v1/referendum/') ||
+      normalizedPath.startsWith('/api/v1/elections/') ||
+      normalizedPath.startsWith('/api/v1/impeachment/');
 }

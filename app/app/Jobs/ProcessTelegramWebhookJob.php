@@ -5,11 +5,14 @@ namespace App\Jobs;
 use App\Http\Controllers\TelegramPasswordRecoveryController;
 use App\Models\IntegrationInboxEntry;
 use App\Models\RegistrationDraft;
+use App\Models\UserProfile;
 use App\Models\UserTelegramIdentity;
 use App\Services\OtpService;
 use App\Services\RegistrationTransactionService;
 use App\Services\TelegramBotClient;
 use App\Support\TelegramContactMismatchException;
+use App\Support\MobileIdentity;
+use App\Support\MobileNumber;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -136,6 +139,20 @@ class ProcessTelegramWebhookJob implements ShouldQueue
                 'برای ثبت‌نام، ثبت‌نام را از داخل اپ آغاز کنید و لینک اختصاصی بات را باز کنید.',
             );
         } elseif (isset($message['contact'])) {
+            $recoveryNonce = Cache::get("telegram:password-recovery:contact:{$telegramUserId}");
+            if (is_string($recoveryNonce) && $recoveryNonce !== '') {
+                $this->verifyPasswordRecoveryContact(
+                    $recoveryNonce,
+                    $telegramUserId,
+                    $chatId,
+                    $message['contact'],
+                    $telegram,
+                );
+                $entry->forceFill(['processed_status' => 'Processed', 'processed_at' => now()])->save();
+
+                return;
+            }
+
             $stored = Cache::get("telegram:registration:nonce:{$telegramUserId}");
             if (! is_array($stored)) {
                 throw new RuntimeException('Telegram registration state is missing or expired.');
@@ -214,29 +231,140 @@ class ProcessTelegramWebhookJob implements ShouldQueue
 
             return;
         }
-        $identity = UserTelegramIdentity::query()
-            ->where('telegram_user_id', $telegramUserId)
-            ->whereKey((int) ($record['telegram_identity_id'] ?? 0))
-            ->where('user_id', (int) ($record['user_id'] ?? 0))
-            ->where('phone_verification_status', 'Verified')
-            ->first();
-        if ($identity === null) {
-            $telegram->sendMessage($chatId, 'این حساب تلگرام برای بازیابی این شماره تأیید نشده است.');
+        Cache::put(
+            "telegram:password-recovery:contact:{$telegramUserId}",
+            $nonce,
+            \Illuminate\Support\Carbon::parse($record['expires_at'] ?? now()->addMinutes(10)),
+        );
+        $telegram->requestContact(
+            $chatId,
+            'برای تأیید مالکیت شمارهٔ ثبت‌شده، دکمهٔ «ارسال شماره موبایل» را بزنید. شماره فقط برای همین درخواست بازیابی بررسی می‌شود.',
+        );
+    }
+
+    private function verifyPasswordRecoveryContact(
+        string $nonce,
+        int $telegramUserId,
+        int $chatId,
+        array $contact,
+        TelegramBotClient $telegram,
+    ): void {
+        $key = TelegramPasswordRecoveryController::cacheKey($nonce);
+        $record = Cache::get($key);
+        $contactUserId = (int) ($contact['user_id'] ?? $contact['telegram_user_id'] ?? 0);
+        $userId = (int) ($record['user_id'] ?? 0);
+        $profile = $userId > 0 ? UserProfile::query()->whereKey($userId)->first() : null;
+        $mobileMatches = false;
+        $contactBelongsToSender = $contactUserId === $telegramUserId;
+        $rejectionReason = 'profile_not_found';
+
+        if (is_array($record) && ($record['state'] ?? '') === 'Pending'
+            && $contactBelongsToSender && $profile !== null
+            && is_string($profile->mobile_hash) && is_string($record['mobile_hash'] ?? null)) {
+            try {
+                $contactMobile = MobileNumber::normalize((string) ($contact['phone_number'] ?? ''));
+                $contactHash = MobileIdentity::hash($contactMobile);
+                $mobileMatches = hash_equals((string) $profile->mobile_hash, $contactHash)
+                    && hash_equals((string) ($record['mobile_hash'] ?? ''), bin2hex($profile->mobile_hash));
+                $rejectionReason = $mobileMatches ? 'telegram_identity_conflict' : 'contact_number_mismatch';
+            } catch (\Throwable) {
+                $mobileMatches = false;
+                $rejectionReason = 'invalid_contact_number';
+            }
+        } elseif ($profile !== null && ! $contactBelongsToSender) {
+            $rejectionReason = 'contact_not_owned_by_sender';
+        } elseif ($profile === null) {
+            $rejectionReason = 'profile_not_found';
+        }
+
+        $identityLinked = $mobileMatches
+            && $profile !== null
+            && $this->linkRecoveryTelegramIdentity($profile, $telegramUserId, $chatId);
+        if (! $identityLinked) {
+            logger()->notice('Telegram password recovery contact was rejected.', [
+                'reason' => $rejectionReason,
+                'profile_found' => $profile !== null,
+                'contact_belongs_to_sender' => $contactBelongsToSender,
+                'mobile_matches' => $mobileMatches,
+            ]);
+            Cache::forget("telegram:password-recovery:contact:{$telegramUserId}");
+            if (is_array($record)) {
+                Cache::put($key, [...$record, 'state' => 'Rejected'], now()->addMinutes(2));
+            }
+            $telegram->sendMessage(
+                $chatId,
+                'شمارهٔ ارسال‌شده با شمارهٔ ثبت‌شده برای این درخواست تطابق ندارد یا این حساب تلگرام به حساب دیگری متصل است. از اپ یک درخواست بازیابی تازه بسازید.',
+            );
 
             return;
         }
-        $identity->forceFill(['chat_id' => $chatId, 'last_seen_at' => now()])->save();
-        $otp = app(OtpService::class)->issueForUser(
-            (int) $identity->user_id,
-            (int) $identity->telegram_identity_id,
-            'password_reset',
-        );
+
+        $identity = UserTelegramIdentity::query()
+            ->where('telegram_user_id', $telegramUserId)
+            ->where('user_id', $profile->user_id)
+            ->where('phone_verification_status', 'Verified')
+            ->firstOrFail();
+        try {
+            $otp = app(OtpService::class)->issueForUser(
+                (int) $profile->user_id,
+                (int) $identity->telegram_identity_id,
+                'password_reset',
+            );
+        } catch (\Throwable) {
+            Cache::forget("telegram:password-recovery:contact:{$telegramUserId}");
+            Cache::put($key, [...$record, 'state' => 'Rejected'], now()->addMinutes(2));
+            $telegram->sendMessage($chatId, 'درخواست ارسال کد انجام نشد. از اپ یک درخواست بازیابی تازه بسازید.');
+
+            return;
+        }
+        Cache::forget("telegram:password-recovery:contact:{$telegramUserId}");
         Cache::put($key, [
             ...$record,
             'state' => 'OtpIssued',
             'otp_id' => $otp->otp_id,
         ], now()->addMinutes(2));
-        $telegram->sendMessage($chatId, 'کد بازیابی به همین گفتگو ارسال شد. آن را در اپ وارد کنید.');
+        $telegram->sendMessage($chatId, 'شماره تأیید شد و کد بازیابی به همین گفتگو ارسال شد. آن را در اپ وارد کنید.');
+    }
+
+    private function linkRecoveryTelegramIdentity(UserProfile $profile, int $telegramUserId, int $chatId): bool
+    {
+        return DB::transaction(function () use ($profile, $telegramUserId, $chatId): bool {
+            $identity = UserTelegramIdentity::query()
+                ->where('telegram_user_id', $telegramUserId)
+                ->lockForUpdate()
+                ->first();
+            $chatIdentity = UserTelegramIdentity::query()
+                ->where('chat_id', $chatId)
+                ->lockForUpdate()
+                ->first();
+
+            if (($chatIdentity !== null && ($identity === null
+                    || (int) $chatIdentity->telegram_identity_id !== (int) $identity->telegram_identity_id))
+                || ($identity !== null && $identity->user_id !== null
+                    && (int) $identity->user_id !== (int) $profile->user_id)
+                || ($identity !== null
+                    && $identity->registration_draft_id !== null
+                    && ($identity->user_id === null
+                        || (int) $identity->user_id !== (int) $profile->user_id))) {
+                return false;
+            }
+
+            $identity ??= new UserTelegramIdentity();
+            $identity->forceFill([
+                'user_id' => $profile->user_id,
+                'registration_draft_id' => null,
+                'telegram_user_id' => $telegramUserId,
+                'chat_id' => $chatId,
+                'link_status' => 'Linked',
+                'verified_mobile_hash' => $profile->mobile_hash,
+                'phone_verified_at' => now(),
+                'phone_verification_status' => 'Verified',
+                'linked_at' => $identity->linked_at ?? now(),
+                'last_seen_at' => now(),
+            ])->save();
+
+            return true;
+        });
     }
 
     public function failed(Throwable $exception): void

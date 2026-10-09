@@ -22,9 +22,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, void>> closeAccount() async {
+  Future<Either<Failure, void>> closeAccount(String password) async {
     try {
-      await _remoteDataSource.closeAccount();
+      await _remoteDataSource.closeAccount(password);
       return const Right(null);
     } on Failure catch (failure) {
       return Left(failure);

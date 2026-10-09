@@ -24,16 +24,48 @@ import '../../features/home/presentation/screens/about_screen.dart';
 import '../../features/home/presentation/screens/about_sections.dart';
 import '../../features/home/presentation/screens/civic_detail_screen.dart';
 import '../../features/home/presentation/screens/election_screen.dart';
+import '../../features/election/presentation/election_voting_hub_screen.dart';
+import '../../features/election/presentation/election_category_hub_screen.dart';
+import '../../features/election/domain/election_category.dart';
+import '../../features/election/presentation/election_process_list_screen.dart';
+import '../../features/election/presentation/election_voting_detail_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/home/presentation/screens/impeachment_screen.dart';
+import '../../features/impeachment/domain/impeachment_office.dart';
+import '../../features/impeachment/presentation/impeachment_workflow_hub.dart';
+import '../../features/impeachment/presentation/impeachment_process_list_screen.dart';
+import '../../features/impeachment/presentation/impeachment_request_screen.dart';
+import '../../features/impeachment/presentation/impeachment_detail_screen.dart';
 import '../../features/home/presentation/screens/main_screen.dart';
 import '../../features/home/presentation/screens/referendum_screen.dart';
 import '../../features/participation/presentation/screens/participation_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/referendum/presentation/screens/referendum_proposal_detail_screen.dart';
+import '../../features/referendum/presentation/screens/referendum_proposals_screen.dart';
+import '../../features/referendum/presentation/screens/referendum_voting_hub_screen.dart';
+import '../../features/referendum/presentation/screens/referendum_process_list_screen.dart';
+import '../../features/referendum/presentation/screens/referendum_voting_detail_screen.dart';
 import '../../features/startup/presentation/pages/gateway_page.dart'
     as gateway_page;
 import '../../features/startup/presentation/pages/splash_page.dart';
 import '../../features/startup/presentation/pages/system_preview_page.dart';
+
+Widget _electionListRoute(GoRouterState state, ElectionListKind kind) {
+  final category = ElectionCategory.fromCode(state.pathParameters['category']);
+  return category == null
+      ? const ElectionVotingHubScreen()
+      : ElectionProcessListScreen(category: category, kind: kind);
+}
+
+Widget _impeachmentOfficeRoute(GoRouterState state) {
+  final office = ImpeachmentOffice.fromCode(state.pathParameters['office']);
+  return office == null ? const ImpeachmentScreen() : ImpeachmentWorkflowHub(office: office);
+}
+
+Widget _impeachmentListRoute(GoRouterState state, String kind) {
+  final office = ImpeachmentOffice.fromCode(state.pathParameters['office']);
+  return office == null ? const ImpeachmentScreen() : ImpeachmentProcessListScreen(office: office, kind: kind);
+}
 
 class _AuthRouterRefresh extends ChangeNotifier {
   _AuthRouterRefresh(Stream<AuthState> stream) {
@@ -80,17 +112,11 @@ GoRouter createAppRouter(AuthCubit authCubit) {
       final isAuthenticated =
           authCubit.state is Authenticated || authCubit.state is Guest;
 
-      if (authCubit.state is Authenticated) {
-        if (location.startsWith('/referendum/')) return '/referendum';
-        if (location.startsWith('/elections/')) return '/elections';
-        if (location.startsWith('/impeachment/')) return '/impeachment';
-      }
-
       if (!isPublic && !isAuthenticated) {
         return '/gateway';
       }
 
-      if (location == '/login' && isAuthenticated) {
+      if (location == '/login' && authCubit.state is Authenticated) {
         return '/';
       }
 
@@ -247,7 +273,11 @@ GoRouter createAppRouter(AuthCubit authCubit) {
       GoRoute(
         path: '/register/success',
         name: 'register-success',
-        builder: (context, state) => const RegistrationSuccessPage(),
+        builder:
+            (context, state) => RegistrationSuccessPage(
+              biometricMessage:
+                  state.extra is String ? state.extra as String : null,
+            ),
       ),
       GoRoute(
         path: '/forgot-password',
@@ -369,10 +399,68 @@ GoRouter createAppRouter(AuthCubit authCubit) {
             builder: (context, state) => const ElectionScreen(),
           ),
           GoRoute(
+            path: '/elections/voting',
+            builder: (context, state) => const ElectionVotingHubScreen(),
+          ),
+          GoRoute(
+            path: '/elections/voting/:category',
+            builder: (context, state) {
+              final category = ElectionCategory.fromCode(state.pathParameters['category']);
+              return category == null
+                  ? const ElectionVotingHubScreen()
+                  : ElectionCategoryHubScreen(category: category);
+            },
+          ),
+          GoRoute(
+            path: '/elections/voting/:category/scheduled',
+            builder: (context, state) => _electionListRoute(state, ElectionListKind.scheduled),
+          ),
+          GoRoute(
+            path: '/elections/voting/:category/eligible',
+            builder: (context, state) => _electionListRoute(state, ElectionListKind.eligible),
+          ),
+          GoRoute(
+            path: '/elections/voting/:category/live-results',
+            builder: (context, state) => _electionListRoute(state, ElectionListKind.live),
+          ),
+          GoRoute(
+            path: '/elections/voting/:category/final-results',
+            builder: (context, state) => _electionListRoute(state, ElectionListKind.finalized),
+          ),
+          GoRoute(
+            path: '/elections/voting/:category/detail/:processId',
+            builder: (context, state) {
+              final category = ElectionCategory.fromCode(state.pathParameters['category']);
+              final processId = int.tryParse(state.pathParameters['processId'] ?? '');
+              final extra = state.extra;
+              final voting = extra is Map && extra['voting'] == true;
+              return category == null || processId == null
+                  ? const ElectionVotingHubScreen()
+                  : ElectionVotingDetailScreen(category: category, processId: processId, voting: voting);
+            },
+          ),
+          GoRoute(
             path: '/impeachment',
             name: 'impeachment',
             builder: (context, state) => const ImpeachmentScreen(),
           ),
+          GoRoute(path: '/impeachment/:office', builder: (context, state) => _impeachmentOfficeRoute(state)),
+          GoRoute(path: '/impeachment/:office/request', builder: (context, state) {
+            final office = ImpeachmentOffice.fromCode(state.pathParameters['office']);
+            return office == null ? const ImpeachmentScreen() : ImpeachmentRequestScreen(office: office);
+          }),
+          GoRoute(path: '/impeachment/:office/supporting', builder: (context, state) => _impeachmentListRoute(state, 'supporting')),
+          GoRoute(path: '/impeachment/:office/scheduled', builder: (context, state) => _impeachmentListRoute(state, 'scheduled')),
+          GoRoute(path: '/impeachment/:office/eligible', builder: (context, state) => _impeachmentListRoute(state, 'eligible')),
+          GoRoute(path: '/impeachment/:office/live', builder: (context, state) => _impeachmentListRoute(state, 'live')),
+          GoRoute(path: '/impeachment/:office/finalized', builder: (context, state) => _impeachmentListRoute(state, 'finalized')),
+          GoRoute(path: '/impeachment/:office/detail/:processId', builder: (context, state) {
+            final office = ImpeachmentOffice.fromCode(state.pathParameters['office']);
+            final id = int.tryParse(state.pathParameters['processId'] ?? '');
+            final extra = state.extra;
+            final kind = extra is Map && extra['kind'] != null ? extra['kind'].toString() : 'live';
+            return office == null || id == null ? const ImpeachmentScreen() : ImpeachmentDetailScreen(office: office, processId: id, kind: kind);
+          }),
           GoRoute(
             path: '/referendum/propose',
             builder:
@@ -387,73 +475,45 @@ GoRouter createAppRouter(AuthCubit authCubit) {
           GoRoute(
             path: '/referendum/supported',
             builder:
-                (context, state) => const CivicDetailScreen(
-                  title: 'مرور موضوعات و ثبت حمایت',
-                  parentIcon: Icons.how_to_vote_outlined,
-                  accent: Color(0xFF2E7D32),
-                  items: [
-                    CivicDetailItem(
-                      title: 'قرارداد ۲۵ ساله با چین',
-                      count: '۳۷۸۹۰',
-                      icon: Icons.volunteer_activism_outlined,
-                    ),
-                    CivicDetailItem(
-                      title: 'تعطیلی ایران خودرو',
-                      count: '۳۴۵۶۷۸۹',
-                      icon: Icons.volunteer_activism_outlined,
-                    ),
-                  ],
-                ),
+                (context, state) => const ReferendumProposalsScreen(),
           ),
           GoRoute(
-            path: '/referendum/active',
-            builder:
-                (context, state) => const CivicDetailScreen(
-                  title: 'مشاهده و ثبت رای در موضوعات فعال',
-                  parentIcon: Icons.how_to_vote_outlined,
-                  accent: Color(0xFF2E7D32),
-                  items: [
-                    CivicDetailItem(
-                      title: 'انحلال جمهوری اسلامی',
-                      icon: Icons.how_to_vote_outlined,
-                    ),
-                    CivicDetailItem(
-                      title: 'محو اسراییل',
-                      icon: Icons.how_to_vote_outlined,
-                    ),
-                    CivicDetailItem(
-                      title: 'بستن تنگه هرمز',
-                      icon: Icons.how_to_vote_outlined,
-                    ),
-                    CivicDetailItem(
-                      title: 'غنی‌سازی اورانیوم',
-                      icon: Icons.how_to_vote_outlined,
-                    ),
-                  ],
-                ),
+            path: '/referendum/supported/:processId',
+            builder: (context, state) {
+              final processId = int.tryParse(state.pathParameters['processId'] ?? '');
+              return processId == null
+                  ? const ReferendumProposalsScreen()
+                  : ReferendumProposalDetailScreen(processId: processId);
+            },
           ),
           GoRoute(
-            path: '/referendum/results',
-            builder:
-                (context, state) => const CivicDetailScreen(
-                  title: 'بررسی نتایج و سوابق قبلی',
-                  parentIcon: Icons.home_outlined,
-                  accent: Color(0xFF2E7D32),
-                  items: [
-                    CivicDetailItem(
-                      title: 'حجاب اجباری',
-                      icon: Icons.history_rounded,
-                    ),
-                    CivicDetailItem(
-                      title: 'مذاکره با آمریکا',
-                      icon: Icons.history_rounded,
-                    ),
-                    CivicDetailItem(
-                      title: 'نظارت استصوابی',
-                      icon: Icons.history_rounded,
-                    ),
-                  ],
-                ),
+            path: '/referendum/voting',
+            builder: (context, state) => const ReferendumVotingHubScreen(),
+          ),
+          GoRoute(
+            path: '/referendum/voting/scheduled',
+            builder: (context, state) => const ReferendumProcessListScreen(kind: ReferendumListKind.scheduled),
+          ),
+          GoRoute(
+            path: '/referendum/voting/eligible',
+            builder: (context, state) => const ReferendumProcessListScreen(kind: ReferendumListKind.eligible),
+          ),
+          GoRoute(
+            path: '/referendum/voting/live-results',
+            builder: (context, state) => const ReferendumProcessListScreen(kind: ReferendumListKind.liveResults),
+          ),
+          GoRoute(
+            path: '/referendum/voting/final-results',
+            builder: (context, state) => const ReferendumProcessListScreen(kind: ReferendumListKind.finalResults),
+          ),
+          GoRoute(
+            path: '/referendum/voting/detail/:processId',
+            builder: (context, state) {
+              final processId = int.tryParse(state.pathParameters['processId'] ?? '');
+              return processId == null
+                  ? const ReferendumProcessListScreen(kind: ReferendumListKind.liveResults)
+                  : ReferendumVotingDetailScreen(processId: processId);
+            },
           ),
           GoRoute(
             path: '/elections/participate',
@@ -509,73 +569,6 @@ GoRouter createAppRouter(AuthCubit authCubit) {
                     CivicDetailItem(title: 'انتخابات استانداری یزد'),
                     CivicDetailItem(title: 'انتخابات استانداری اصفهان'),
                     CivicDetailItem(title: 'انتخابات استانداری فارس'),
-                  ],
-                ),
-          ),
-          GoRoute(
-            path: '/impeachment/request',
-            builder:
-                (context, state) => const CivicDetailScreen(
-                  title: 'درخواست استیضاح یک مسول ملی یا محلی',
-                  parentIcon: Icons.gavel_outlined,
-                  accent: AppTheme.danger,
-                  items: [
-                    CivicDetailItem(
-                      title: 'حوزه کاربری شما',
-                      subtitle:
-                          'کشور: ایران / استان: فارس / شهرستان: نورآباد ممسنی / شهر / روستا: دهگپ محمودی',
-                    ),
-                    CivicDetailItem(title: 'ثبت درخواست استیضاح رییس جمهور'),
-                    CivicDetailItem(
-                      title: 'ثبت درخواست استیضاح استاندار / فارس',
-                    ),
-                  ],
-                ),
-          ),
-          GoRoute(
-            path: '/impeachment/active',
-            builder:
-                (context, state) => const CivicDetailScreen(
-                  title: 'شرکت در فرآیند رای اعتماد و ثبت رای',
-                  parentIcon: Icons.gavel_outlined,
-                  accent: AppTheme.danger,
-                  items: [
-                    CivicDetailItem(
-                      title: 'رای اعتماد به رییس جمهور',
-                      status: 'در حال برگزاری',
-                      statusIcon: Icons.sensors_rounded,
-                    ),
-                  ],
-                ),
-          ),
-          GoRoute(
-            path: '/impeachment/results',
-            builder:
-                (context, state) => const CivicDetailScreen(
-                  title: 'نتایج استیضاح های انجام شده و اطلاعات و آمار نهایی',
-                  parentIcon: Icons.gavel_outlined,
-                  accent: AppTheme.danger,
-                  items: [
-                    CivicDetailItem(
-                      title: 'استاندار کرمان',
-                      status: 'برکنار شد',
-                      statusIcon: Icons.person_remove_alt_1_rounded,
-                    ),
-                    CivicDetailItem(
-                      title: 'استاندار اصفهان',
-                      status: 'برکنار شد',
-                      statusIcon: Icons.person_remove_alt_1_rounded,
-                    ),
-                    CivicDetailItem(
-                      title: 'استاندار یزد',
-                      status: 'ابقا شد',
-                      statusIcon: Icons.verified_user_outlined,
-                    ),
-                    CivicDetailItem(
-                      title: 'استاندار فارس',
-                      status: 'به حد نصاب نرسید',
-                      statusIcon: Icons.hourglass_bottom_rounded,
-                    ),
                   ],
                 ),
           ),

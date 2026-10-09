@@ -55,6 +55,7 @@ class RegistrationCubit extends Cubit<RegistrationState> {
 
   final LoadGeographicalChildrenUseCase _loadChildren;
   final SaveRegistrationDraftUseCase _saveDraft;
+  RegistrationGeographyLoaded _geography = const RegistrationGeographyLoaded();
 
   Future<void> save(RegistrationDraft draft) async {
     emit(const RegistrationLoading());
@@ -69,11 +70,8 @@ class RegistrationCubit extends Cubit<RegistrationState> {
     int? parentId,
     required RegistrationLevel level,
   }) async {
+    final previous = _geography;
     emit(const RegistrationLoading());
-    final previous =
-        state is RegistrationGeographyLoaded
-            ? state as RegistrationGeographyLoaded
-            : const RegistrationGeographyLoaded();
     final result = await _loadChildren(
       parentId: parentId,
       childType: switch (level) {
@@ -85,8 +83,8 @@ class RegistrationCubit extends Cubit<RegistrationState> {
     );
     result.fold(
       (failure) => emit(RegistrationError(failure.message)),
-      (items) => emit(
-        RegistrationGeographyLoaded(
+      (items) {
+        _geography = RegistrationGeographyLoaded(
           countries:
               level == RegistrationLevel.country ? items : previous.countries,
           provinces:
@@ -95,8 +93,9 @@ class RegistrationCubit extends Cubit<RegistrationState> {
               level == RegistrationLevel.county ? items : previous.counties,
           localities:
               level == RegistrationLevel.locality ? items : previous.localities,
-        ),
-      ),
+        );
+        emit(_geography);
+      },
     );
   }
 }

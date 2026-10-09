@@ -65,14 +65,14 @@ class VetoAppLookupSeeder extends Seeder
         ], 'state_code');
 
         DB::table('system_state_lookups')->upsert([
-            ['state_code' => 1, 'state_name' => 'Activation phase', 'description' => 'Waiting for initial threshold'],
-            ['state_code' => 2, 'state_name' => 'Referendum ready state', 'description' => null],
-            ['state_code' => 3, 'state_name' => 'First Presidential Election', 'description' => null],
-            ['state_code' => 4, 'state_name' => 'First Provincial/State Elections', 'description' => null],
-            ['state_code' => 5, 'state_name' => 'First County/Governorship Elections', 'description' => null],
-            ['state_code' => 6, 'state_name' => 'First Municipal Elections', 'description' => null],
-            ['state_code' => 7, 'state_name' => 'System completely deployed/finalized', 'description' => null],
+            ['state_code' => 1, 'state_name' => 'در حال کسب نصاب برای فعالسازی بخش همه پرسی', 'description' => 'Activation phase, waiting for initial threshold'],
+            ['state_code' => 2, 'state_name' => 'بخش همه پرسی فعال است', 'description' => 'Referendum ready state'],
+            ['state_code' => 3, 'state_name' => 'بخش های همه پرسی و انتخابات فعال است', 'description' => 'Referendum and election sections active'],
+            ['state_code' => 4, 'state_name' => 'بخش های همه پرسی، انتخابات و استیضاح فعال هستند', 'description' => 'Referendum, election, and impeachment sections active'],
         ], ['state_code'], ['state_name', 'description']);
+        DB::table('system_states')->where('state_value', '>=', 5)
+            ->update(['state_value' => 3, 'state_changed_at' => now()]);
+        DB::table('system_state_lookups')->where('state_code', '>', 4)->delete();
 
         DB::table('security_policies')->updateOrInsert(
             ['is_active' => true],

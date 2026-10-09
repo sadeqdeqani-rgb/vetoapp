@@ -52,9 +52,9 @@ class ProfileCubit extends Cubit<ProfileState> {
     );
   }
 
-  Future<void> closeAccount() async {
+  Future<void> closeAccount(String password) async {
     emit(const ProfileLoading());
-    final result = await _closeAccount();
+    final result = await _closeAccount(password);
     result.fold(
       (failure) => emit(ProfileError(failure.message)),
       (_) => emit(const ProfileClosed()),

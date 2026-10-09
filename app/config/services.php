@@ -9,6 +9,18 @@ return [
         'timeout' => (int) env('TELEGRAM_HTTP_TIMEOUT', 10),
     ],
 
+    'process_receipts' => [
+        'key_id' => env('PROCESS_RECEIPT_KEY_ID'),
+        'private_key' => env('PROCESS_RECEIPT_PRIVATE_KEY'),
+        'public_key' => env('PROCESS_RECEIPT_PUBLIC_KEY'),
+        'identity_hmac_key' => env('PROCESS_IDENTITY_HMAC_KEY'),
+    ],
+    'process_tree_heads' => [
+        'key_id' => env('PROCESS_TREE_HEAD_KEY_ID'),
+        'private_key' => env('PROCESS_TREE_HEAD_PRIVATE_KEY'),
+        'public_key' => env('PROCESS_TREE_HEAD_PUBLIC_KEY'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

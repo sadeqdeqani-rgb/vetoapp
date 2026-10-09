@@ -54,3 +54,9 @@ deploy/.env.production
 deploy/.env.telegram-test
 deploy/backups/
 deploy/cfg/monitoring/data/
+
+# Generated release artifacts and deployment transfer bundles.
+deploy/packages/
+artifacts/
+**/__pycache__/
+*.py[cod]

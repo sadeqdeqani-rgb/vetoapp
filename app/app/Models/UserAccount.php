@@ -29,6 +29,7 @@ class UserAccount extends Model
             'mfa_required' => 'boolean',
             'failed_login_count' => 'integer',
             'lockout_count' => 'integer',
+            'locked_until' => 'datetime',
             'password_changed_at' => 'datetime',
             'password_reset_completed_at' => 'datetime',
         ];

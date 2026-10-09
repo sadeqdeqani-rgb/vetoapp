@@ -56,6 +56,28 @@ class NationalIdEligibilityRecord extends NationalIdEligibilityDraft {
   final DateTime? updatedAt;
 }
 
+class NationalIdAgeEligibilityReport {
+  const NationalIdAgeEligibilityReport({
+    required this.id,
+    required this.registrationDraftId,
+    required this.nationalId,
+    required this.birthDate,
+    required this.statusCode,
+    required this.createdAt,
+    this.adminNote,
+    this.updatedAt,
+  });
+
+  final int id;
+  final int registrationDraftId;
+  final String nationalId;
+  final String birthDate;
+  final String statusCode;
+  final String? adminNote;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+}
+
 class AdminSession {
   const AdminSession({
     required this.token,
@@ -168,4 +190,30 @@ class AdminClosurePenaltyPolicy {
   final bool isActive;
   final DateTime effectiveFrom;
   final DateTime? effectiveTo;
+}
+
+class AdminProcessLifecyclePolicy {
+  const AdminProcessLifecyclePolicy({
+    required this.id,
+    required this.versionNumber,
+    required this.thresholdRatePpm,
+    required this.minSupportCount,
+    required this.supportPeriodDays,
+    required this.waitingPeriodDays,
+    required this.votingPeriodDays,
+    required this.publicationDelayHours,
+    required this.isActive,
+    this.effectiveFrom,
+  });
+
+  final int id;
+  final int versionNumber;
+  final int thresholdRatePpm;
+  final int minSupportCount;
+  final int supportPeriodDays;
+  final int waitingPeriodDays;
+  final int votingPeriodDays;
+  final int publicationDelayHours;
+  final bool isActive;
+  final DateTime? effectiveFrom;
 }

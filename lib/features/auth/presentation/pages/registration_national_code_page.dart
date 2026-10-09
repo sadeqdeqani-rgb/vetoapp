@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/auth_card.dart';
+import '../../../../core/widgets/app_message_dialog.dart';
 import '../../../../core/validation/iranian_national_code_validator.dart';
 import '../../domain/repositories/registration_repository.dart';
 
@@ -101,40 +102,39 @@ class _RegistrationNationalCodePageState
     }
   }
 
-  Future<void> _showMessage(String message) => showDialog<void>(
+  Future<void> _showMessage(String message) => showAppMessageDialog<void>(
     context: context,
-    builder: (dialogContext) => AlertDialog(
-      content: Text(message, textAlign: TextAlign.center),
-      actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('متوجه شدم'))],
-    ),
+    message: message,
+    tone: AppMessageTone.error,
+    actions: [appDialogButton(context, label: 'متوجه شدم', primary: true, onPressed: () => Navigator.of(context).pop())],
   );
 
   Future<void> _showAgeEligibilityDialog(String code) async {
-    final report = await showDialog<bool>(
+    final report = await showAppMessageDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        content: const Text('سامانه شما را زیر ۱۸ سال تشخیص داده است و شما مجاز به ثبت نام نیستید. چنان‌که سامانه در ارزیابی خود خطا کرده باشد، می‌توانید با ارسال کد ملی و تاریخ تولد خود، مشکل خود در ثبت نام را به مدیران سامانه گزارش کنید.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('متوجه شدم')),
-          TextButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('گزارش خطا')),
-        ],
-      ),
+      message: 'سامانه شما را زیر ۱۸ سال تشخیص داده است و شما مجاز به ثبت نام نیستید. چنان‌که سامانه در ارزیابی خود خطا کرده باشد، می‌توانید با ارسال کد ملی و تاریخ تولد خود، مشکل خود در ثبت نام را به مدیران سامانه گزارش کنید.',
+      tone: AppMessageTone.warning,
+      actions: [
+        appDialogButton(context, label: 'متوجه شدم', onPressed: () => Navigator.pop(context, false)),
+        appDialogButton(context, label: 'گزارش خطا', primary: true, onPressed: () => Navigator.pop(context, true)),
+      ],
     );
     if (report != true || !mounted) return;
     final dateController = TextEditingController();
-    final submit = await showDialog<bool>(
+    final submit = await showAppMessageDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('گزارش خطای تشخیص سن'),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
-          TextFormField(initialValue: code, readOnly: true, decoration: const InputDecoration(labelText: 'کد ملی')),
-          TextField(controller: dateController, keyboardType: TextInputType.datetime, decoration: const InputDecoration(labelText: 'تاریخ تولد (YYYY-MM-DD)', hintText: '۱۳۸۰-۰۱-۰۱')),
-        ]),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('انصراف')),
-          TextButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('ارسال گزارش')),
-        ],
-      ),
+      title: 'گزارش خطای تشخیص سن',
+      message: 'کد ملی و تاریخ تولد خود را برای بررسی ارسال کنید.',
+      tone: AppMessageTone.info,
+      content: Column(mainAxisSize: MainAxisSize.min, children: [
+        TextFormField(initialValue: code, readOnly: true, textAlign: TextAlign.center, decoration: const InputDecoration(labelText: 'کد ملی')),
+        const SizedBox(height: 12),
+        TextField(controller: dateController, keyboardType: TextInputType.datetime, textAlign: TextAlign.center, decoration: const InputDecoration(labelText: 'تاریخ تولد (YYYY-MM-DD)', hintText: '۱۳۸۰-۰۱-۰۱')),
+      ]),
+      actions: [
+        appDialogButton(context, label: 'انصراف', onPressed: () => Navigator.pop(context, false)),
+        appDialogButton(context, label: 'ارسال گزارش', primary: true, onPressed: () => Navigator.pop(context, true)),
+      ],
     );
     if (submit == true && mounted) {
       final birthDate = IranianNationalCodeValidator.normalize(dateController.text);

@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\UserProfile;
-use App\Models\UserTelegramIdentity;
 use App\Support\MobileIdentity;
 use App\Support\MobileNumber;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -31,16 +31,18 @@ class TelegramPasswordRecoveryController extends Controller
         $expiresAt = now()->addMinutes((int) env('TELEGRAM_LINK_NONCE_TTL_MINUTES', 10));
         $profile = UserProfile::query()
             ->where('mobile_hash', MobileIdentity::hash($mobile))
-            ->where('is_active', true)
             ->first();
-        $identity = $profile === null ? null : UserTelegramIdentity::query()
-            ->where('user_id', $profile->user_id)
-            ->where('phone_verification_status', 'Verified')
-            ->first();
-
+        if ($profile !== null && ! $profile->is_active) {
+            $ledger = DB::table('national_id_cooldown_ledgers')
+                ->where('national_id_hash', $profile->national_id_hash)->first();
+            if ($profile->account?->account_status !== 'Closed' || $ledger === null
+                || now()->lessThan($ledger->cooldown_until)) {
+                $profile = null;
+            }
+        }
         Cache::put($this->cacheKey($nonce), [
-            'user_id' => $identity?->user_id,
-            'telegram_identity_id' => $identity?->telegram_identity_id,
+            'user_id' => $profile?->user_id,
+            'mobile_hash' => $profile?->mobile_hash === null ? null : bin2hex($profile->mobile_hash),
             'state' => 'Pending',
             'expires_at' => $expiresAt->toISOString(),
         ], $expiresAt);

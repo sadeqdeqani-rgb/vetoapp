@@ -8,4 +8,6 @@ abstract interface class AuthRepository {
     required String phoneNumber,
     required String password,
   });
+
+  Future<void> logout();
 }

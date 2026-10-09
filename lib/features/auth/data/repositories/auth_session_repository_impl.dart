@@ -14,9 +14,16 @@ class AuthSessionRepositoryImpl implements AuthSessionRepository {
   @override
   Future<AuthSession> readSession() async {
     final mode = await _localDataSource.read(_modeKey);
+    // Interactive preview is intentionally scoped to the current app process.
+    // Remove the legacy persisted guest marker so an app restart always opens
+    // the gateway instead of silently returning to the preview.
+    if (mode == '2') {
+      await clearSession();
+      return const AuthSession(mode: AuthSessionMode.unauthenticated);
+    }
+
     final sessionMode = switch (mode) {
       '1' => AuthSessionMode.authenticated,
-      '2' => AuthSessionMode.guest,
       _ => AuthSessionMode.unauthenticated,
     };
 
@@ -39,9 +46,11 @@ class AuthSessionRepositoryImpl implements AuthSessionRepository {
 
   @override
   Future<void> saveGuestSession() async {
+    // Guest preview is ephemeral; only the in-memory AuthCubit state marks it.
+    // Clearing stale persisted values also handles upgrades from older builds.
     await _localDataSource.delete(_tokenKey);
     await _localDataSource.delete(_userIdKey);
-    await _localDataSource.write(_modeKey, '2');
+    await _localDataSource.delete(_modeKey);
   }
 
   @override

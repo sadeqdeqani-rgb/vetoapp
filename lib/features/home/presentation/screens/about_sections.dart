@@ -1,23 +1,14 @@
 class AboutSection {
-  const AboutSection({
-    required this.title,
-    required this.body,
-    this.attachments = const [],
-  });
+  const AboutSection({required this.title, required this.body, this.key});
+  final String? key;
   final String title;
   final String body;
-  final List<AboutAttachment> attachments;
-}
-
-class AboutAttachment {
-  const AboutAttachment({required this.title, required this.assetPath});
-  final String title;
-  final String assetPath;
 }
 
 const aboutSections = <AboutSection>[
   AboutSection(
-    title: 'اهداف سامانه',
+    key: 'goals',
+    title: 'اهداف وتواپ',
     body:
         '''وِتواَپ یک اپلیکیشن با قابلیت برگزاری همه‌پرسی، انتخابات و استیضاح است.
 
@@ -36,24 +27,11 @@ const aboutSections = <AboutSection>[
 در وِتواَپ، برای حل‌وفصل تمامی اختلافات و انتخاب و برکناری‌ها، نظر جمعی مردم به‌عنوان فصل‌الخطاب تلقی خواهد شد.''',
   ),
   AboutSection(
-    title: 'سازندگان سامانه',
+    key: 'creators',
+    title: 'هویت سازندگان',
     body:
         '''ما صادق دهقانی و مجید قرقانی، دو شهروند عادی ساکن ایران هستیم. توجه به شرایط اجتماعی و سیاسی در ایران، تنها راه برون‌رفت از وضع موجود را در برگزاری همه‌پرسی و انتخابات آزاد می‌دانیم و با این انگیزه، اقدام به ساخت این اپلیکیشن کرده‌ایم.ضمناً رأی شعبۀ اول دادگاه انقلاب شهرستان یزد، تصویر واضح‌تری از هویت سازندگان ارائه می‌کند.
 
 این رای در ۲۷ مرداد در شعبه ۱۶ دادگاه تجدید نظر استان یزد، عینا تایید شده است.''',
-    attachments: [
-      AboutAttachment(
-        title: 'دادنامه بدوی',
-        assetPath: 'assets/documents/دادنامه-بدوی.pdf',
-      ),
-      AboutAttachment(
-        title: 'ابلاغیه دادگاه تجدید نظر',
-        assetPath: 'assets/documents/ابلاغیه-دادگاه-تجدید-نظر.pdf',
-      ),
-      AboutAttachment(
-        title: 'گردشکار پرونده',
-        assetPath: 'assets/documents/گردشکار-پرونده.pdf',
-      ),
-    ],
   ),
 ];

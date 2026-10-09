@@ -5,12 +5,16 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/auth_card.dart';
+import '../../../../core/widgets/app_message_dialog.dart';
 import '../../../../core/validation/digit_normalizer.dart';
+import '../../../../core/validation/iranian_mobile_input_formatter.dart';
+import '../../../../core/validation/iranian_mobile_number.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/registration_session.dart';
 import '../../domain/repositories/registration_repository.dart';
 import '../../domain/entities/otp_challenge.dart';
+import '../../domain/repositories/telegram_password_recovery_repository.dart';
 import '../cubit/otp_cubit.dart';
 
 /// مرحلهٔ دریافت شمارهٔ تلفن همراه برای بازیابی رمز یا ثبت‌نام.
@@ -32,6 +36,7 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
   static const _externalChannel = MethodChannel('vetoapp/external');
 
   bool _isLoading = false;
+  bool _waitingForTelegram = false;
   RegistrationSession? _registrationSession;
 
   @override
@@ -41,32 +46,17 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
   }
 
   String _normalizePhoneNumber(String value) {
-    var phone = normalizeDigits(
-      value.trim(),
-    ).replaceAll(RegExp(r'[\s\-()]'), '');
-
-    if (phone.startsWith('0098')) {
-      phone = '0${phone.substring(4)}';
-    } else if (phone.startsWith('+98')) {
-      phone = '0${phone.substring(3)}';
-    } else if (phone.startsWith('98') && phone.length == 12) {
-      phone = '0${phone.substring(2)}';
-    } else if (RegExp(r'^9\d{9}$').hasMatch(phone)) {
-      phone = '0$phone';
-    }
-
-    return phone;
+    return normalizeIranianMobileNumber(value);
   }
 
   String? _validatePhoneNumber(String? value) {
-    final phone = _normalizePhoneNumber(value ?? '');
-
-    if (phone.isEmpty) {
+    final digits = normalizeDigits(value?.trim() ?? '');
+    if (digits.isEmpty) {
       return 'شمارهٔ تلفن همراه را وارد کنید.';
     }
 
-    if (!RegExp(r'^09\d{9}$').hasMatch(phone)) {
-      return 'شمارهٔ تلفن همراه معتبر نیست.';
+    if (!RegExp(r'^9\d{9}$').hasMatch(digits)) {
+      return '۱۰ رقم معتبر شمارهٔ همراه را پس از پیش‌شمارهٔ +۹۸ وارد کنید.';
     }
 
     return null;
@@ -89,25 +79,126 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
       if (widget.isRegistration) {
         await _startRegistrationOtp(phoneNumber);
       } else {
-        await context.read<OtpCubit>().request(
-          phoneNumber: phoneNumber,
-          purpose: OtpPurpose.passwordRecovery,
-        );
+        await _startPasswordRecovery(phoneNumber);
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error.toString().replaceFirst('Exception: ', '')),
-          ),
+        await showAppMessageDialog<void>(
+          context: context,
+          message: error.toString().replaceFirst('Exception: ', ''),
+          tone: AppMessageTone.error,
+          actions: [
+            appDialogButton(
+              context,
+              label: 'متوجه شدم',
+              primary: true,
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
         );
       }
     } finally {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _waitingForTelegram = false;
         });
       }
+    }
+  }
+
+  Future<void> _startPasswordRecovery(String phoneNumber) async {
+    final repository = getIt<TelegramPasswordRecoveryRepository>();
+    final startResult = await repository.start(phoneNumber: phoneNumber);
+    final challenge = startResult.fold(
+      (failure) => throw Exception(failure.message),
+      (value) => value,
+    );
+
+    if (!mounted) return;
+    setState(() => _waitingForTelegram = true);
+    try {
+      await _externalChannel.invokeMethod<void>('openUrl', {
+        'url': challenge.telegramStartUrl,
+      });
+    } on PlatformException {
+      throw Exception('بازکردن ربات تلگرام ممکن نشد. دوباره تلاش کنید.');
+    }
+
+    if (!mounted) return;
+    await showAppMessageDialog<void>(
+      context: context,
+      message:
+          'در ربات وتواپ روی «شروع» بزنید و دکمهٔ «ارسال شماره موبایل» را انتخاب کنید. پس از تأیید شماره و دریافت کد در تلگرام، به اپ برگردید.',
+      tone: AppMessageTone.info,
+      actions: [
+        appDialogButton(
+          context,
+          label: 'متوجه شدم',
+          primary: true,
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
+    );
+
+    while (mounted && DateTime.now().isBefore(challenge.expiresAt)) {
+      final statusResult = await repository.status(nonce: challenge.nonce);
+      final recoveryStatus = statusResult.fold(
+        (failure) => throw Exception(failure.message),
+        (value) => value,
+      );
+
+      if (recoveryStatus.state == 'OtpIssued' && recoveryStatus.otpId != null) {
+        if (!mounted) return;
+        context.push(
+          '/otp-verification',
+          extra: <String, dynamic>{
+            'phoneNumber': phoneNumber,
+            'isPasswordRecovery': true,
+            'otpId': recoveryStatus.otpId,
+          },
+        );
+        return;
+      }
+
+      if (recoveryStatus.state == 'Rejected') {
+        if (!mounted) return;
+        await showAppMessageDialog<void>(
+          context: context,
+          message:
+              'شمارهٔ ارسالی در تلگرام با شمارهٔ حساب وتواپ تطبیق نکرد یا ارسال کد انجام نشد. دوباره از اپ درخواست بازیابی بدهید و شمارهٔ همان حساب تلگرام را با دکمهٔ رسمی ارسال کنید.',
+          tone: AppMessageTone.error,
+          actions: [
+            appDialogButton(
+              context,
+              label: 'متوجه شدم',
+              primary: true,
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+        return;
+      }
+
+      if (!mounted) return;
+      await Future<void>.delayed(const Duration(seconds: 2));
+    }
+
+    if (mounted) {
+      await showAppMessageDialog<void>(
+        context: context,
+        message:
+            'تأیید بازیابی در تلگرام دریافت نشد یا مهلت پیوند تمام شد. دوباره درخواست بازیابی بدهید.',
+        tone: AppMessageTone.warning,
+        actions: [
+          appDialogButton(
+            context,
+            label: 'متوجه شدم',
+            primary: true,
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      );
     }
   }
 
@@ -122,18 +213,19 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
       final failure = created.fold((value) => value, (_) => null);
       if (failure is RegistrationMobileAlreadyRegisteredFailure) {
         if (!mounted) return;
-        await showDialog<void>(
+        await showAppMessageDialog<void>(
           context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: const Text('شماره موبایل ثبت شده است'),
-            content: Text(failure.message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('متوجه شدم'),
-              ),
-            ],
-          ),
+          title: 'شماره موبایل ثبت شده است',
+          message: failure.message,
+          tone: AppMessageTone.warning,
+          actions: [
+            appDialogButton(
+              context,
+              label: 'متوجه شدم',
+              primary: true,
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
         );
 
         return;
@@ -168,13 +260,18 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
     }
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'در تلگرام «ارسال شماره موبایل» را بزنید؛ سپس به اپ برگردید.',
+    await showAppMessageDialog<void>(
+      context: context,
+      message: 'در تلگرام «ارسال شماره موبایل» را بزنید؛ سپس به اپ برگردید.',
+      tone: AppMessageTone.info,
+      actions: [
+        appDialogButton(
+          context,
+          label: 'متوجه شدم',
+          primary: true,
+          onPressed: () => Navigator.of(context).pop(),
         ),
-        duration: Duration(seconds: 6),
-      ),
+      ],
     );
     for (var attempt = 0; attempt < 30 && mounted; attempt++) {
       final result = await repository.registrationStatus(session);
@@ -193,12 +290,19 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
       await Future<void>.delayed(const Duration(seconds: 2));
     }
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
+      await showAppMessageDialog<void>(
+        context: context,
+        message:
             'تأیید شماره در تلگرام دریافت نشد؛ پس از ارسال Contact دوباره تلاش کنید.',
+        tone: AppMessageTone.warning,
+        actions: [
+          appDialogButton(
+            context,
+            label: 'متوجه شدم',
+            primary: true,
+            onPressed: () => Navigator.of(context).pop(),
           ),
-        ),
+        ],
       );
     }
   }
@@ -207,7 +311,7 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
   Widget build(BuildContext context) {
     return AuthScaffold(
       maxWidth: 520,
-      onBack: _isLoading ? null : () => context.pop(),
+      onBack: _isLoading && !_waitingForTelegram ? null : () => context.pop(),
       child: BlocListener<OtpCubit, OtpState>(
         listener: (context, state) {
           if (state is OtpRequested) {
@@ -224,9 +328,19 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
             );
           } else if (state is OtpError && mounted) {
             setState(() => _isLoading = false);
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            showAppMessageDialog<void>(
+              context: context,
+              message: state.message,
+              tone: AppMessageTone.error,
+              actions: [
+                appDialogButton(
+                  context,
+                  label: 'متوجه شدم',
+                  primary: true,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            );
           }
         },
         child: AuthFormCard(
@@ -249,10 +363,23 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
+                if (_waitingForTelegram && !widget.isRegistration) ...[
+                  const SizedBox(height: 10),
+                  const Text(
+                    'در انتظار تأیید درخواست در ربات تلگرام…',
+                    textAlign: TextAlign.center,
+                  ),
+                ],
                 if (widget.isRegistration) ...[
                   const SizedBox(height: 8),
                   const Text(
                     'برای ثبت‌نام، شماره را در بات تلگرام هم تأیید کنید.',
+                    textAlign: TextAlign.center,
+                  ),
+                ] else ...[
+                  const SizedBox(height: 8),
+                  const Text(
+                    'برای تأیید مالکیت حساب، درخواست را در ربات تلگرام وتواپ تأیید کنید.',
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -266,12 +393,8 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                     keyboardType: TextInputType.phone,
                     textInputAction: TextInputAction.done,
                     textAlign: TextAlign.left,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                        RegExp(r'[0-9۰-۹٠-٩]'),
-                      ),
-                      LengthLimitingTextInputFormatter(10),
-                    ],
+                    textDirection: TextDirection.ltr,
+                    inputFormatters: [IranianMobileInputFormatter()],
                     validator: _validatePhoneNumber,
                     onFieldSubmitted: (_) => _continueToOtp(),
                     decoration: InputDecoration(
@@ -300,7 +423,7 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                   label:
                       widget.isRegistration
                           ? 'تأیید در تلگرام و دریافت کد'
-                          : 'ارسال کد تأیید',
+                          : 'دریافت کد از ربات تلگرام',
                   onPressed: _continueToOtp,
                   loading: _isLoading,
                 ),
