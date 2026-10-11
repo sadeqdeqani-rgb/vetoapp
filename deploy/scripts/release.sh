@@ -98,7 +98,7 @@ if [[ "$seed" == true ]]; then
   "${compose[@]}" run --rm --no-deps seed
 fi
 
-"${compose[@]}" up -d --wait app queue scheduler telegram-poller wordpress nginx backup wordpress-backup
+"${compose[@]}" up -d --wait app queue scheduler wordpress nginx backup wordpress-backup
 "${compose[@]}" --profile ops run --rm --no-deps wordpress-theme-sync
 "${compose[@]}" exec -T queue php artisan queue:restart --no-interaction || true
 

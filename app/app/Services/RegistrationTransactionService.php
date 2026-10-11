@@ -78,17 +78,22 @@ class RegistrationTransactionService
         }
 
         $prefix = (int) substr($nationalId, 0, 3);
-        $firstRangeValue = (int) substr($nationalId, 3, 3);
-        $secondRangeValue = (int) substr($nationalId, 6, 3);
+        // The two configured ranges are alternatives for the three serial digits
+        // immediately following the geographic prefix, not separate checks for
+        // two different groups of digits in the national code.
+        $serialRangeValue = (int) substr($nationalId, 3, 3);
         $eligibility = DB::table('national_id_area_eligibilities')
             ->where('national_id_prefix_3', $prefix)
             ->first();
+        $matchesFirstRange = $eligibility !== null
+            && $serialRangeValue >= (int) $eligibility->first_range_from
+            && $serialRangeValue <= (int) $eligibility->first_range_to;
+        $matchesSecondRange = $eligibility !== null
+            && $serialRangeValue >= (int) $eligibility->second_range_from
+            && $serialRangeValue <= (int) $eligibility->second_range_to;
         if (
             $eligibility === null
-            || $firstRangeValue < (int) $eligibility->first_range_from
-            || $firstRangeValue > (int) $eligibility->first_range_to
-            || $secondRangeValue < (int) $eligibility->second_range_from
-            || $secondRangeValue > (int) $eligibility->second_range_to
+            || (! $matchesFirstRange && ! $matchesSecondRange)
         ) {
             return ['code' => 'national_id_area_ineligible', 'valid' => false];
         }
@@ -423,7 +428,7 @@ class RegistrationTransactionService
         return $nationalId;
     }
 
-    private function canReassignClosedAccountIdentity(
+    public function canReassignClosedAccountIdentity(
         UserTelegramIdentity $identity,
         RegistrationDraft $draft,
     ): bool {

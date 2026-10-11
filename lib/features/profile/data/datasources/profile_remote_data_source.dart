@@ -6,6 +6,7 @@ import '../models/profile_model.dart';
 abstract interface class ProfileRemoteDataSource {
   Future<ProfileModel> getProfile();
   Future<List<Map<String, dynamic>>> getReceipts();
+  Future<Map<String, dynamic>> verifyReceipt(String receiptNumber);
   Future<Map<String, dynamic>> getNotifications();
   Future<void> markNotificationRead(String notificationId);
   Future<void> verifyPassword(String currentPassword);
@@ -85,6 +86,12 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
 
       final data = response.data?['data'];
       if (data == null) return const [];
+      if (data is List) {
+        return data
+            .whereType<Map>()
+            .map((item) => Map<String, dynamic>.from(item))
+            .toList(growable: false);
+      }
       if (data is! Map<String, dynamic>) {
         throw const ServerFailure('پاسخ فهرست فعالیت‌ها معتبر نیست.');
       }
@@ -95,6 +102,21 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       // Older API deployments may not yet expose this optional inbox endpoint.
       // For a user with no receipt history, present the same empty state.
       if (error.response?.statusCode == 404) return const [];
+      throw _failure(error);
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> verifyReceipt(String receiptNumber) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/api/v1/public/process-receipts/verify',
+        data: {'receipt_number': receiptNumber.trim()},
+      );
+      final data = response.data?['data'];
+      if (data is Map) return Map<String, dynamic>.from(data);
+      throw const ServerFailure('پاسخ استعلام رسید معتبر نیست.');
+    } on DioException catch (error) {
       throw _failure(error);
     }
   }

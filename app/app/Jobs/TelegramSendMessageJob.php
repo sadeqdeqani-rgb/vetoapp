@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\OtpDeliveryAttempt;
+use App\Models\Otp;
 use App\Models\UserTelegramIdentity;
 use App\Services\TelegramBotClient;
 use Illuminate\Bus\Queueable;
@@ -34,9 +35,17 @@ class TelegramSendMessageJob implements ShouldQueue
             ->where('phone_verification_status', 'Verified')
             ->firstOrFail();
 
+        $purpose = Otp::query()->whereKey($attempt->otp_id)->value('purpose');
+        $purposeLabel = match ($purpose) {
+            'registration' => 'ثبت‌نام',
+            'password_reset' => 'بازیابی رمز',
+            default => 'تأیید درخواست',
+        };
+        $code = Crypt::decryptString($this->encryptedCode);
+
         $result = $telegram->sendMessage(
             (int) $identity->chat_id,
-            'کد تأیید وتواپ: '.Crypt::decryptString($this->encryptedCode).' (اعتبار: ۲ دقیقه)'
+            "کد یک‌بارمصرف {$purposeLabel} وتواپ: {$code}\nاعتبار: ۲ دقیقه.\nاین کد را فقط در اپ وتواپ وارد کنید و با هیچ‌کس، حتی افرادی که خود را پشتیبانی معرفی می‌کنند، به اشتراک نگذارید. اگر خودتان این درخواست را نداده‌اید، پیام را نادیده بگیرید."
         );
 
         $attempt->forceFill([

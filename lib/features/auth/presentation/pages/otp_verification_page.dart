@@ -97,33 +97,48 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     await context.read<OtpCubit>().verify(
       phoneNumber: widget.phoneNumber,
       code: normalizeDigits(_otpController.text.trim()),
-      purpose: widget.isPasswordRecovery
-          ? OtpPurpose.passwordRecovery
-          : widget.isRegistration
-          ? OtpPurpose.registration
-          : OtpPurpose.login,
+      purpose:
+          widget.isPasswordRecovery
+              ? OtpPurpose.passwordRecovery
+              : widget.isRegistration
+              ? OtpPurpose.registration
+              : OtpPurpose.login,
       otpId: widget.otpId,
     );
   }
 
   void _resendOtp() {
     _startTimer();
-    showAppMessageDialog<void>(context: context, message: 'کد تأیید مجدداً به ${widget.phoneNumber} ارسال خواهد شد.', tone: AppMessageTone.info, actions: [appDialogButton(context, label: 'متوجه شدم', primary: true, onPressed: () => Navigator.of(context).pop())]);
+    showAppMessageDialog<void>(
+      context: context,
+      message: 'کد تأیید مجدداً به ${widget.phoneNumber} ارسال خواهد شد.',
+      tone: AppMessageTone.info,
+      actions: [
+        appDialogButton(
+          context,
+          label: 'متوجه شدم',
+          primary: true,
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final title = widget.isPasswordRecovery
-        ? 'تأیید بازیابی رمز'
-        : widget.isRegistration
-        ? 'تأیید شمارهٔ ثبت‌نام'
-        : 'تأیید کد ورود';
+    final title =
+        widget.isPasswordRecovery
+            ? 'تأیید بازیابی رمز'
+            : widget.isRegistration
+            ? 'تأیید شمارهٔ ثبت‌نام'
+            : 'تأیید کد ورود';
 
-    final description = widget.isPasswordRecovery
-        ? 'کد بازیابی ارسال‌شده در گفت‌وگوی ربات تلگرام وتواپ را وارد کنید.'
-        : widget.isRegistration
-        ? 'کد تأیید ارسال‌شده به شمارهٔ زیر را وارد کنید.'
-        : 'کد تأیید ارسال‌شده به شمارهٔ زیر را وارد کنید.';
+    final description =
+        widget.isPasswordRecovery
+            ? 'کد یک‌بارمصرف بازیابی ارسال‌شده در گفت‌وگوی ربات وتواپ را وارد کنید. اعتبار کد ۲ دقیقه است؛ آن را با هیچ‌کس به اشتراک نگذارید.'
+            : widget.isRegistration
+            ? 'کد یک‌بارمصرف ثبت‌نام ارسال‌شده به شمارهٔ زیر را وارد کنید. اعتبار کد ۲ دقیقه است؛ آن را با هیچ‌کس به اشتراک نگذارید.'
+            : 'کد تأیید ارسال‌شده به شمارهٔ زیر را وارد کنید. کد را با هیچ‌کس به اشتراک نگذارید.';
 
     return AuthScaffold(
       maxWidth: 520,
@@ -153,7 +168,19 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             }
           } else if (state is OtpError && mounted) {
             setState(() => _isLoading = false);
-            showAppMessageDialog<void>(context: context, message: state.message, tone: AppMessageTone.error, actions: [appDialogButton(context, label: 'متوجه شدم', primary: true, onPressed: () => Navigator.of(context).pop())]);
+            showAppMessageDialog<void>(
+              context: context,
+              message: state.message,
+              tone: AppMessageTone.error,
+              actions: [
+                appDialogButton(
+                  context,
+                  label: 'متوجه شدم',
+                  primary: true,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            );
           }
         },
         child: AuthFormCard(
@@ -218,9 +245,10 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                   '${(_remainingSeconds % 60).toString().padLeft(2, '0')}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: _remainingSeconds == 0
-                        ? AppTheme.danger
-                        : AppTheme.textSecondary,
+                    color:
+                        _remainingSeconds == 0
+                            ? AppTheme.danger
+                            : AppTheme.textSecondary,
                     fontSize: 15,
                   ),
                 ),
@@ -241,9 +269,10 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 ),
                 const SizedBox(height: 12),
                 AuthActionButton(
-                  label: widget.isRegistration
-                      ? 'تأیید و ادامه ثبت‌نام'
-                      : 'تأیید و ادامه',
+                  label:
+                      widget.isRegistration
+                          ? 'تأیید و ادامه ثبت‌نام'
+                          : 'تأیید و ادامه',
                   onPressed: _otpComplete && !_isLoading ? _verifyOtp : null,
                   loading: _isLoading,
                 ),

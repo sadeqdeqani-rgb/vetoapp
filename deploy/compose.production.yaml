@@ -267,6 +267,7 @@ services:
 
   telegram-poller:
     <<: *app
+    profiles: ["long-polling"]
     command: ["php", "artisan", "telegram:poll", "--no-interaction"]
     depends_on:
       mysql:

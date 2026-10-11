@@ -232,7 +232,7 @@ class _ElectionProcessListScreenState extends State<ElectionProcessListScreen>
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Text(
-                  'انتخاباتی در این بخش پیدا نشد. تعداد: $_total',
+                  'هنوز هیچ رویدادی در این بخش وجود ندارد.',
                   textAlign: TextAlign.center,
                 ),
               ),

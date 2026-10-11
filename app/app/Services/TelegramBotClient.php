@@ -61,7 +61,7 @@ class TelegramBotClient
 
     public function requestContact(
         int $chatId,
-        string $text = 'برای ادامه، Contact رسمی خودتان را ارسال کنید.',
+        string $text = 'برای ادامه، فقط در صورت تمایل دکمهٔ «اشتراک‌گذاری شماره برای تأیید» را بزنید.',
     ): array
     {
         $response = Http::asJson()
@@ -71,7 +71,7 @@ class TelegramBotClient
                 'text' => $text,
                 'reply_markup' => [
                     'keyboard' => [[
-                        ['text' => 'ارسال شماره موبایل', 'request_contact' => true],
+                        ['text' => 'اشتراک‌گذاری شماره برای تأیید', 'request_contact' => true],
                     ]],
                     'resize_keyboard' => true,
                     'one_time_keyboard' => true,
@@ -97,6 +97,19 @@ class TelegramBotClient
 
         if (! $response->successful() || ! $response->json('ok')) {
             throw new RuntimeException('Telegram setWebhook failed.');
+        }
+
+        return (array) $response->json('result');
+    }
+
+    public function getWebhookInfo(): array
+    {
+        $response = Http::asJson()
+            ->timeout((int) config('services.telegram.timeout', 10))
+            ->get($this->apiUrl('getWebhookInfo'));
+
+        if (! $response->successful() || ! $response->json('ok')) {
+            throw new RuntimeException('Telegram getWebhookInfo failed.');
         }
 
         return (array) $response->json('result');

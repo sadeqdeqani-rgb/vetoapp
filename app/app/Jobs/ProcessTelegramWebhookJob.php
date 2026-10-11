@@ -77,7 +77,7 @@ class ProcessTelegramWebhookJob implements ShouldQueue
                 ->where('telegram_link_nonce_expires_at', '>', now())
                 ->firstOrFail();
 
-            $identity = DB::transaction(function () use ($telegramUserId, $chatId, $from, $draft): ?UserTelegramIdentity {
+            $identity = DB::transaction(function () use ($telegramUserId, $chatId, $from, $draft, $registration): ?UserTelegramIdentity {
                 $identity = UserTelegramIdentity::query()
                     ->where('telegram_user_id', $telegramUserId)
                     ->lockForUpdate()
@@ -94,12 +94,17 @@ class ProcessTelegramWebhookJob implements ShouldQueue
                         || ($previousDraft->state_code === 'Initiated' && $previousDraft->expires_at->isPast())
                     );
 
-                    if ($identity->user_id !== null || ! $previousDraftExpired) {
+                    $closedAccountReassignmentAllowed = $identity->user_id !== null
+                        && $registration->canReassignClosedAccountIdentity($identity, $draft);
+
+                    if (! $previousDraftExpired
+                        || ($identity->user_id !== null && ! $closedAccountReassignmentAllowed)) {
                         throw new RuntimeException('Telegram identity is linked to another draft.');
                     }
 
-                    // Reuse an unregistered Telegram identity only after its old draft expired.
-                    // Ask for Contact again so verification is bound to the new draft's phone.
+                    // Reuse an identity from an expired registration draft, or from a closed
+                    // account only when the existing policy permits a fresh registration.
+                    // Contact verification still runs before the old user link is detached.
                     $identity->forceFill([
                         'registration_draft_id' => $draft->registration_draft_id,
                         'link_status' => 'Pending',
@@ -132,11 +137,14 @@ class ProcessTelegramWebhookJob implements ShouldQueue
                 ['draft_id' => $draft->registration_draft_id, 'nonce' => $nonce],
                 $draft->telegram_link_nonce_expires_at
             );
-            $telegram->requestContact($chatId);
+            $telegram->requestContact(
+                $chatId,
+                'درخواست ثبت‌نام وتواپ از اپ آغاز شده است. اگر می‌خواهید ادامه دهید، شماره‌ای را که در اپ وارد کردید با دکمهٔ زیر به بات بفرستید. این شماره برای تطبیق و تأیید ثبت‌نام استفاده و در حساب ثبت‌نامی شما نگهداری می‌شود؛ کد یک‌بارمصرف ثبت‌نام در همین گفتگو فرستاده خواهد شد. تلگرام شماره را در اختیار بات قرار می‌دهد. اگر این درخواست را شما آغاز نکرده‌اید یا مایل به ادامه نیستید، دکمه را نزنید و گفتگو را ببندید.',
+            );
         } elseif (isset($message['text']) && preg_match('/^\/start(?:@\w+)?$/', trim($message['text']))) {
             $telegram->sendMessage(
                 $chatId,
-                'برای ثبت‌نام، ثبت‌نام را از داخل اپ آغاز کنید و لینک اختصاصی بات را باز کنید.',
+                'این بات فقط درخواست‌هایی را ادامه می‌دهد که از داخل اپ وتواپ آغاز شده باشند. برای ثبت‌نام یا بازیابی رمز، وارد اپ شوید و همان مسیر را شروع کنید. بات هیچ‌وقت رمز عبور یا کد یک‌بارمصرف شما را درخواست نمی‌کند؛ کد را با هیچ‌کس به اشتراک نگذارید.',
             );
         } elseif (isset($message['contact'])) {
             $recoveryNonce = Cache::get("telegram:password-recovery:contact:{$telegramUserId}");
@@ -148,6 +156,7 @@ class ProcessTelegramWebhookJob implements ShouldQueue
                     $message['contact'],
                     $telegram,
                 );
+                $this->redactContactPayload($entry);
                 $entry->forceFill(['processed_status' => 'Processed', 'processed_at' => now()])->save();
 
                 return;
@@ -200,7 +209,10 @@ class ProcessTelegramWebhookJob implements ShouldQueue
 
             if ($contactVerified) {
                 Cache::forget("telegram:registration:nonce:{$telegramUserId}");
-                $telegram->sendMessage($chatId, 'شماره شما با موفقیت تأیید شد.');
+                $telegram->sendMessage(
+                    $chatId,
+                    'شماره برای درخواست ثبت‌نام وتواپ تأیید شد. کد یک‌بارمصرف فقط برای ادامهٔ ثبت‌نام است و تا ۲ دقیقه اعتبار دارد؛ آن را در اپ وارد کنید و با هیچ‌کس به اشتراک نگذارید. اگر خودتان این درخواست را آغاز نکرده‌اید، کد را نادیده بگیرید.',
+                );
             }
         } elseif (
             isset($message['text'])
@@ -215,6 +227,7 @@ class ProcessTelegramWebhookJob implements ShouldQueue
             $identity->forceFill(['chat_id' => $chatId, 'last_seen_at' => now()])->save();
         }
 
+        $this->redactContactPayload($entry);
         $entry->forceFill(['processed_status' => 'Processed', 'processed_at' => now()])->save();
     }
 
@@ -238,7 +251,7 @@ class ProcessTelegramWebhookJob implements ShouldQueue
         );
         $telegram->requestContact(
             $chatId,
-            'برای تأیید مالکیت شمارهٔ ثبت‌شده، دکمهٔ «ارسال شماره موبایل» را بزنید. شماره فقط برای همین درخواست بازیابی بررسی می‌شود.',
+            'درخواست بازیابی رمز وتواپ از اپ آغاز شده است. اگر می‌خواهید ادامه دهید، دکمهٔ زیر را بزنید تا شمارهٔ حساب تلگرام‌تان برای تطبیق با شمارهٔ واردشده در اپ به بات وتواپ فرستاده شود. در صورت تأیید، کد یک‌بارمصرف همین درخواست در این گفتگو ارسال می‌شود. اشتراک‌گذاری اختیاری است؛ اگر درخواست را شما آغاز نکرده‌اید یا مایل به ادامه نیستید، دکمه را نزنید و گفتگو را ببندید.',
         );
     }
 
@@ -323,7 +336,10 @@ class ProcessTelegramWebhookJob implements ShouldQueue
             'state' => 'OtpIssued',
             'otp_id' => $otp->otp_id,
         ], now()->addMinutes(2));
-        $telegram->sendMessage($chatId, 'شماره تأیید شد و کد بازیابی به همین گفتگو ارسال شد. آن را در اپ وارد کنید.');
+        $telegram->sendMessage(
+            $chatId,
+            'درخواست بازیابی تأیید شد. کد یک‌بارمصرف تا ۲ دقیقه اعتبار دارد؛ آن را فقط در اپ وتواپ وارد کنید و با هیچ‌کس به اشتراک نگذارید. اگر خودتان درخواست بازیابی نداده‌اید، کد را نادیده بگیرید.',
+        );
     }
 
     private function linkRecoveryTelegramIdentity(UserProfile $profile, int $telegramUserId, int $chatId): bool
@@ -369,11 +385,26 @@ class ProcessTelegramWebhookJob implements ShouldQueue
 
     public function failed(Throwable $exception): void
     {
-        IntegrationInboxEntry::query()
-            ->whereKey($this->inboxEntryId)
-            ->update([
+        $entry = IntegrationInboxEntry::query()->find($this->inboxEntryId);
+        if ($entry !== null) {
+            $this->redactContactPayload($entry);
+            $entry->forceFill([
                 'processed_status' => 'Failed',
                 'processed_at' => now(),
-            ]);
+            ])->save();
+        }
+    }
+
+    private function redactContactPayload(IntegrationInboxEntry $entry): void
+    {
+        $payload = $entry->payload;
+        if (! is_array($payload) || ! is_array($payload['message']['contact'] ?? null)) {
+            return;
+        }
+
+        // Telegram's webhook includes the raw phone number in Contact. Keep the
+        // inbox event, but discard the contact details after processing.
+        $payload['message']['contact'] = ['redacted' => true];
+        $entry->forceFill(['payload' => $payload])->save();
     }
 }

@@ -634,19 +634,19 @@ class _EventsWidget extends StatelessWidget {
     const types = <String, (String, String, IconData, Color)>{
       'referendum': (
         'آخرین همه‌پرسی‌های در حال برگزاری',
-        '/referendum/active',
+        '/referendum/voting/live-results',
         Icons.how_to_vote_outlined,
         AppTheme.success,
       ),
       'election': (
         'آخرین انتخابات‌های در حال برگزاری',
-        '/elections/live',
+        '/elections/voting',
         Icons.ballot_outlined,
         AppTheme.election,
       ),
       'impeachment': (
         'آخرین استیضاح‌های در حال برگزاری',
-        '/impeachment/active',
+        '/impeachment',
         Icons.gavel_outlined,
         AppTheme.danger,
       ),

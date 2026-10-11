@@ -70,6 +70,8 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
     }
 
     final phoneNumber = _normalizePhoneNumber(_phoneController.text);
+    final consented = await _confirmPhoneUse();
+    if (!consented || !mounted) return;
 
     setState(() {
       _isLoading = true;
@@ -107,6 +109,34 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
     }
   }
 
+  Future<bool> _confirmPhoneUse() async {
+    final isRegistration = widget.isRegistration;
+    final result = await showAppMessageDialog<bool>(
+      context: context,
+      title: isRegistration ? 'تأیید شماره برای ثبت‌نام' : 'بازیابی رمز عبور',
+      message:
+          isRegistration
+              ? 'شماره‌ای که وارد کرده‌اید برای آغاز ثبت‌نام به سرور وتواپ فرستاده می‌شود. اگر این درخواست به تأیید تلگرام نیاز داشته باشد، بات باز می‌شود و فقط با زدن دکمهٔ اشتراک‌گذاری، تلگرام شمارهٔ حساب شما را برای تطبیق به بات می‌فرستد. شماره در حساب ثبت‌نامی شما نگهداری می‌شود و کد یک‌بارمصرف ثبت‌نام در گفت‌وگوی بات ارسال خواهد شد. اگر موافق نیستید، انصراف را بزنید.'
+              : 'شماره‌ای که وارد کرده‌اید برای آغاز درخواست بازیابی به سرور وتواپ فرستاده می‌شود. در تلگرام، فرستادن شماره اختیاری است؛ با زدن دکمهٔ اشتراک‌گذاری، شمارهٔ حساب تلگرام برای تطبیق به بات وتواپ می‌رسد و در صورت تأیید، کد یک‌بارمصرف بازیابی در همان گفتگو ارسال می‌شود. برای حفظ حریم خصوصی، نتیجهٔ درخواست اطلاعاتی دربارهٔ وجود حساب افشا نمی‌کند. اگر موافق نیستید، انصراف را بزنید.',
+      tone: AppMessageTone.info,
+      barrierDismissible: false,
+      actions: [
+        appDialogButton(
+          context,
+          label: 'انصراف',
+          onPressed: () => Navigator.of(context).pop(false),
+        ),
+        appDialogButton(
+          context,
+          label: 'ادامه',
+          primary: true,
+          onPressed: () => Navigator.of(context).pop(true),
+        ),
+      ],
+    );
+    return result ?? false;
+  }
+
   Future<void> _startPasswordRecovery(String phoneNumber) async {
     final repository = getIt<TelegramPasswordRecoveryRepository>();
     final startResult = await repository.start(phoneNumber: phoneNumber);
@@ -126,21 +156,6 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
     }
 
     if (!mounted) return;
-    await showAppMessageDialog<void>(
-      context: context,
-      message:
-          'در ربات وتواپ روی «شروع» بزنید و دکمهٔ «ارسال شماره موبایل» را انتخاب کنید. پس از تأیید شماره و دریافت کد در تلگرام، به اپ برگردید.',
-      tone: AppMessageTone.info,
-      actions: [
-        appDialogButton(
-          context,
-          label: 'متوجه شدم',
-          primary: true,
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ],
-    );
-
     while (mounted && DateTime.now().isBefore(challenge.expiresAt)) {
       final statusResult = await repository.status(nonce: challenge.nonce);
       final recoveryStatus = statusResult.fold(
@@ -166,7 +181,7 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
         await showAppMessageDialog<void>(
           context: context,
           message:
-              'شمارهٔ ارسالی در تلگرام با شمارهٔ حساب وتواپ تطبیق نکرد یا ارسال کد انجام نشد. دوباره از اپ درخواست بازیابی بدهید و شمارهٔ همان حساب تلگرام را با دکمهٔ رسمی ارسال کنید.',
+              'درخواست از طریق تلگرام تأیید نشد. شمارهٔ واردشده در اپ و شمارهٔ حساب تلگرام را بررسی کنید و اگر لازم است، از اپ درخواست تازه‌ای بسازید.',
           tone: AppMessageTone.error,
           actions: [
             appDialogButton(
@@ -253,6 +268,10 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
     if (startUrl == null || startUrl.isEmpty) {
       throw Exception('نشانی بات روی سرور تنظیم نشده است.');
     }
+
+    if (!mounted) return;
+    setState(() => _waitingForTelegram = true);
+
     try {
       await _externalChannel.invokeMethod<void>('openUrl', {'url': startUrl});
     } on PlatformException {
@@ -260,19 +279,6 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
     }
 
     if (!mounted) return;
-    await showAppMessageDialog<void>(
-      context: context,
-      message: 'در تلگرام «ارسال شماره موبایل» را بزنید؛ سپس به اپ برگردید.',
-      tone: AppMessageTone.info,
-      actions: [
-        appDialogButton(
-          context,
-          label: 'متوجه شدم',
-          primary: true,
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ],
-    );
     for (var attempt = 0; attempt < 30 && mounted; attempt++) {
       final result = await repository.registrationStatus(session);
       final updated = result.fold((_) => null, (value) => value);
@@ -293,7 +299,7 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
       await showAppMessageDialog<void>(
         context: context,
         message:
-            'تأیید شماره در تلگرام دریافت نشد؛ پس از ارسال Contact دوباره تلاش کنید.',
+            'تأیید شماره در تلگرام دریافت نشد. اگر مایلید، دوباره تلاش کنید و در بات گزینهٔ «اشتراک‌گذاری شماره برای تأیید» را بزنید.',
         tone: AppMessageTone.warning,
         actions: [
           appDialogButton(
@@ -372,14 +378,16 @@ class _ForgotPasswordPhonePageState extends State<ForgotPasswordPhonePage> {
                 ],
                 if (widget.isRegistration) ...[
                   const SizedBox(height: 8),
-                  const Text(
-                    'برای ثبت‌نام، شماره را در بات تلگرام هم تأیید کنید.',
+                  Text(
+                    _waitingForTelegram
+                        ? 'در انتظار تأیید شماره در تلگرام… پس از تأیید، کد به‌طور خودکار ارسال می‌شود.'
+                        : 'اگر تأیید تلگرام لازم باشد، اشتراک‌گذاری شماره در بات با انتخاب شما انجام می‌شود.',
                     textAlign: TextAlign.center,
                   ),
                 ] else ...[
                   const SizedBox(height: 8),
                   const Text(
-                    'برای تأیید مالکیت حساب، درخواست را در ربات تلگرام وتواپ تأیید کنید.',
+                    'برای بازیابی رمز، شمارهٔ حساب را در بات تلگرام وتواپ به‌صورت اختیاری برای تطبیق بفرستید.',
                     textAlign: TextAlign.center,
                   ),
                 ],

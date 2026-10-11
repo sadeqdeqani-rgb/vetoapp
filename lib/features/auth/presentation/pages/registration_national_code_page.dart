@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/iranian_date.dart';
 import '../../../../core/widgets/auth_card.dart';
 import '../../../../core/widgets/app_message_dialog.dart';
 import '../../../../core/validation/iranian_national_code_validator.dart';
@@ -34,8 +35,9 @@ class _RegistrationNationalCodePageState
   bool _isLoading = false;
 
   bool get _canContinue =>
-      IranianNationalCodeValidator.normalize(_nationalCodeController.text)
-          .length ==
+      IranianNationalCodeValidator.normalize(
+        _nationalCodeController.text,
+      ).length ==
       10;
 
   @override
@@ -58,7 +60,9 @@ class _RegistrationNationalCodePageState
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_isLoading) return;
     setState(() => _isLoading = true);
-    final code = IranianNationalCodeValidator.normalize(_nationalCodeController.text);
+    final code = IranianNationalCodeValidator.normalize(
+      _nationalCodeController.text,
+    );
     try {
       final result = await getIt<RegistrationRepository>().validateNationalCode(
         draftId: widget.draftId,
@@ -70,22 +74,33 @@ class _RegistrationNationalCodePageState
         (value) => value,
       );
       if (payload == null) {
-        await _showMessage(result.fold((failure) => failure.message, (_) => 'اعتبارسنجی کد ملی انجام نشد.'));
+        await _showMessage(
+          result.fold(
+            (failure) => failure.message,
+            (_) => 'اعتبارسنجی کد ملی انجام نشد.',
+          ),
+        );
         return;
       }
       switch (payload['code']) {
         case 'invalid_national_code':
-          await _showMessage('این کد ملی نادرست است لطفا کد ملی درست و واقعی وارد کنید');
+          await _showMessage(
+            'این کد ملی نادرست است لطفا کد ملی درست و واقعی وارد کنید',
+          );
           return;
         case 'national_code_already_registered':
-          await _showMessage('کاربری قبلا با شماره موبایل ${payload['mobile_number'] ?? ''} با این کد ملی در اَپ ثبت نام کرده است.');
+          await _showMessage(
+            'کاربری قبلا با شماره موبایل ${payload['mobile_number'] ?? ''} با این کد ملی در اَپ ثبت نام کرده است.',
+          );
           return;
         case 'national_id_area_ineligible':
           await _showAgeEligibilityDialog(code);
           return;
       }
       if (payload['valid'] != true) {
-        await _showMessage('این کد ملی نادرست است لطفا کد ملی درست و واقعی وارد کنید');
+        await _showMessage(
+          'این کد ملی نادرست است لطفا کد ملی درست و واقعی وارد کنید',
+        );
         return;
       }
       await context.push(
@@ -106,51 +121,160 @@ class _RegistrationNationalCodePageState
     context: context,
     message: message,
     tone: AppMessageTone.error,
-    actions: [appDialogButton(context, label: 'متوجه شدم', primary: true, onPressed: () => Navigator.of(context).pop())],
+    actions: [
+      appDialogButton(
+        context,
+        label: 'متوجه شدم',
+        primary: true,
+        onPressed: () => Navigator.of(context).pop(),
+      ),
+    ],
   );
 
   Future<void> _showAgeEligibilityDialog(String code) async {
     final report = await showAppMessageDialog<bool>(
       context: context,
-      message: 'سامانه شما را زیر ۱۸ سال تشخیص داده است و شما مجاز به ثبت نام نیستید. چنان‌که سامانه در ارزیابی خود خطا کرده باشد، می‌توانید با ارسال کد ملی و تاریخ تولد خود، مشکل خود در ثبت نام را به مدیران سامانه گزارش کنید.',
+      message:
+          'سامانه شما را زیر ۱۸ سال تشخیص داده است و شما مجاز به ثبت نام نیستید. چنان‌که سامانه در ارزیابی خود خطا کرده باشد، می‌توانید با ارسال کد ملی و تاریخ تولد خود، مشکل خود در ثبت نام را به مدیران سامانه گزارش کنید.',
       tone: AppMessageTone.warning,
       actions: [
-        appDialogButton(context, label: 'متوجه شدم', onPressed: () => Navigator.pop(context, false)),
-        appDialogButton(context, label: 'گزارش خطا', primary: true, onPressed: () => Navigator.pop(context, true)),
+        appDialogButton(
+          context,
+          label: 'متوجه شدم',
+          onPressed: () => Navigator.pop(context, false),
+        ),
+        appDialogButton(
+          context,
+          label: 'گزارش خطا',
+          primary: true,
+          onPressed: () => Navigator.pop(context, true),
+        ),
       ],
     );
     if (report != true || !mounted) return;
-    final dateController = TextEditingController();
+    final dayController = TextEditingController();
+    final yearController = TextEditingController();
+    int? selectedMonth;
     final submit = await showAppMessageDialog<bool>(
       context: context,
       title: 'گزارش خطای تشخیص سن',
       message: 'کد ملی و تاریخ تولد خود را برای بررسی ارسال کنید.',
       tone: AppMessageTone.info,
-      content: Column(mainAxisSize: MainAxisSize.min, children: [
-        TextFormField(initialValue: code, readOnly: true, textAlign: TextAlign.center, decoration: const InputDecoration(labelText: 'کد ملی')),
-        const SizedBox(height: 12),
-        TextField(controller: dateController, keyboardType: TextInputType.datetime, textAlign: TextAlign.center, decoration: const InputDecoration(labelText: 'تاریخ تولد (YYYY-MM-DD)', hintText: '۱۳۸۰-۰۱-۰۱')),
-      ]),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextFormField(
+            initialValue: code,
+            readOnly: true,
+            textAlign: TextAlign.center,
+            decoration: const InputDecoration(labelText: 'کد ملی'),
+          ),
+          const SizedBox(height: 14),
+          StatefulBuilder(
+            builder:
+                (context, setDialogState) => Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: TextField(
+                        controller: dayController,
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        maxLength: 2,
+                        decoration: const InputDecoration(
+                          labelText: 'روز',
+                          counterText: '',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 4,
+                      child: DropdownButtonFormField<int>(
+                        initialValue: selectedMonth,
+                        isExpanded: true,
+                        decoration: const InputDecoration(labelText: 'ماه'),
+                        hint: const Text('انتخاب ماه'),
+                        items: [
+                          for (var i = 0; i < IranianDate.months.length; i++)
+                            DropdownMenuItem(
+                              value: i + 1,
+                              child: Text(IranianDate.months[i]),
+                            ),
+                        ],
+                        onChanged:
+                            (month) =>
+                                setDialogState(() => selectedMonth = month),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 3,
+                      child: TextField(
+                        controller: yearController,
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        maxLength: 4,
+                        decoration: const InputDecoration(
+                          labelText: 'سال',
+                          counterText: '',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+          ),
+        ],
+      ),
       actions: [
-        appDialogButton(context, label: 'انصراف', onPressed: () => Navigator.pop(context, false)),
-        appDialogButton(context, label: 'ارسال گزارش', primary: true, onPressed: () => Navigator.pop(context, true)),
+        appDialogButton(
+          context,
+          label: 'انصراف',
+          onPressed: () => Navigator.pop(context, false),
+        ),
+        appDialogButton(
+          context,
+          label: 'ارسال گزارش',
+          primary: true,
+          onPressed: () => Navigator.pop(context, true),
+        ),
       ],
     );
     if (submit == true && mounted) {
-      final birthDate = IranianNationalCodeValidator.normalize(dateController.text);
-      if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(birthDate)) {
-        await _showMessage('تاریخ تولد را با قالب سال-ماه-روز وارد کنید.');
+      final day = int.tryParse(
+        IranianNationalCodeValidator.normalize(dayController.text),
+      );
+      final year = int.tryParse(
+        IranianNationalCodeValidator.normalize(yearController.text),
+      );
+      final birthDate =
+          day == null || year == null || selectedMonth == null
+              ? null
+              : IranianDate.jalaliToGregorianIso(
+                year: year,
+                month: selectedMonth!,
+                day: day,
+              );
+      if (birthDate == null) {
+        await _showMessage('روز، ماه و سال تولد را به‌درستی انتخاب کنید.');
       } else {
-        final result = await getIt<RegistrationRepository>().submitAgeEligibilityReport(
-          draftId: widget.draftId,
-          nationalCode: code,
-          birthDate: birthDate,
-        );
+        final result = await getIt<RegistrationRepository>()
+            .submitAgeEligibilityReport(
+              draftId: widget.draftId,
+              nationalCode: code,
+              birthDate: birthDate,
+            );
         if (!mounted) return;
-        await _showMessage(result.fold((failure) => failure.message, (_) => 'گزارش شما ثبت شد و برای بررسی به مدیران سامانه ارسال شد.'));
+        await _showMessage(
+          result.fold(
+            (failure) => failure.message,
+            (_) => 'گزارش شما ثبت شد و برای بررسی به مدیران سامانه ارسال شد.',
+          ),
+        );
       }
     }
-    dateController.dispose();
+    dayController.dispose();
+    yearController.dispose();
   }
 
   @override

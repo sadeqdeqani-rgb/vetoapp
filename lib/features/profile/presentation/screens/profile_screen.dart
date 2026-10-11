@@ -9,6 +9,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/router/app_back_handler_registry.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/iranian_date.dart';
 import '../../../../core/widgets/app_message_dialog.dart';
 import '../../../../core/widgets/app_tap_tile.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
@@ -41,6 +42,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _newPassword = TextEditingController();
   final _repeatPassword = TextEditingController();
   final _closePassword = TextEditingController();
+  final _receiptLookupController = TextEditingController();
   final _remote = getIt<ProfileRemoteDataSource>();
 
   int _view = 0;
@@ -56,6 +58,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? _settlement;
   List<Map<String, dynamic>>? _receipts;
   String? _receiptsError;
+  int _receiptSection = 0;
+  bool _receiptLookupBusy = false;
+  String? _receiptLookupError;
+  Map<String, dynamic>? _receiptLookupResult;
   Map<String, dynamic>? _notifications;
   Timer? _notificationRefreshTimer;
   bool _notificationRefreshInFlight = false;
@@ -78,6 +84,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _newPassword.dispose();
     _repeatPassword.dispose();
     _closePassword.dispose();
+    _receiptLookupController.dispose();
     super.dispose();
   }
 
@@ -124,8 +131,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } else if (view == 4) {
       await _perform(() async => _closure = await _remote.getClosurePolicy());
     } else if (view == 5) {
+      _receiptSection = 0;
       _receipts = null;
       _receiptsError = null;
+      _receiptLookupResult = null;
+      _receiptLookupError = null;
       setState(() {});
       await _loadReceipts();
     } else if (view == 6) {
@@ -637,8 +647,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _when(dynamic iso) {
     final date = DateTime.tryParse(iso?.toString() ?? '')?.toLocal();
     if (date == null) return 'نامشخص';
-    String two(int value) => value.toString().padLeft(2, '0');
-    return '${date.year}/${two(date.month)}/${two(date.day)}، ساعت ${two(date.hour)}:${two(date.minute)}';
+    String two(int value) =>
+        IranianDate.persianDigits(value.toString().padLeft(2, '0'));
+    return '${IranianDate.formatGregorian(date)}، ساعت ${two(date.hour)}:${two(date.minute)}';
   }
 
   Widget _panel(String title, List<Widget> children) => Container(
@@ -827,7 +838,137 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ]);
   }
 
-  Widget _receiptsPage() {
+  Future<void> _lookupReceipt() async {
+    final number = _receiptLookupController.text.trim();
+    if (number.isEmpty) {
+      setState(() {
+        _receiptLookupError = 'شمارهٔ رسید را وارد کنید.';
+        _receiptLookupResult = null;
+      });
+      return;
+    }
+    setState(() {
+      _receiptLookupBusy = true;
+      _receiptLookupError = null;
+      _receiptLookupResult = null;
+    });
+    try {
+      final result = await _remote.verifyReceipt(number);
+      if (mounted) setState(() => _receiptLookupResult = result);
+    } catch (error) {
+      final message =
+          error is Failure
+              ? error.message
+              : error.toString().replaceFirst('Exception: ', '');
+      if (mounted) setState(() => _receiptLookupError = message);
+    } finally {
+      if (mounted) setState(() => _receiptLookupBusy = false);
+    }
+  }
+
+  Widget _receiptsPage() => Column(
+    children: [
+      SegmentedButton<int>(
+        segments: const [
+          ButtonSegment(
+            value: 0,
+            label: Text('رسیدهای من'),
+            icon: Icon(Icons.receipt_long_outlined),
+          ),
+          ButtonSegment(
+            value: 1,
+            label: Text('استعلام رسید'),
+            icon: Icon(Icons.fact_check_outlined),
+          ),
+        ],
+        selected: {_receiptSection},
+        onSelectionChanged:
+            (selection) => setState(() => _receiptSection = selection.first),
+      ),
+      const SizedBox(height: 14),
+      if (_receiptSection == 0)
+        _receiptsListSection()
+      else
+        _receiptLookupSection(),
+    ],
+  );
+
+  Widget _receiptLookupSection() => _panel('استعلام رسید دیجیتال', [
+    const Text(
+      'شمارهٔ رسید را وارد کنید تا محتوای ثبت‌شده و اعتبار امضای آن بررسی شود. رسید می‌تواند متعلق به هر کاربری باشد.',
+      textAlign: TextAlign.center,
+    ),
+    const SizedBox(height: 12),
+    TextField(
+      controller: _receiptLookupController,
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+      keyboardType: TextInputType.text,
+      decoration: const InputDecoration(labelText: 'شمارهٔ رسید دیجیتال'),
+    ),
+    const SizedBox(height: 12),
+    FilledButton.icon(
+      style: _filledStyle,
+      onPressed: _receiptLookupBusy ? null : _lookupReceipt,
+      icon:
+          _receiptLookupBusy
+              ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+              : const Icon(Icons.search),
+      label: const Text('استعلام'),
+    ),
+    if (_receiptLookupError != null) ...[
+      const SizedBox(height: 12),
+      Text(
+        _receiptLookupError!,
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.red),
+      ),
+    ],
+    if (_receiptLookupResult case final result?) ...[
+      const Divider(height: 28),
+      Text(
+        result['valid'] == true
+            ? 'امضای دیجیتال معتبر است.'
+            : 'امضای دیجیتال معتبر نیست.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: result['valid'] == true ? AppTheme.success : AppTheme.danger,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      const SizedBox(height: 10),
+      _receiptFact(
+        'موضوع / رویداد',
+        result['payload'] is Map
+            ? (result['payload'] as Map)['event_title']
+            : null,
+      ),
+      if (result['payload'] is Map &&
+          (result['payload'] as Map)['receipt_type_code'] == 'VOTE')
+        _receiptFact(
+          'رأی ثبت‌شده',
+          (result['payload'] as Map)['ballot_choice_label'],
+        ),
+      if (result['payload'] is Map)
+        _receiptFact(
+          'شمارهٔ ترتیب رأی',
+          (result['payload'] as Map)['sequence_no'],
+        ),
+      _receiptFact('الگوریتم امضا', result['algorithm']),
+      _receiptFact('اثر انگشت رسید', result['receipt_hash']),
+    ],
+  ]);
+
+  Widget _receiptFact(String label, dynamic value) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Text('$label: ${value ?? '—'}', textAlign: TextAlign.center),
+  );
+
+  Widget _receiptsListSection() {
     final receipts = _receipts;
     if (receipts == null) {
       return _panel('فعالیت‌های من', [

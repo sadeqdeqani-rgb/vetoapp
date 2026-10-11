@@ -278,7 +278,7 @@ class _ReferendumProcessListScreenState
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Text(
-                'در این بخش همه‌پرسی‌ای پیدا نشد.',
+                'هنوز هیچ رویدادی در این بخش وجود ندارد.',
                 textAlign: TextAlign.center,
               ),
             ),

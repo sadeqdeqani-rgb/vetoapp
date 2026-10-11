@@ -17,7 +17,7 @@ class TelegramWebhookController extends Controller
             || (! hash_equals($configured, $secret)
                 && ($headerSecret === '' || ! hash_equals($configured, $headerSecret)))
         ) {
-            return response()->json(['ok' => true]);
+            return response()->json(['ok' => false], 403);
         }
 
         $ingestor->ingest($request->json()->all());

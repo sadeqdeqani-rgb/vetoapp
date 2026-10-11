@@ -592,19 +592,25 @@ class _NationalIdEditorState extends State<_NationalIdEditor> {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: 'Prefix سه‌رقمی'),
             ),
+            const Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: Text(
+                'یکی از دو بازه باید با سه رقم پس از پیش‌شمارهٔ کد ملی مطابقت داشته باشد.',
+              ),
+            ),
             Row(
               children: [
-                Expanded(child: _rangeField('محدوده اول از', _firstFrom)),
+                Expanded(child: _rangeField('بازه مجاز اول از', _firstFrom)),
                 const SizedBox(width: 12),
-                Expanded(child: _rangeField('محدوده اول تا', _firstTo)),
+                Expanded(child: _rangeField('بازه مجاز اول تا', _firstTo)),
               ],
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: _rangeField('محدوده دوم از', _secondFrom)),
+                Expanded(child: _rangeField('بازه مجاز دوم از', _secondFrom)),
                 const SizedBox(width: 12),
-                Expanded(child: _rangeField('محدوده دوم تا', _secondTo)),
+                Expanded(child: _rangeField('بازه مجاز دوم تا', _secondTo)),
               ],
             ),
             const SizedBox(height: 12),

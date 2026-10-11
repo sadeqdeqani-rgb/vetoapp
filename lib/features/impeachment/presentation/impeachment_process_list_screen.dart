@@ -31,7 +31,6 @@ class _ImpeachmentProcessListScreenState
   final _search = TextEditingController();
   GeographicScopeSelection _scope = const GeographicScopeSelection();
   List<Map<String, dynamic>> _items = [];
-  int _total = 0;
   bool _loading = true;
   String? _error;
   Timer? _timer;
@@ -109,9 +108,6 @@ class _ImpeachmentProcessListScreenState
                     .map((row) => Map<String, dynamic>.from(row))
                     .toList()
                 : [];
-        final pagination = data['pagination'];
-        _total =
-            pagination is Map ? int.tryParse('${pagination['total']}') ?? 0 : 0;
         _loading = false;
       });
       _syncTimer();
@@ -209,7 +205,7 @@ class _ImpeachmentProcessListScreenState
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Text(
-                  'موردی در این بخش پیدا نشد. تعداد: $_total',
+                  'هنوز هیچ رویدادی در این بخش وجود ندارد.',
                   textAlign: TextAlign.center,
                 ),
               ),
