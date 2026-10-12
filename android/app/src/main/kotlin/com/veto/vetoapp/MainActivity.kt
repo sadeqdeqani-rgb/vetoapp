@@ -2,6 +2,7 @@ package com.veto.vetoapp
 
 import android.content.Intent
 import android.os.Build
+import android.provider.Settings
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
@@ -21,6 +22,19 @@ import java.security.spec.ECGenParameterSpec
 class MainActivity : FlutterFragmentActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "vetoapp/activation-device")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "getActivationDeviceIdentity") {
+                    result.notImplemented()
+                    return@setMethodCallHandler
+                }
+                val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+                if (androidId.isNullOrBlank()) {
+                    result.error("device_id_unavailable", "شناسه دستگاه در دسترس نیست.", null)
+                } else {
+                    result.success(mapOf("platform" to "android", "device_identifier" to androidId))
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "vetoapp/document")
             .setMethodCallHandler { call, result ->
                 if (call.method != "openPdf") {

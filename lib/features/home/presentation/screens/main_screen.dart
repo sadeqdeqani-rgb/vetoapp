@@ -2,11 +2,15 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_back_handler_registry.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_background.dart';
+import '../../../../core/widgets/app_message_dialog.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../auth/presentation/cubit/auth_state.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key, required this.child});
@@ -67,6 +71,40 @@ class MainScreen extends StatelessWidget {
     }
     final parent = _parentLocation(location);
     context.go(location == parent ? '/' : parent);
+  }
+
+  void _handleNavigationTap(BuildContext context, int index) {
+    final location = _locations[index];
+    final isInteractiveGuest = context.read<AuthCubit>().state is Guest;
+    context.go(location);
+
+    if (!isInteractiveGuest || index < 1 || index > 3) return;
+    final accent = _tabColor(index);
+    final title = switch (index) {
+      1 => 'همه‌پرسی',
+      2 => 'انتخابات',
+      _ => 'استیضاح',
+    };
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted) return;
+      showAppMessageDialog<void>(
+        context: context,
+        title: title,
+        message:
+            'تمامی مطالب و محتویات این بخش غیرواقعی بوده و صرفاً برای آشنایی کاربران با روش کار سامانه درج شده است.',
+        accentColor: accent,
+        actions: [
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: accent,
+              foregroundColor: AppTheme.surface,
+            ),
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('متوجه شدم'),
+          ),
+        ],
+      );
+    });
   }
 
   @override
@@ -225,7 +263,8 @@ class MainScreen extends StatelessWidget {
                                 label: label,
                                 selected: isSelected,
                                 color: _tabColor(index),
-                                onTap: () => context.go(_locations[index]),
+                                onTap:
+                                    () => _handleNavigationTap(context, index),
                               ),
                             ),
                           );

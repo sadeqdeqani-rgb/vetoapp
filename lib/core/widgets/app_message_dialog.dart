@@ -11,6 +11,7 @@ class AppMessageDialog extends StatelessWidget {
     this.title,
     required this.message,
     this.tone = AppMessageTone.info,
+    this.accentColor,
     this.actions = const [],
     this.content,
   });
@@ -18,15 +19,18 @@ class AppMessageDialog extends StatelessWidget {
   final String? title;
   final String message;
   final AppMessageTone tone;
+  final Color? accentColor;
   final List<Widget> actions;
   final Widget? content;
 
-  Color get _color => switch (tone) {
-    AppMessageTone.info => AppTheme.primary,
-    AppMessageTone.success => AppTheme.success,
-    AppMessageTone.warning => AppTheme.profile,
-    AppMessageTone.error => AppTheme.danger,
-  };
+  Color get _color =>
+      accentColor ??
+      switch (tone) {
+        AppMessageTone.info => AppTheme.primary,
+        AppMessageTone.success => AppTheme.success,
+        AppMessageTone.warning => AppTheme.profile,
+        AppMessageTone.error => AppTheme.danger,
+      };
 
   IconData get _icon => switch (tone) {
     AppMessageTone.info => Icons.info_outline_rounded,
@@ -44,25 +48,48 @@ class AppMessageDialog extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(24, 26, 24, 18),
         decoration: AppTheme.cardDecoration,
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(color: _color.withValues(alpha: .10), shape: BoxShape.circle),
-            child: Icon(_icon, color: _color, size: 32),
-          ),
-          if (title != null) ...[
-            const SizedBox(height: 14),
-            Text(title!, textAlign: TextAlign.center, style: AppTheme.getTitleStyle(fontSize: 20, color: _color)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: _color.withValues(alpha: .10),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(_icon, color: _color, size: 32),
+            ),
+            if (title != null) ...[
+              const SizedBox(height: 14),
+              Text(
+                title!,
+                textAlign: TextAlign.center,
+                style: AppTheme.getTitleStyle(fontSize: 20, color: _color),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: AppTheme.getTitleStyle(
+                fontSize: 17,
+                color: AppTheme.textPrimary,
+                fontWeight: FontWeight.normal,
+              ).copyWith(height: 1.7),
+            ),
+            if (content != null) ...[const SizedBox(height: 18), content!],
+            if (actions.isNotEmpty) ...[
+              const SizedBox(height: 18),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 10,
+                runSpacing: 8,
+                children: actions,
+              ),
+            ],
           ],
-          const SizedBox(height: 12),
-          Text(message, textAlign: TextAlign.center, style: AppTheme.getTitleStyle(fontSize: 17, color: AppTheme.textPrimary, fontWeight: FontWeight.normal).copyWith(height: 1.7)),
-          if (content != null) ...[const SizedBox(height: 18), content!],
-          if (actions.isNotEmpty) ...[
-            const SizedBox(height: 18),
-            Wrap(alignment: WrapAlignment.center, spacing: 10, runSpacing: 8, children: actions),
-          ],
-        ]),
+        ),
       ),
     ),
   );
@@ -73,6 +100,7 @@ Future<T?> showAppMessageDialog<T>({
   String? title,
   required String message,
   AppMessageTone tone = AppMessageTone.info,
+  Color? accentColor,
   List<Widget> actions = const [],
   Widget? content,
   bool barrierDismissible = true,
@@ -82,9 +110,23 @@ Future<T?> showAppMessageDialog<T>({
   // nearest Navigator, so the dialog must be pushed onto that same Navigator.
   useRootNavigator: false,
   barrierDismissible: barrierDismissible,
-  builder: (_) => AppMessageDialog(title: title, message: message, tone: tone, actions: actions, content: content),
+  builder:
+      (_) => AppMessageDialog(
+        title: title,
+        message: message,
+        tone: tone,
+        accentColor: accentColor,
+        actions: actions,
+        content: content,
+      ),
 );
 
-Widget appDialogButton(BuildContext context, {required String label, required VoidCallback onPressed, bool primary = false}) => primary
-    ? FilledButton(onPressed: onPressed, child: Text(label))
-    : TextButton(onPressed: onPressed, child: Text(label));
+Widget appDialogButton(
+  BuildContext context, {
+  required String label,
+  required VoidCallback onPressed,
+  bool primary = false,
+}) =>
+    primary
+        ? FilledButton(onPressed: onPressed, child: Text(label))
+        : TextButton(onPressed: onPressed, child: Text(label));

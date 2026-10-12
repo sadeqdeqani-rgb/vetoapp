@@ -34,6 +34,24 @@ class _GatewayPageState extends State<GatewayPage> {
     );
   }
 
+  Future<void> _showActivationNotice() => showDialog<void>(
+    context: context,
+    builder:
+        (context) => AlertDialog(
+          title: const Text('ثبت‌نام و ورود'),
+          content: const Text(
+            'سامانه هنوز ثبت نام و احراز هویت کاربران را آغاز نکرده است. برای شروع به کار سامانه لازم است نیمی از شهروندان ایرانی، درخواست خود برای شروع به کار سامانه با هدف انقلاب سوم در ایران، انحلال جمهوری اسلامی و برگزاری همه پرسی قانون اساسی جدید را ثبت کنند. برای ثبت درخواست خود از نسخه تعاملی وارد شوید.',
+            style: TextStyle(fontWeight: FontWeight.w700, height: 1.6),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('متوجه شدم'),
+            ),
+          ],
+        ),
+  );
+
   @override
   Widget build(BuildContext context) => AuthScaffold(
     showBackButton: false,
@@ -50,14 +68,11 @@ class _GatewayPageState extends State<GatewayPage> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 20),
-          GatewayActionButton(
-            title: 'ثبت نام',
-            onTap: () => context.pushNamed('register-terms'),
-          ),
+          GatewayActionButton(title: 'ثبت نام', onTap: _showActivationNotice),
           const SizedBox(height: 12),
           GatewayActionButton(
             title: 'ورود کاربر',
-            onTap: () => context.push('/login'),
+            onTap: _showActivationNotice,
           ),
           const SizedBox(height: 12),
           GatewayActionButton(

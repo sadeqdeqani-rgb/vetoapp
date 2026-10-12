@@ -46,8 +46,13 @@ Dio createDioClient([
           handler.next(options);
         },
         onError: (error, handler) async {
+          final attachedSessionToken =
+              error.requestOptions.headers['Authorization'] is String &&
+              (error.requestOptions.headers['Authorization'] as String)
+                  .startsWith('Bearer ');
           if (error.response?.statusCode == 401 &&
-              _requiresUserSession(error.requestOptions.path)) {
+              _requiresUserSession(error.requestOptions.path) &&
+              attachedSessionToken) {
             try {
               await Future.wait([
                 storage.delete(key: 'auth_session_mode'),

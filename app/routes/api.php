@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\ActivationRequestController;
 use App\Http\Controllers\AdminManagementController;
 use App\Http\Controllers\AdminPolicyController;
 use App\Http\Controllers\AdminReferendumPolicyController;
@@ -29,6 +30,8 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/home/introduction', [HomeManagementController::class, 'publicSections']);
     Route::get('/public/active-users', [DashboardController::class, 'publicActiveUsers']);
     Route::get('/public/geography-user-counts', [DashboardController::class, 'publicGeographyUserCounts']);
+    Route::get('/public/activation-requests/count', [ActivationRequestController::class, 'count']);
+    Route::post('/public/activation-requests', [ActivationRequestController::class, 'store']);
     Route::post('/auth/login', [UserAuthController::class, 'login']);
     Route::post('/auth/biometric/login/challenge', [BiometricAuthController::class, 'loginChallenge']);
     Route::post('/auth/biometric/login/verify', [BiometricAuthController::class, 'verifyLogin']);

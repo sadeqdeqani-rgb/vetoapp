@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -119,65 +120,88 @@ class _PreviewHome extends StatefulWidget {
 
 class _PreviewHomeState extends State<_PreviewHome> {
   late Future<_PreviewHomeData> _previewData = _loadPreviewData();
+  bool _submittingRequest = false;
 
   Future<_PreviewHomeData> _loadPreviewData() async {
-    final dio = getIt<Dio>();
-    final results = await Future.wait([
-      dio.get<Map<String, dynamic>>('/api/v1/public/active-users'),
-      dio.get<Map<String, dynamic>>(
-        '/api/v1/public/geography-user-counts',
-        queryParameters: {'level': 'province'},
-      ),
-    ]);
-    final countData = results[0].data?['data'];
-    final activeCount =
-        countData is Map ? countData['active_user_count'] : null;
-    if (activeCount is! num) {
-      throw const FormatException('تعداد کاربران از سرور دریافت نشد.');
-    }
-
-    final provinces = _decodeAreas(results[1].data);
-    return _PreviewHomeData(
-      activeUsers: activeCount.toInt(),
-      geography: {'provinces': provinces},
-    );
-  }
-
-  Future<List<Map<String, dynamic>>> _loadGeographyChildren(
-    String level,
-    int parentId,
-  ) async {
-    final type = switch (level) {
-      'provinces' => 'province',
-      'counties' => 'county',
-      _ => 'settlement',
-    };
     final response = await getIt<Dio>().get<Map<String, dynamic>>(
-      '/api/v1/public/geography-user-counts',
-      queryParameters: {
-        'level': type,
-        if (type != 'province') 'parent_id': parentId,
-      },
+      '/api/v1/public/activation-requests/count',
     );
-    return _decodeAreas(response.data);
+    final countData = response.data?['data'];
+    if (countData is! Map ||
+        countData['request_count'] is! num ||
+        countData['required_count'] is! num ||
+        countData['remaining_count'] is! num) {
+      throw const FormatException('آمار درخواست‌های شروع سامانه معتبر نیست.');
+    }
+    return _PreviewHomeData(
+      requestCount: (countData['request_count'] as num).toInt(),
+      requiredCount: (countData['required_count'] as num).toInt(),
+      remainingCount: (countData['remaining_count'] as num).toInt(),
+    );
   }
 
-  List<Map<String, dynamic>> _decodeAreas(Object? response) {
-    final data = response is Map ? response['data'] : null;
-    if (data is! List) {
-      throw const FormatException('پاسخ حوزه‌های جغرافیایی معتبر نیست.');
+  Future<void> _submitActivationRequest() async {
+    if (_submittingRequest) return;
+    final approved = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('تأیید درخواست'),
+            content: const Text(
+              'درخواست شما برای شروع به کار سامانه ثبت شود؟ برای جلوگیری از ثبت تکراری، شناسه‌ای با حفظ حریم خصوصی از دستگاه به سرور ارسال می‌شود.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('بازگشت'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('تأیید و ثبت'),
+              ),
+            ],
+          ),
+    );
+    if (approved != true || !mounted) return;
+    setState(() => _submittingRequest = true);
+    try {
+      final identity = await const MethodChannel(
+        'vetoapp/activation-device',
+      ).invokeMapMethod<String, dynamic>('getActivationDeviceIdentity');
+      if (identity == null) throw StateError('شناسه دستگاه در دسترس نیست.');
+      final response = await getIt<Dio>().post<Map<String, dynamic>>(
+        '/api/v1/public/activation-requests',
+        data: identity,
+      );
+      final data = response.data?['data'];
+      final message =
+          data is Map && data['message'] is String
+              ? data['message'] as String
+              : response.data?['message'] as String? ?? 'پاسخ سرور دریافت نشد.';
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+      setState(() => _previewData = _loadPreviewData());
+    } catch (error) {
+      if (!mounted) return;
+      final message =
+          error is DioException
+              ? (error.response?.data is Map
+                  ? ((error.response!.data as Map)['message'] as String? ??
+                      'ثبت درخواست انجام نشد؛ اتصال اینترنت را بررسی کنید.')
+                  : 'ثبت درخواست انجام نشد؛ اتصال اینترنت را بررسی کنید.')
+              : error is PlatformException
+              ? (error.message ?? 'بررسی شناسه دستگاه انجام نشد.')
+              : error is StateError
+              ? error.message
+              : 'ثبت درخواست انجام نشد؛ دوباره تلاش کنید.';
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    } finally {
+      if (mounted) setState(() => _submittingRequest = false);
     }
-    return data
-        .whereType<Map>()
-        .map((item) {
-          final row = Map<String, dynamic>.from(item);
-          return {
-            ...row,
-            'active_user_count':
-                (row['active_user_count'] as num?)?.toInt() ?? 0,
-          };
-        })
-        .toList(growable: false);
   }
 
   @override
@@ -188,6 +212,11 @@ class _PreviewHomeState extends State<_PreviewHome> {
       builder: (context, snapshot) {
         final children = <Widget>[
           const _IntroductionWidget(),
+          const SizedBox(height: 14),
+          _ActivationIntentWidget(
+            onTap: _submittingRequest ? null : _submitActivationRequest,
+            submitting: _submittingRequest,
+          ),
           const SizedBox(height: 14),
         ];
         if (snapshot.hasError) {
@@ -205,31 +234,21 @@ class _PreviewHomeState extends State<_PreviewHome> {
         } else if (!snapshot.hasData) {
           children.add(
             const _Card(
-              title: 'تعداد کاربران ثبت‌نام‌شده',
+              title: 'در حال دریافت آمار درخواست‌ها',
               child: Center(child: CircularProgressIndicator()),
             ),
           );
         } else {
           final preview = snapshot.data!;
-          final total = preview.activeUsers;
           children
             ..add(
-              _SystemStateCard(
-                title: '',
-                registeredUsers: total,
-                remainingUsers: (44000000 - total).clamp(0, 44000000),
+              _ActivationCountCard(
+                requiredCount: preview.requiredCount,
+                requestCount: preview.requestCount,
+                remainingCount: preview.remainingCount,
               ),
             )
-            ..add(const SizedBox(height: 14))
-            ..add(
-              _GeoWidget(
-                geography: preview.geography,
-                total: total,
-                loadChildren: _loadGeographyChildren,
-              ),
-            )
-            ..add(const SizedBox(height: 14))
-            ..add(const _EventsWidget());
+            ..add(const SizedBox(height: 14));
         }
 
         return ListView(
@@ -256,9 +275,131 @@ class _IntroductionWidget extends StatelessWidget {
 }
 
 class _PreviewHomeData {
-  const _PreviewHomeData({required this.activeUsers, required this.geography});
-  final int activeUsers;
-  final Map<String, dynamic> geography;
+  const _PreviewHomeData({
+    required this.requestCount,
+    required this.requiredCount,
+    required this.remainingCount,
+  });
+  final int requestCount;
+  final int requiredCount;
+  final int remainingCount;
+}
+
+class _ActivationIntentWidget extends StatelessWidget {
+  const _ActivationIntentWidget({
+    required this.onTap,
+    required this.submitting,
+  });
+  final VoidCallback? onTap;
+  final bool submitting;
+  @override
+  Widget build(BuildContext context) => Card(
+    color: AppTheme.primary.withValues(alpha: 0.1),
+    clipBehavior: Clip.antiAlias,
+    child: InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            const Text(
+              'من درخواست شروع به کار سامانه و آغاز انقلاب سوم در ایران را دارم',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                height: 1.65,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              submitting
+                  ? 'در حال ثبت درخواست...'
+                  : 'برای ثبت درخواست لمس کنید',
+              style: TextStyle(
+                color: AppTheme.primaryDark,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (submitting) ...[
+              const SizedBox(height: 8),
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ],
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _ActivationCountCard extends StatelessWidget {
+  const _ActivationCountCard({
+    required this.requiredCount,
+    required this.requestCount,
+    required this.remainingCount,
+  });
+  final int requiredCount;
+  final int requestCount;
+  final int remainingCount;
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: AppTheme.primaryDark,
+      borderRadius: BorderRadius.circular(22),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _countRow(
+          'تعداد متقاضیان مورد نیاز برای شروع به کار سامانه',
+          '${persianCount(requiredCount)} نفر',
+          Colors.white,
+        ),
+        const Divider(color: Color(0x55FFFFFF), height: 20),
+        _countRow(
+          'تعداد متقاضیانی که درخواست خود را ثبت کرده‌اند',
+          '${persianCount(requestCount)} نفر',
+          Colors.white,
+        ),
+        const Divider(color: Color(0x55FFFFFF), height: 20),
+        _countRow(
+          'تعداد متقاضیان باقی‌مانده',
+          '${persianCount(remainingCount)} نفر',
+          Colors.white,
+        ),
+      ],
+    ),
+  );
+
+  Widget _countRow(String label, String value, Color color) => Column(
+    children: [
+      Text(
+        label,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: color,
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          height: 1.45,
+        ),
+      ),
+      const SizedBox(height: 3),
+      Text(
+        value,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: color,
+          fontSize: 20,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    ],
+  );
 }
 
 class _SystemStateCard extends StatelessWidget {
@@ -386,21 +527,15 @@ class _Card extends StatelessWidget {
 }
 
 class _GeoWidget extends StatefulWidget {
-  const _GeoWidget({
-    required this.geography,
-    required this.total,
-    this.loadChildren,
-  });
+  const _GeoWidget({required this.geography, required this.total});
   final Map<String, dynamic> geography;
   final Object? total;
-  final Future<List<Map<String, dynamic>>> Function(String, int)? loadChildren;
   @override
   State<_GeoWidget> createState() => _GeoWidgetState();
 }
 
 class _GeoWidgetState extends State<_GeoWidget> {
   late final Map<String, dynamic> _geography = Map.of(widget.geography);
-  final Set<String> _loading = {};
   int? provinceId, countyId, settlementId;
   List<Map<String, dynamic>> _rows(String key, [int? parent]) =>
       (_geography[key] as List? ?? [])
@@ -413,15 +548,11 @@ class _GeoWidgetState extends State<_GeoWidget> {
           .toList();
   Widget _choice(
     String label,
-    String key,
     List<Map<String, dynamic>> rows,
     int? selected,
-    ValueChanged<int?> changed, {
-    int? parentId,
-  }) {
-    if (rows.isEmpty && (widget.loadChildren == null || parentId == null)) {
-      return const SizedBox.shrink();
-    }
+    ValueChanged<int?> changed,
+  ) {
+    if (rows.isEmpty) return const SizedBox.shrink();
     Map<String, dynamic>? selectedRow;
     for (final row in rows) {
       if ((row['id'] as num).toInt() == selected) {
@@ -434,32 +565,7 @@ class _GeoWidgetState extends State<_GeoWidget> {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () async {
-          var available = rows;
-          final cacheKey = '$key:$parentId';
-          if (available.isEmpty &&
-              widget.loadChildren != null &&
-              parentId != null) {
-            setState(() => _loading.add(cacheKey));
-            try {
-              final loaded = await widget.loadChildren!(key, parentId);
-              final existing =
-                  (_geography[key] as List? ?? []).whereType<Map>().toList();
-              final knownIds = existing.map((row) => row['id']).toSet();
-              _geography[key] = [
-                ...existing,
-                ...loaded.where((row) => !knownIds.contains(row['id'])),
-              ];
-              available = _rows(key, parentId);
-            } catch (_) {
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('دریافت فهرست $label انجام نشد.')),
-                );
-              }
-            } finally {
-              if (mounted) setState(() => _loading.remove(cacheKey));
-            }
-          }
+          final available = rows;
           if (!mounted || available.isEmpty) return;
           final value = await showModalBottomSheet<int>(
             context: context,
@@ -473,17 +579,7 @@ class _GeoWidgetState extends State<_GeoWidget> {
           decoration: InputDecoration(
             labelText: label,
             border: const OutlineInputBorder(),
-            suffixIcon:
-                _loading.contains('$key:$parentId')
-                    ? const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    )
-                    : const Icon(Icons.search),
+            suffixIcon: const Icon(Icons.search),
           ),
           child: Row(
             children: [
@@ -512,7 +608,6 @@ class _GeoWidgetState extends State<_GeoWidget> {
         Text('ایران: ${persianCount(widget.total)} نفر'),
         _choice(
           'استان',
-          'provinces',
           _rows('provinces'),
           provinceId,
           (value) => setState(() {
@@ -524,23 +619,19 @@ class _GeoWidgetState extends State<_GeoWidget> {
         if (provinceId != null)
           _choice(
             'شهرستان',
-            'counties',
             _rows('counties', provinceId),
             countyId,
             (value) => setState(() {
               countyId = value;
               settlementId = null;
             }),
-            parentId: provinceId,
           ),
         if (countyId != null)
           _choice(
             'شهر / روستا',
-            'settlements',
             _rows('settlements', countyId),
             settlementId,
             (value) => setState(() => settlementId = value),
-            parentId: countyId,
           ),
       ],
     ),

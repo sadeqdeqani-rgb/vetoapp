@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/interactive_empty_tab_notice.dart';
 import '../../features/admin/presentation/pages/admin_login_page.dart';
 import '../../features/admin/presentation/pages/admin_page.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
@@ -45,6 +46,7 @@ import '../../features/referendum/presentation/screens/referendum_proposals_scre
 import '../../features/referendum/presentation/screens/referendum_voting_hub_screen.dart';
 import '../../features/referendum/presentation/screens/referendum_process_list_screen.dart';
 import '../../features/referendum/presentation/screens/referendum_voting_detail_screen.dart';
+import '../../features/referendum/presentation/screens/interactive_referendum_samples_screen.dart';
 import '../../features/startup/presentation/pages/gateway_page.dart'
     as gateway_page;
 import '../../features/startup/presentation/pages/splash_page.dart';
@@ -59,13 +61,20 @@ Widget _electionListRoute(GoRouterState state, ElectionListKind kind) {
 
 Widget _impeachmentOfficeRoute(GoRouterState state) {
   final office = ImpeachmentOffice.fromCode(state.pathParameters['office']);
-  return office == null ? const ImpeachmentScreen() : ImpeachmentWorkflowHub(office: office);
+  return office == null
+      ? const ImpeachmentScreen()
+      : ImpeachmentWorkflowHub(office: office);
 }
 
 Widget _impeachmentListRoute(GoRouterState state, String kind) {
   final office = ImpeachmentOffice.fromCode(state.pathParameters['office']);
-  return office == null ? const ImpeachmentScreen() : ImpeachmentProcessListScreen(office: office, kind: kind);
+  return office == null
+      ? const ImpeachmentScreen()
+      : ImpeachmentProcessListScreen(office: office, kind: kind);
 }
+
+Widget _guestPreviewRoute(AuthCubit authCubit, Widget page) =>
+    authCubit.state is Guest ? const InteractiveEmptyTabNotice() : page;
 
 class _AuthRouterRefresh extends ChangeNotifier {
   _AuthRouterRefresh(Stream<AuthState> stream) {
@@ -405,7 +414,9 @@ GoRouter createAppRouter(AuthCubit authCubit) {
           GoRoute(
             path: '/elections/voting/:category',
             builder: (context, state) {
-              final category = ElectionCategory.fromCode(state.pathParameters['category']);
+              final category = ElectionCategory.fromCode(
+                state.pathParameters['category'],
+              );
               return category == null
                   ? const ElectionVotingHubScreen()
                   : ElectionCategoryHubScreen(category: category);
@@ -413,30 +424,57 @@ GoRouter createAppRouter(AuthCubit authCubit) {
           ),
           GoRoute(
             path: '/elections/voting/:category/scheduled',
-            builder: (context, state) => _electionListRoute(state, ElectionListKind.scheduled),
+            builder:
+                (context, state) => _guestPreviewRoute(
+                  authCubit,
+                  _electionListRoute(state, ElectionListKind.scheduled),
+                ),
           ),
           GoRoute(
             path: '/elections/voting/:category/eligible',
-            builder: (context, state) => _electionListRoute(state, ElectionListKind.eligible),
+            builder:
+                (context, state) => _guestPreviewRoute(
+                  authCubit,
+                  _electionListRoute(state, ElectionListKind.eligible),
+                ),
           ),
           GoRoute(
             path: '/elections/voting/:category/live-results',
-            builder: (context, state) => _electionListRoute(state, ElectionListKind.live),
+            builder:
+                (context, state) => _guestPreviewRoute(
+                  authCubit,
+                  _electionListRoute(state, ElectionListKind.live),
+                ),
           ),
           GoRoute(
             path: '/elections/voting/:category/final-results',
-            builder: (context, state) => _electionListRoute(state, ElectionListKind.finalized),
+            builder:
+                (context, state) => _guestPreviewRoute(
+                  authCubit,
+                  _electionListRoute(state, ElectionListKind.finalized),
+                ),
           ),
           GoRoute(
             path: '/elections/voting/:category/detail/:processId',
             builder: (context, state) {
-              final category = ElectionCategory.fromCode(state.pathParameters['category']);
-              final processId = int.tryParse(state.pathParameters['processId'] ?? '');
+              final category = ElectionCategory.fromCode(
+                state.pathParameters['category'],
+              );
+              final processId = int.tryParse(
+                state.pathParameters['processId'] ?? '',
+              );
               final extra = state.extra;
               final voting = extra is Map && extra['voting'] == true;
-              return category == null || processId == null
-                  ? const ElectionVotingHubScreen()
-                  : ElectionVotingDetailScreen(category: category, processId: processId, voting: voting);
+              return _guestPreviewRoute(
+                authCubit,
+                category == null || processId == null
+                    ? const ElectionVotingHubScreen()
+                    : ElectionVotingDetailScreen(
+                      category: category,
+                      processId: processId,
+                      voting: voting,
+                    ),
+              );
             },
           ),
           GoRoute(
@@ -444,46 +482,123 @@ GoRouter createAppRouter(AuthCubit authCubit) {
             name: 'impeachment',
             builder: (context, state) => const ImpeachmentScreen(),
           ),
-          GoRoute(path: '/impeachment/:office', builder: (context, state) => _impeachmentOfficeRoute(state)),
-          GoRoute(path: '/impeachment/:office/request', builder: (context, state) {
-            final office = ImpeachmentOffice.fromCode(state.pathParameters['office']);
-            return office == null ? const ImpeachmentScreen() : ImpeachmentRequestScreen(office: office);
-          }),
-          GoRoute(path: '/impeachment/:office/supporting', builder: (context, state) => _impeachmentListRoute(state, 'supporting')),
-          GoRoute(path: '/impeachment/:office/scheduled', builder: (context, state) => _impeachmentListRoute(state, 'scheduled')),
-          GoRoute(path: '/impeachment/:office/eligible', builder: (context, state) => _impeachmentListRoute(state, 'eligible')),
-          GoRoute(path: '/impeachment/:office/live', builder: (context, state) => _impeachmentListRoute(state, 'live')),
-          GoRoute(path: '/impeachment/:office/finalized', builder: (context, state) => _impeachmentListRoute(state, 'finalized')),
-          GoRoute(path: '/impeachment/:office/detail/:processId', builder: (context, state) {
-            final office = ImpeachmentOffice.fromCode(state.pathParameters['office']);
-            final id = int.tryParse(state.pathParameters['processId'] ?? '');
-            final extra = state.extra;
-            final kind = extra is Map && extra['kind'] != null ? extra['kind'].toString() : 'live';
-            return office == null || id == null ? const ImpeachmentScreen() : ImpeachmentDetailScreen(office: office, processId: id, kind: kind);
-          }),
+          GoRoute(
+            path: '/impeachment/:office',
+            builder: (context, state) => _impeachmentOfficeRoute(state),
+          ),
+          GoRoute(
+            path: '/impeachment/:office/request',
+            builder: (context, state) {
+              final office = ImpeachmentOffice.fromCode(
+                state.pathParameters['office'],
+              );
+              return _guestPreviewRoute(
+                authCubit,
+                office == null
+                    ? const ImpeachmentScreen()
+                    : ImpeachmentRequestScreen(office: office),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/impeachment/:office/supporting',
+            builder:
+                (context, state) => _guestPreviewRoute(
+                  authCubit,
+                  _impeachmentListRoute(state, 'supporting'),
+                ),
+          ),
+          GoRoute(
+            path: '/impeachment/:office/scheduled',
+            builder:
+                (context, state) => _guestPreviewRoute(
+                  authCubit,
+                  _impeachmentListRoute(state, 'scheduled'),
+                ),
+          ),
+          GoRoute(
+            path: '/impeachment/:office/eligible',
+            builder:
+                (context, state) => _guestPreviewRoute(
+                  authCubit,
+                  _impeachmentListRoute(state, 'eligible'),
+                ),
+          ),
+          GoRoute(
+            path: '/impeachment/:office/live',
+            builder:
+                (context, state) => _guestPreviewRoute(
+                  authCubit,
+                  _impeachmentListRoute(state, 'live'),
+                ),
+          ),
+          GoRoute(
+            path: '/impeachment/:office/finalized',
+            builder:
+                (context, state) => _guestPreviewRoute(
+                  authCubit,
+                  _impeachmentListRoute(state, 'finalized'),
+                ),
+          ),
+          GoRoute(
+            path: '/impeachment/:office/detail/:processId',
+            builder: (context, state) {
+              final office = ImpeachmentOffice.fromCode(
+                state.pathParameters['office'],
+              );
+              final id = int.tryParse(state.pathParameters['processId'] ?? '');
+              final extra = state.extra;
+              final kind =
+                  extra is Map && extra['kind'] != null
+                      ? extra['kind'].toString()
+                      : 'live';
+              return _guestPreviewRoute(
+                authCubit,
+                office == null || id == null
+                    ? const ImpeachmentScreen()
+                    : ImpeachmentDetailScreen(
+                      office: office,
+                      processId: id,
+                      kind: kind,
+                    ),
+              );
+            },
+          ),
           GoRoute(
             path: '/referendum/propose',
             builder:
-                (context, state) => const CivicDetailScreen(
-                  title: 'پیشنهاد موضوع برای همه‌پرسی',
-                  parentIcon: Icons.how_to_vote_outlined,
-                  proposalForm: true,
-                  accent: Color(0xFF2E7D32),
-                  items: [],
+                (context, state) => _guestPreviewRoute(
+                  authCubit,
+                  const CivicDetailScreen(
+                    title: 'پیشنهاد موضوع برای همه‌پرسی',
+                    parentIcon: Icons.how_to_vote_outlined,
+                    proposalForm: true,
+                    accent: Color(0xFF2E7D32),
+                    items: [],
+                  ),
                 ),
           ),
           GoRoute(
             path: '/referendum/supported',
             builder:
-                (context, state) => const ReferendumProposalsScreen(),
+                (context, state) => authCubit.state is Guest
+                    ? const InteractiveReferendumSamplesScreen(
+                        kind: InteractiveReferendumSampleKind.supporting,
+                      )
+                    : const ReferendumProposalsScreen(),
           ),
           GoRoute(
             path: '/referendum/supported/:processId',
             builder: (context, state) {
-              final processId = int.tryParse(state.pathParameters['processId'] ?? '');
-              return processId == null
-                  ? const ReferendumProposalsScreen()
-                  : ReferendumProposalDetailScreen(processId: processId);
+              final processId = int.tryParse(
+                state.pathParameters['processId'] ?? '',
+              );
+              return _guestPreviewRoute(
+                authCubit,
+                processId == null
+                    ? const ReferendumProposalsScreen()
+                    : ReferendumProposalDetailScreen(processId: processId),
+              );
             },
           ),
           GoRoute(
@@ -492,27 +607,62 @@ GoRouter createAppRouter(AuthCubit authCubit) {
           ),
           GoRoute(
             path: '/referendum/voting/scheduled',
-            builder: (context, state) => const ReferendumProcessListScreen(kind: ReferendumListKind.scheduled),
+            builder:
+                (context, state) => authCubit.state is Guest
+                    ? const InteractiveReferendumSamplesScreen(
+                        kind: InteractiveReferendumSampleKind.scheduled,
+                      )
+                    : const ReferendumProcessListScreen(
+                        kind: ReferendumListKind.scheduled,
+                      ),
           ),
           GoRoute(
             path: '/referendum/voting/eligible',
-            builder: (context, state) => const ReferendumProcessListScreen(kind: ReferendumListKind.eligible),
+            builder:
+                (context, state) => authCubit.state is Guest
+                    ? const InteractiveReferendumSamplesScreen(
+                        kind: InteractiveReferendumSampleKind.eligible,
+                      )
+                    : const ReferendumProcessListScreen(
+                        kind: ReferendumListKind.eligible,
+                      ),
           ),
           GoRoute(
             path: '/referendum/voting/live-results',
-            builder: (context, state) => const ReferendumProcessListScreen(kind: ReferendumListKind.liveResults),
+            builder:
+                (context, state) => authCubit.state is Guest
+                    ? const InteractiveReferendumSamplesScreen(
+                        kind: InteractiveReferendumSampleKind.liveResults,
+                      )
+                    : const ReferendumProcessListScreen(
+                        kind: ReferendumListKind.liveResults,
+                      ),
           ),
           GoRoute(
             path: '/referendum/voting/final-results',
-            builder: (context, state) => const ReferendumProcessListScreen(kind: ReferendumListKind.finalResults),
+            builder:
+                (context, state) => authCubit.state is Guest
+                    ? const InteractiveReferendumSamplesScreen(
+                        kind: InteractiveReferendumSampleKind.finalResults,
+                      )
+                    : const ReferendumProcessListScreen(
+                        kind: ReferendumListKind.finalResults,
+                      ),
           ),
           GoRoute(
             path: '/referendum/voting/detail/:processId',
             builder: (context, state) {
-              final processId = int.tryParse(state.pathParameters['processId'] ?? '');
-              return processId == null
-                  ? const ReferendumProcessListScreen(kind: ReferendumListKind.liveResults)
-                  : ReferendumVotingDetailScreen(processId: processId);
+              final processId = int.tryParse(
+                state.pathParameters['processId'] ?? '',
+              );
+              return _guestPreviewRoute(
+                authCubit,
+                processId == null
+                    ? const ReferendumProcessListScreen(
+                      kind: ReferendumListKind.liveResults,
+                    )
+                    : ReferendumVotingDetailScreen(processId: processId),
+              );
             },
           ),
           GoRoute(

@@ -20,6 +20,15 @@ return [
         'private_key' => env('PROCESS_TREE_HEAD_PRIVATE_KEY'),
         'public_key' => env('PROCESS_TREE_HEAD_PUBLIC_KEY'),
     ],
+    'activation_requests' => [
+        'hmac_key' => env('ACTIVATION_REQUEST_HMAC_KEY', env('APP_KEY')),
+    ],
+    'apple_device_check' => [
+        'team_id' => env('APPLE_DEVICECHECK_TEAM_ID'),
+        'key_id' => env('APPLE_DEVICECHECK_KEY_ID'),
+        'private_key' => env('APPLE_DEVICECHECK_PRIVATE_KEY'),
+        'environment' => env('APPLE_DEVICECHECK_ENVIRONMENT', 'production'),
+    ],
 
     /*
     |--------------------------------------------------------------------------
