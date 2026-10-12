@@ -33,6 +33,7 @@ class CivicDetailScreen extends StatefulWidget {
     required this.items,
     this.description,
     this.proposalForm = false,
+    this.interactivePreview = false,
     this.accent = AppTheme.primary,
   });
 
@@ -41,6 +42,7 @@ class CivicDetailScreen extends StatefulWidget {
   final List<CivicDetailItem> items;
   final String? description;
   final bool proposalForm;
+  final bool interactivePreview;
   final Color accent;
 
   @override
@@ -92,7 +94,11 @@ class _CivicDetailScreenState extends State<CivicDetailScreen> {
             ],
             const SizedBox(height: 16),
             if (widget.proposalForm)
-              _ProposalForm(controllers: _controllers, focusNodes: _focusNodes),
+              _ProposalForm(
+                controllers: _controllers,
+                focusNodes: _focusNodes,
+                interactivePreview: widget.interactivePreview,
+              ),
             if (!widget.proposalForm)
               ...widget.items.map(
                 (item) => Padding(
@@ -108,18 +114,23 @@ class _CivicDetailScreenState extends State<CivicDetailScreen> {
 }
 
 class _ProposalForm extends StatefulWidget {
-  const _ProposalForm({required this.controllers, required this.focusNodes});
+  const _ProposalForm({
+    required this.controllers,
+    required this.focusNodes,
+    required this.interactivePreview,
+  });
 
   final List<TextEditingController> controllers;
   final List<FocusNode> focusNodes;
+  final bool interactivePreview;
 
   @override
   State<_ProposalForm> createState() => _ProposalFormState();
 }
 
 class _ProposalFormState extends State<_ProposalForm> {
-  final _repository = getIt<ReferendumProposalRepository>();
-  final _biometricAuth = getIt<BiometricAuthService>();
+  late final _repository = getIt<ReferendumProposalRepository>();
+  late final _biometricAuth = getIt<BiometricAuthService>();
   bool _submitting = false;
 
   void _advanceOnSpace(int index, String value) {
@@ -140,6 +151,26 @@ class _ProposalFormState extends State<_ProposalForm> {
 
   Future<void> _submit() async {
     if (_submitting) return;
+    if (widget.interactivePreview) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('پیشنهاد موضوع'),
+          content: const Text(
+            'این فرم در محیط تعاملی برای آشنایی با روش کار سامانه نمایش داده می‌شود. ثبت واقعی موضوع پس از شروع به کار سامانه فعال خواهد شد.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.w700, height: 1.6),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('متوجه شدم'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
     final subject = widget.controllers
         .map((c) => c.text.trim())
         .where((part) => part.isNotEmpty)

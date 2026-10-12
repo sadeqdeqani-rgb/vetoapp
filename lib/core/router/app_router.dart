@@ -566,17 +566,14 @@ GoRouter createAppRouter(AuthCubit authCubit) {
           ),
           GoRoute(
             path: '/referendum/propose',
-            builder:
-                (context, state) => _guestPreviewRoute(
-                  authCubit,
-                  const CivicDetailScreen(
-                    title: 'پیشنهاد موضوع برای همه‌پرسی',
-                    parentIcon: Icons.how_to_vote_outlined,
-                    proposalForm: true,
-                    accent: Color(0xFF2E7D32),
-                    items: [],
-                  ),
-                ),
+            builder: (context, state) => CivicDetailScreen(
+              title: 'پیشنهاد موضوع برای همه‌پرسی',
+              parentIcon: Icons.how_to_vote_outlined,
+              proposalForm: true,
+              interactivePreview: authCubit.state is Guest,
+              accent: const Color(0xFF2E7D32),
+              items: const [],
+            ),
           ),
           GoRoute(
             path: '/referendum/supported',

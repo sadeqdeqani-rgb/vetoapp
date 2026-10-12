@@ -10,6 +10,7 @@ class AppMessageDialog extends StatelessWidget {
     super.key,
     this.title,
     required this.message,
+    this.messageFontWeight = FontWeight.normal,
     this.tone = AppMessageTone.info,
     this.accentColor,
     this.actions = const [],
@@ -18,6 +19,7 @@ class AppMessageDialog extends StatelessWidget {
 
   final String? title;
   final String message;
+  final FontWeight messageFontWeight;
   final AppMessageTone tone;
   final Color? accentColor;
   final List<Widget> actions;
@@ -75,7 +77,7 @@ class AppMessageDialog extends StatelessWidget {
               style: AppTheme.getTitleStyle(
                 fontSize: 17,
                 color: AppTheme.textPrimary,
-                fontWeight: FontWeight.normal,
+                fontWeight: messageFontWeight,
               ).copyWith(height: 1.7),
             ),
             if (content != null) ...[const SizedBox(height: 18), content!],
@@ -99,6 +101,7 @@ Future<T?> showAppMessageDialog<T>({
   required BuildContext context,
   String? title,
   required String message,
+  FontWeight messageFontWeight = FontWeight.normal,
   AppMessageTone tone = AppMessageTone.info,
   Color? accentColor,
   List<Widget> actions = const [],
@@ -114,6 +117,7 @@ Future<T?> showAppMessageDialog<T>({
       (_) => AppMessageDialog(
         title: title,
         message: message,
+        messageFontWeight: messageFontWeight,
         tone: tone,
         accentColor: accentColor,
         actions: actions,

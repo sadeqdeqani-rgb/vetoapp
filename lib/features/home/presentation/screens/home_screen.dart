@@ -149,6 +149,12 @@ class _PreviewHomeState extends State<_PreviewHome> {
             title: const Text('تأیید درخواست'),
             content: const Text(
               'درخواست شما برای شروع به کار سامانه ثبت شود؟ برای جلوگیری از ثبت تکراری، شناسه‌ای با حفظ حریم خصوصی از دستگاه به سرور ارسال می‌شود.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                height: 1.6,
+              ),
             ),
             actions: [
               TextButton(
@@ -181,7 +187,15 @@ class _PreviewHomeState extends State<_PreviewHome> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ).showSnackBar(
+        SnackBar(
+          content: Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+        ),
+      );
       setState(() => _previewData = _loadPreviewData());
     } catch (error) {
       if (!mounted) return;
@@ -198,7 +212,15 @@ class _PreviewHomeState extends State<_PreviewHome> {
               : 'ثبت درخواست انجام نشد؛ دوباره تلاش کنید.';
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ).showSnackBar(
+        SnackBar(
+          content: Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _submittingRequest = false);
     }

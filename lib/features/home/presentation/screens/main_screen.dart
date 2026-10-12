@@ -92,6 +92,7 @@ class MainScreen extends StatelessWidget {
         title: title,
         message:
             'تمامی مطالب و محتویات این بخش غیرواقعی بوده و صرفاً برای آشنایی کاربران با روش کار سامانه درج شده است.',
+        messageFontWeight: FontWeight.w700,
         accentColor: accent,
         actions: [
           FilledButton(
