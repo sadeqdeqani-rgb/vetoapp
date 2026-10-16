@@ -9,6 +9,7 @@ use App\Http\Controllers\BiometricAuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GeographicalAreaController;
 use App\Http\Controllers\HomeManagementController;
+use App\Http\Controllers\WordPressContentManagementController;
 use App\Http\Controllers\NationalCodeController;
 use App\Http\Controllers\OtpApiController;
 use App\Http\Controllers\ProfileController;
@@ -28,6 +29,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
     Route::get('/home/introduction', [HomeManagementController::class, 'publicSections']);
+    Route::get('/home/gateway-introduction', [HomeManagementController::class, 'publicGatewayIntroduction']);
     Route::get('/public/active-users', [DashboardController::class, 'publicActiveUsers']);
     Route::get('/public/geography-user-counts', [DashboardController::class, 'publicGeographyUserCounts']);
     Route::get('/public/activation-requests/count', [ActivationRequestController::class, 'count']);
@@ -159,6 +161,12 @@ Route::prefix('admin')->group(function (): void {
         Route::get('/home/state', [HomeManagementController::class, 'state']);
         Route::post('/home/state', [HomeManagementController::class, 'changeState']);
         Route::get('/home/events', [HomeManagementController::class, 'events']);
+
+        Route::get('/wordpress/content', [WordPressContentManagementController::class, 'show']);
+        Route::put('/wordpress/settings', [WordPressContentManagementController::class, 'updateSettings']);
+        Route::patch('/wordpress/pages/{pageId}', [WordPressContentManagementController::class, 'updatePage'])->whereNumber('pageId');
+        Route::patch('/wordpress/collections/{type}/{itemId}', [WordPressContentManagementController::class, 'updateCollectionItem'])->whereNumber('itemId');
+        Route::post('/wordpress/media', [WordPressContentManagementController::class, 'uploadMedia']);
 
         Route::get('/countries', [AdminManagementController::class, 'countries']);
 

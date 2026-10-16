@@ -9,6 +9,9 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 
+const _previewAccent = AppTheme.primary;
+const _previewAccentDark = AppTheme.primaryDark;
+
 String persianCount(Object? value) {
   final text = '${value ?? 0}'.replaceAllMapped(
     RegExp(r'(?=(\d{3})+(?!\d))'),
@@ -156,6 +159,8 @@ class _PreviewHomeState extends State<_PreviewHome> {
                 height: 1.6,
               ),
             ),
+            actionsAlignment: MainAxisAlignment.center,
+            actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
@@ -185,17 +190,7 @@ class _PreviewHomeState extends State<_PreviewHome> {
               ? data['message'] as String
               : response.data?['message'] as String? ?? 'پاسخ سرور دریافت نشد.';
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(
-        SnackBar(
-          content: Text(
-            message,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-          ),
-        ),
-      );
+      _showActivationMessage(message);
       setState(() => _previewData = _loadPreviewData());
     } catch (error) {
       if (!mounted) return;
@@ -210,20 +205,22 @@ class _PreviewHomeState extends State<_PreviewHome> {
               : error is StateError
               ? error.message
               : 'ثبت درخواست انجام نشد؛ دوباره تلاش کنید.';
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(
-        SnackBar(
-          content: Text(
-            message,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-          ),
-        ),
-      );
+      _showActivationMessage(message);
     } finally {
       if (mounted) setState(() => _submittingRequest = false);
     }
+  }
+
+  void _showActivationMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
   }
 
   @override
@@ -316,7 +313,7 @@ class _ActivationIntentWidget extends StatelessWidget {
   final bool submitting;
   @override
   Widget build(BuildContext context) => Card(
-    color: AppTheme.primary.withValues(alpha: 0.1),
+    color: _previewAccent.withValues(alpha: 0.1),
     clipBehavior: Clip.antiAlias,
     child: InkWell(
       onTap: onTap,
@@ -339,7 +336,7 @@ class _ActivationIntentWidget extends StatelessWidget {
                   ? 'در حال ثبت درخواست...'
                   : 'برای ثبت درخواست لمس کنید',
               style: TextStyle(
-                color: AppTheme.primaryDark,
+                color: _previewAccentDark,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -371,7 +368,7 @@ class _ActivationCountCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(20),
     decoration: BoxDecoration(
-      color: AppTheme.primaryDark,
+      color: _previewAccentDark,
       borderRadius: BorderRadius.circular(22),
     ),
     child: Column(

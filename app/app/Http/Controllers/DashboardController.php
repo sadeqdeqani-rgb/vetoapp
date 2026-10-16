@@ -89,6 +89,7 @@ class DashboardController extends Controller
         $state = DB::table('system_states')->where('system_state_id', 1)->first();
         $stateCode = (int) ($state?->state_value ?? 1);
         $sections = DB::table('home_introduction_sections')->where('is_published', true)
+            ->where('section_key', '<>', 'gateway_intro')
             ->orderByRaw("FIELD(section_key, 'goals', 'identity', 'activation', 'validation', 'technical', 'creators')")
             ->get(['section_key', 'title', 'body_text']);
         $iranId = DB::table('countries')->where('country_code', 364)->value('country_id');

@@ -1,4 +1,5 @@
 import '../entities/admin_entities.dart';
+import 'dart:typed_data';
 
 abstract interface class AdminRepository {
   Future<List<Map<String, dynamic>>> homeSections();
@@ -6,6 +7,21 @@ abstract interface class AdminRepository {
   Future<Map<String, dynamic>> homeState();
   Future<Map<String, dynamic>> changeHomeState(int stateValue);
   Future<List<Map<String, dynamic>>> homeEvents();
+  Future<Map<String, dynamic>> wordpressContent();
+  Future<void> saveWordPressSettings(Map<String, String> settings);
+  Future<Map<String, dynamic>> updateWordPressPage(
+    int pageId,
+    Map<String, dynamic> data,
+  );
+  Future<Map<String, dynamic>> updateWordPressCollectionItem(
+    String type,
+    int itemId,
+    Map<String, dynamic> data,
+  );
+  Future<Map<String, dynamic>> uploadWordPressImage(
+    Uint8List bytes,
+    String fileName,
+  );
   Future<List<AdminContentRecord>> introductionRecords();
 
   Future<List<AdminContentRecord>> termsRecords();

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import '../../domain/entities/admin_entities.dart';
 import '../../domain/repositories/admin_repository.dart';
 
@@ -28,6 +30,42 @@ class DemoAdminRepository implements AdminRepository {
   @override
   Future<List<Map<String, dynamic>>> homeEvents() async =>
       const <Map<String, dynamic>>[];
+
+  @override
+  Future<Map<String, dynamic>> wordpressContent() async => {
+    'settings': <String, dynamic>{},
+    'pages': <Map<String, dynamic>>[],
+    'collections': <String, dynamic>{
+      'features': <Map<String, dynamic>>[],
+      'previews': <Map<String, dynamic>>[],
+      'faqs': <Map<String, dynamic>>[],
+    },
+  };
+
+  @override
+  Future<void> saveWordPressSettings(Map<String, String> settings) async {}
+
+  @override
+  Future<Map<String, dynamic>> updateWordPressPage(
+    int pageId,
+    Map<String, dynamic> data,
+  ) async => data;
+
+  @override
+  Future<Map<String, dynamic>> updateWordPressCollectionItem(
+    String type,
+    int itemId,
+    Map<String, dynamic> data,
+  ) async => data;
+
+  @override
+  Future<Map<String, dynamic>> uploadWordPressImage(
+    Uint8List bytes,
+    String fileName,
+  ) async => {
+    'id': 1,
+    'source_url': 'https://example.invalid/$fileName',
+  };
 
   AdminSession? session;
   AdminContentDraft? introduction;

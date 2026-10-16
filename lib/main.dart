@@ -191,6 +191,10 @@ class _VetoAppState extends State<VetoApp> with WidgetsBindingObserver {
         checkerboardRasterCacheImages: false,
         checkerboardOffscreenLayers: false,
         theme: AppTheme.light,
+        builder: (context, child) => Directionality(
+          textDirection: TextDirection.rtl,
+          child: child ?? const SizedBox.shrink(),
+        ),
         routerConfig: widget.appRouter,
       ),
     );

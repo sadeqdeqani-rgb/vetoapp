@@ -194,6 +194,7 @@ abstract final class AppTheme {
         ),
       ),
       dialogTheme: const DialogThemeData(
+        alignment: Alignment.center,
         backgroundColor: surface,
         surfaceTintColor: Colors.transparent,
         titleTextStyle: TextStyle(

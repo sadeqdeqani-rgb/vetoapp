@@ -141,12 +141,14 @@ class AuthFormCard extends StatelessWidget {
     super.key,
     required this.child,
     this.title,
+    this.titleColor = AppTheme.primary,
     this.maxWidth = 520,
     this.padding = const EdgeInsets.fromLTRB(24, 18, 24, 26),
   });
 
   final Widget child;
   final String? title;
+  final Color titleColor;
   final double maxWidth;
   final EdgeInsetsGeometry padding;
 
@@ -165,7 +167,7 @@ class AuthFormCard extends StatelessWidget {
               title!,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppTheme.primary,
+                color: titleColor,
                 fontSize: 22,
               ),
             ),

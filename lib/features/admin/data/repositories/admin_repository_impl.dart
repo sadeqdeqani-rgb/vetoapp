@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'dart:typed_data';
 
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../domain/entities/admin_entities.dart';
@@ -62,6 +63,67 @@ class AdminRepositoryImpl implements AdminRepository {
     return _rows(
       response,
     ).whereType<Map>().map((row) => Map<String, dynamic>.from(row)).toList();
+  }
+
+  @override
+  Future<Map<String, dynamic>> wordpressContent() async {
+    final response = await _dio.get(
+      '/api/admin/wordpress/content',
+      options: await _authorizedOptions(),
+    );
+    return Map<String, dynamic>.from(response.data['data'] as Map? ?? {});
+  }
+
+  @override
+  Future<void> saveWordPressSettings(Map<String, String> settings) async {
+    await _dio.put(
+      '/api/admin/wordpress/settings',
+      data: {'settings': settings},
+      options: await _authorizedOptions(),
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateWordPressPage(
+    int pageId,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await _dio.patch(
+      '/api/admin/wordpress/pages/$pageId',
+      data: data,
+      options: await _authorizedOptions(),
+    );
+    return Map<String, dynamic>.from(response.data['data'] as Map? ?? {});
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateWordPressCollectionItem(
+    String type,
+    int itemId,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await _dio.patch(
+      '/api/admin/wordpress/collections/$type/$itemId',
+      data: data,
+      options: await _authorizedOptions(),
+    );
+    return Map<String, dynamic>.from(response.data['data'] as Map? ?? {});
+  }
+
+  @override
+  Future<Map<String, dynamic>> uploadWordPressImage(
+    Uint8List bytes,
+    String fileName,
+  ) async {
+    final form = FormData.fromMap({
+      'file': MultipartFile.fromBytes(bytes, filename: fileName),
+    });
+    final response = await _dio.post(
+      '/api/admin/wordpress/media',
+      data: form,
+      options: await _authorizedOptions(),
+    );
+    return Map<String, dynamic>.from(response.data['data'] as Map? ?? {});
   }
 
   Future<Options> _authorizedOptions() async {

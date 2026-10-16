@@ -405,7 +405,9 @@ GoRouter createAppRouter(AuthCubit authCubit) {
           GoRoute(
             path: '/elections',
             name: 'elections',
-            builder: (context, state) => const ElectionScreen(),
+            builder: (context, state) => ElectionScreen(
+              interactivePreview: authCubit.state is Guest,
+            ),
           ),
           GoRoute(
             path: '/elections/voting',
@@ -480,7 +482,9 @@ GoRouter createAppRouter(AuthCubit authCubit) {
           GoRoute(
             path: '/impeachment',
             name: 'impeachment',
-            builder: (context, state) => const ImpeachmentScreen(),
+            builder: (context, state) => ImpeachmentScreen(
+              interactivePreview: authCubit.state is Guest,
+            ),
           ),
           GoRoute(
             path: '/impeachment/:office',

@@ -23,6 +23,12 @@ return [
     'activation_requests' => [
         'hmac_key' => env('ACTIVATION_REQUEST_HMAC_KEY', env('APP_KEY')),
     ],
+    'wordpress_content' => [
+        'base_url' => env('WORDPRESS_CONTENT_API_URL'),
+        'username' => env('WORDPRESS_CONTENT_API_USERNAME'),
+        'application_password' => env('WORDPRESS_CONTENT_API_PASSWORD'),
+        'timeout' => (int) env('WORDPRESS_CONTENT_API_TIMEOUT', 20),
+    ],
     'apple_device_check' => [
         'team_id' => env('APPLE_DEVICECHECK_TEAM_ID'),
         'key_id' => env('APPLE_DEVICECHECK_KEY_ID'),

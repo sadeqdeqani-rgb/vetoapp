@@ -10,15 +10,29 @@ use Illuminate\Validation\ValidationException;
 
 class HomeManagementController extends Controller
 {
-    public const SECTIONS = ['goals', 'identity', 'activation', 'validation', 'technical', 'creators'];
+    public const SECTIONS = ['goals', 'identity', 'activation', 'validation', 'technical', 'creators', 'gateway_intro'];
 
     public function __construct(private readonly AdminAuditService $audit) {}
 
     public function publicSections(): JsonResponse
     {
         return response()->json(['data' => DB::table('home_introduction_sections')
-            ->where('is_published', true)->orderByRaw("FIELD(section_key, 'goals', 'identity', 'activation', 'validation', 'technical', 'creators')")
+            ->where('is_published', true)->where('section_key', '<>', 'gateway_intro')
+            ->orderByRaw("FIELD(section_key, 'goals', 'identity', 'activation', 'validation', 'technical', 'creators')")
             ->get(['section_key', 'title', 'body_text'])]);
+    }
+
+    public function publicGatewayIntroduction(): JsonResponse
+    {
+        $content = DB::table('home_introduction_sections')
+            ->where('section_key', 'gateway_intro')
+            ->first(['section_key', 'title', 'body_text']);
+
+        return response()->json(['data' => $content ?? [
+            'section_key' => 'gateway_intro',
+            'title' => 'آشنایی با وتواپ',
+            'body_text' => 'وتواپ بستری برای پیشنهاد و حمایت از موضوعات همه‌پرسی، مشارکت در انتخابات و درخواست استیضاح است. در نسخهٔ تعاملی می‌توانید با شیوهٔ کار بخش‌های مختلف آشنا شوید و درخواست فعال‌سازی سامانه را ثبت کنید.',
+        ]])->header('Cache-Control', 'public, max-age=60');
     }
 
     public function sections(): JsonResponse

@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
@@ -25,6 +26,7 @@ class _AdminPageState extends State<AdminPage> {
     'کاربر ادمین',
     'سیاست چرخهٔ فرایندها',
     'محتوای خانه و وضعیت سامانه',
+    'محتوای سایت وردپرس',
   ];
 
   int _selectedSection = 0;
@@ -173,7 +175,8 @@ class _AdminPageState extends State<AdminPage> {
       7 => const _ClosurePolicyEditor(),
       8 => const _AdminUserEditor(),
       9 => const _ProcessLifecyclePolicyEditor(),
-      _ => const _HomeManagementEditor(),
+      10 => const _HomeManagementEditor(),
+      _ => const _WordPressContentEditor(),
     };
   }
 }
@@ -1936,6 +1939,7 @@ class _HomeManagementEditorState extends State<_HomeManagementEditor> {
     'validation': 'فرآیند اعتبارسنجی سامانه',
     'technical': 'زیرساخت فنی',
     'creators': 'هویت سازندگان',
+    'gateway_intro': 'معرفی کلی درگاه ورودی',
   };
   static const states = [
     'در حال کسب نصاب برای فعالسازی بخش همه‌پرسی',
@@ -2057,7 +2061,7 @@ class _HomeManagementEditorState extends State<_HomeManagementEditor> {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       DefaultTabController(
-        length: 2,
+        length: 3,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -2068,6 +2072,7 @@ class _HomeManagementEditorState extends State<_HomeManagementEditor> {
                   isScrollable: true,
                   tabs: [
                     Tab(text: 'محتوای معرفی'),
+                    Tab(text: 'پاپ‌آپ ورودی'),
                     Tab(text: 'قوانین و مقررات'),
                   ],
                 ),
@@ -2079,8 +2084,11 @@ class _HomeManagementEditorState extends State<_HomeManagementEditor> {
                 return AnimatedBuilder(
                   animation: tabController,
                   builder: (context, _) {
-                    if (tabController.index == 1) {
+                    if (tabController.index == 2) {
                       return const _ContentEditor();
+                    }
+                    if (tabController.index == 1) {
+                      return const _GatewayIntroductionEditor();
                     }
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2095,6 +2103,9 @@ class _HomeManagementEditorState extends State<_HomeManagementEditor> {
                               ),
                               items:
                                   sections.entries
+                                      .where(
+                                        (entry) => entry.key != 'gateway_intro',
+                                      )
                                       .map(
                                         (entry) => DropdownMenuItem(
                                           value: entry.key,
@@ -2131,6 +2142,11 @@ class _HomeManagementEditorState extends State<_HomeManagementEditor> {
                                     spacing: 8,
                                     children:
                                         (snapshot.data ?? [])
+                                            .where(
+                                              (row) =>
+                                                  row['section_key'] !=
+                                                  'gateway_intro',
+                                            )
                                             .map(
                                               (row) => ActionChip(
                                                 label: Text(
@@ -2236,6 +2252,654 @@ class _HomeManagementEditorState extends State<_HomeManagementEditor> {
           ),
         ],
       ),
+    ],
+  );
+}
+
+class _GatewayIntroductionEditor extends StatefulWidget {
+  const _GatewayIntroductionEditor();
+
+  @override
+  State<_GatewayIntroductionEditor> createState() =>
+      _GatewayIntroductionEditorState();
+}
+
+class _GatewayIntroductionEditorState
+    extends State<_GatewayIntroductionEditor> {
+  static const _defaultText =
+      'وتواپ بستری برای پیشنهاد و حمایت از موضوعات همه‌پرسی، مشارکت در انتخابات و درخواست استیضاح است. در نسخهٔ تعاملی می‌توانید با شیوهٔ کار بخش‌های مختلف آشنا شوید و درخواست فعال‌سازی سامانه را ثبت کنید.';
+
+  final _body = TextEditingController();
+  bool _loading = true;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _body.dispose();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    try {
+      final rows = await GetIt.I<AdminRepository>().homeSections();
+      final matches = rows.where(
+        (row) => row['section_key'] == 'gateway_intro',
+      );
+      final row = matches.isEmpty ? null : matches.first;
+      if (!mounted) return;
+      _body.text = row == null ? _defaultText : '${row['body_text'] ?? ''}';
+    } catch (_) {
+      if (mounted) _body.text = _defaultText;
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _save() async {
+    if (_body.text.trim().isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('متن معرفی را وارد کنید.')));
+      return;
+    }
+    setState(() => _saving = true);
+    try {
+      await GetIt.I<AdminRepository>().saveHomeSection('gateway_intro', {
+        'title': 'آشنایی با وتواپ',
+        'body_text': _body.text.trim(),
+        'is_published': true,
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('متن پاپ‌آپ ورودی ذخیره شد.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ذخیرهٔ متن پاپ‌آپ انجام نشد.')),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      const SizedBox(height: 12),
+      _EditorCard(
+        children: [
+          const Text(
+            'متن معرفی که پس از اسپلش و پیش از درگاه نمایش داده می‌شود',
+          ),
+          if (_loading)
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else ...[
+            TextField(
+              controller: _body,
+              minLines: 5,
+              maxLines: 12,
+              decoration: const InputDecoration(
+                labelText: 'متن پاپ‌آپ ورودی',
+                alignLabelWithHint: true,
+              ),
+            ),
+            FilledButton(
+              onPressed: _saving ? null : _save,
+              child: Text(_saving ? 'در حال ذخیره...' : 'ذخیرهٔ متن پاپ‌آپ'),
+            ),
+          ],
+        ],
+      ),
+    ],
+  );
+}
+
+class _WordPressContentEditor extends StatefulWidget {
+  const _WordPressContentEditor();
+
+  @override
+  State<_WordPressContentEditor> createState() =>
+      _WordPressContentEditorState();
+}
+
+class _WordPressContentEditorState extends State<_WordPressContentEditor> {
+  static const _areas = <String, String>{
+    'settings': 'تنظیمات صفحهٔ اصلی',
+    'pages': 'برگه‌های سایت',
+    'features': 'قابلیت‌ها',
+    'previews': 'تصاویر نمونه',
+    'faqs': 'پرسش‌های متداول',
+  };
+
+  static const _settingLabels = <String, String>{
+    'brand_name': 'نام برند',
+    'site_caption': 'زیرعنوان کنار لوگو',
+    'brand_logo_url': 'نشانی لوگوی سایت',
+    'header_cta_label': 'متن دکمهٔ سربرگ',
+    'header_cta_url': 'پیوند دکمهٔ سربرگ',
+    'hero_eyebrow': 'برچسب بالای عنوان',
+    'hero_title': 'عنوان اصلی صفحه',
+    'hero_lead': 'متن معرفی آغاز صفحه',
+    'hero_image_url': 'تصویر اصلی آغاز صفحه',
+    'hero_primary_label': 'متن دکمهٔ اصلی',
+    'hero_primary_url': 'پیوند دکمهٔ اصلی',
+    'hero_secondary_label': 'متن دکمهٔ دوم',
+    'hero_secondary_url': 'پیوند دکمهٔ دوم',
+    'intro_video_url': 'ویدیوی کوتاه معرفی',
+    'android_url': 'پیوند دریافت اندروید',
+  };
+
+  final _controllers = <String, TextEditingController>{};
+  Map<String, dynamic> _content = {};
+  String _area = 'settings';
+  bool _loading = true;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      final content = await GetIt.I<AdminRepository>().wordpressContent();
+      final settings = content['settings'];
+      for (final controller in _controllers.values) {
+        controller.dispose();
+      }
+      _controllers.clear();
+      if (settings is Map) {
+        for (final entry in settings.entries) {
+          if (entry.value == null || entry.value is String) {
+            _controllers['${entry.key}'] = TextEditingController(
+              text: '${entry.value ?? ''}',
+            );
+          }
+        }
+      }
+      if (!mounted) return;
+      setState(() {
+        _content = content;
+        _loading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      _message('دریافت محتوای سایت انجام نشد: $error');
+    }
+  }
+
+  void _message(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  String _settingLabel(String key) =>
+      _settingLabels[key] ?? key.replaceAll('_', ' ');
+
+  bool _isImageSetting(String key) =>
+      key.toLowerCase().contains('image') ||
+      key.toLowerCase().contains('logo') ||
+      key.toLowerCase().contains('poster') ||
+      key.toLowerCase().contains('visual') ||
+      key.toLowerCase().contains('banner');
+
+  Future<Map<String, dynamic>?> _chooseAndUploadImage() async {
+    final selection = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
+      allowMultiple: false,
+    );
+    if (selection == null || selection.files.isEmpty) return null;
+    final file = selection.files.single;
+    final bytes = file.bytes;
+    if (bytes == null || bytes.isEmpty) {
+      _message('خواندن فایل تصویر انجام نشد.');
+      return null;
+    }
+    return GetIt.I<AdminRepository>().uploadWordPressImage(
+      bytes,
+      file.name,
+    );
+  }
+
+  Future<void> _saveSettings() async {
+    final settings = <String, String>{
+      for (final entry in _controllers.entries) entry.key: entry.value.text,
+    };
+    setState(() => _saving = true);
+    try {
+      await GetIt.I<AdminRepository>().saveWordPressSettings(settings);
+      await _load();
+      _message('تنظیمات سایت ذخیره شد.');
+    } catch (error) {
+      _message('ذخیرهٔ تنظیمات سایت انجام نشد: $error');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _uploadSettingImage(String key) async {
+    try {
+      final media = await _chooseAndUploadImage();
+      if (media == null) return;
+      final url = '${media['source_url'] ?? ''}';
+      if (url.isEmpty) throw Exception('نشانی تصویر از وردپرس دریافت نشد.');
+      _controllers[key]?.text = url;
+      await _saveSettings();
+    } catch (error) {
+      _message('بارگذاری تصویر انجام نشد: $error');
+    }
+  }
+
+  Future<void> _uploadHeroImage() async {
+    try {
+      final media = await _chooseAndUploadImage();
+      if (media == null) return;
+      final id = media['id'];
+      if (id is! num) throw Exception('شناسهٔ تصویر از وردپرس دریافت نشد.');
+      _controllers['hero_image_id']?.text = id.toInt().toString();
+      await _saveSettings();
+    } catch (error) {
+      _message('بارگذاری تصویر اصلی انجام نشد: $error');
+    }
+  }
+
+  Future<void> _resetHeroImage() async {
+    _controllers['hero_image_id']?.text = '0';
+    await _saveSettings();
+  }
+
+  List<Map<String, dynamic>> _recordsFor(String area) {
+    final collections = _collections;
+    final source = area == 'pages' ? _content['pages'] : collections?[area];
+    if (source is! List) return const [];
+    return source
+        .whereType<Map>()
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList();
+  }
+
+  Map? get _collections =>
+      _content['collections'] is Map ? _content['collections'] as Map : null;
+
+  Future<void> _editRecord(
+    String area,
+    Map<String, dynamic> record,
+  ) async {
+    final controllers = <String, TextEditingController>{};
+    for (final key in [
+      'title',
+      'content',
+      'excerpt',
+      'subtitle',
+      'status',
+      'menu_order',
+      'icon',
+      'resource_url',
+      'resource_label',
+      'featured_media',
+    ]) {
+      controllers[key] = TextEditingController(text: '${record[key] ?? ''}');
+    }
+    try {
+      final saved = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: Text('ویرایش ${record['title'] ?? 'محتوا'}'),
+            content: SizedBox(
+              width: 640,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _dialogText(controllers['title']!, 'عنوان'),
+                    _dialogText(
+                      controllers['content']!,
+                      area == 'faqs' ? 'پاسخ' : 'متن محتوا (HTML مجاز)',
+                      multiline: true,
+                    ),
+                    _dialogText(controllers['excerpt']!, 'خلاصه', multiline: true),
+                    if (area == 'pages')
+                      _dialogText(controllers['subtitle']!, 'زیرعنوان'),
+                    if (area == 'features')
+                      _dialogText(controllers['icon']!, 'نام آیکن'),
+                    if (area == 'faqs') ...[
+                      _dialogText(controllers['resource_label']!, 'متن پیوند'),
+                      _dialogText(controllers['resource_url']!, 'نشانی پیوند'),
+                    ],
+                    if (area == 'previews' || area == 'pages') ...[
+                      _dialogText(
+                        controllers['featured_media']!,
+                        'شناسهٔ تصویر شاخص',
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton.icon(
+                          onPressed: () async {
+                            try {
+                              final media = await _chooseAndUploadImage();
+                              if (media == null) return;
+                              controllers['featured_media']!.text =
+                                  '${media['id'] ?? ''}';
+                              setDialogState(() {});
+                            } catch (error) {
+                              _message('بارگذاری تصویر انجام نشد: $error');
+                            }
+                          },
+                          icon: const Icon(Icons.upload_file),
+                          label: const Text('بارگذاری تصویر و انتخاب آن'),
+                        ),
+                      ),
+                      if ('${record['featured_image_url'] ?? ''}'.isNotEmpty)
+                        Image.network(
+                          '${record['featured_image_url']}',
+                          height: 110,
+                          errorBuilder: (context, error, stack) =>
+                              const SizedBox.shrink(),
+                        ),
+                    ],
+                    if (area != 'pages') ...[
+                      _dialogText(controllers['menu_order']!, 'ترتیب نمایش'),
+                    ],
+                    DropdownButtonFormField<String>(
+                      value: controllers['status']!.text == 'draft'
+                          ? 'draft'
+                          : 'publish',
+                      decoration: const InputDecoration(labelText: 'وضعیت'),
+                      items: const [
+                        DropdownMenuItem(value: 'publish', child: Text('منتشرشده')),
+                        DropdownMenuItem(value: 'draft', child: Text('پیش‌نویس')),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) controllers['status']!.text = value;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('بازگشت'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: const Text('ذخیره'),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (saved != true) return;
+      final data = <String, dynamic>{
+        'title': controllers['title']!.text.trim(),
+        'content': controllers['content']!.text,
+        'excerpt': controllers['excerpt']!.text,
+        'status': controllers['status']!.text,
+      };
+      if (area == 'pages') data['subtitle'] = controllers['subtitle']!.text;
+      if (area == 'features') data['icon'] = controllers['icon']!.text;
+      if (area == 'faqs') {
+        data['resource_label'] = controllers['resource_label']!.text;
+        data['resource_url'] = controllers['resource_url']!.text;
+      }
+      if (area != 'pages') {
+        data['menu_order'] = int.tryParse(controllers['menu_order']!.text) ?? 0;
+      }
+      if (area == 'previews' || area == 'pages') {
+        data['featured_media'] =
+            int.tryParse(controllers['featured_media']!.text) ?? 0;
+      }
+      if (area == 'pages') {
+        await GetIt.I<AdminRepository>().updateWordPressPage(
+          (record['id'] as num).toInt(),
+          data,
+        );
+      } else {
+        await GetIt.I<AdminRepository>().updateWordPressCollectionItem(
+          area,
+          (record['id'] as num).toInt(),
+          data,
+        );
+      }
+      await _load();
+      _message('محتوا ذخیره شد.');
+    } catch (error) {
+      _message('ذخیرهٔ محتوا انجام نشد: $error');
+    } finally {
+      for (final controller in controllers.values) {
+        controller.dispose();
+      }
+    }
+  }
+
+  Widget _dialogText(
+    TextEditingController controller,
+    String label, {
+    bool multiline = false,
+  }) => TextField(
+    controller: controller,
+    minLines: multiline ? 3 : 1,
+    maxLines: multiline ? 8 : 1,
+    decoration: InputDecoration(labelText: label, alignLabelWithHint: multiline),
+  );
+
+  Widget _settingsView() {
+    if (_controllers.isEmpty) {
+      return const _EditorCard(
+        children: [Text('اتصال محتوای وردپرس برقرار نیست یا تنظیمی پیدا نشد.')],
+      );
+    }
+    final entries = _controllers.entries
+        .where((entry) => entry.key != 'hero_image_id')
+        .toList();
+    final heroImageUrl = '${_content['hero_image_url'] ?? ''}';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _EditorCard(
+          children: [
+            const Text('تنظیمات متنی و رسانه‌ای پوستهٔ سایت'),
+            const Text(
+              'مقادیر در وردپرس ذخیره می‌شوند. تصویرها پس از بارگذاری در کتابخانهٔ رسانهٔ وردپرس ثبت خواهند شد.',
+            ),
+          ],
+        ),
+        _EditorCard(
+          children: [
+            const Text('تصویر اصلی بخش آغازین صفحهٔ خانه'),
+            const Text(
+              'این تصویر مستقل از لوگوی سایت است و در بخش آغازین صفحهٔ خانه نمایش داده می‌شود.',
+            ),
+            if (heroImageUrl.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  heroImageUrl,
+                  height: 180,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stack) => const Text(
+                    'پیش‌نمایش تصویر اصلی در دسترس نیست.',
+                  ),
+                ),
+              )
+            else
+              const Text('تصویر پیش‌فرض پوسته در حال استفاده است.'),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: _saving ? null : _uploadHeroImage,
+                  icon: const Icon(Icons.image_outlined),
+                  label: const Text('بارگذاری تصویر اصلی'),
+                ),
+                if (heroImageUrl.isNotEmpty)
+                  TextButton.icon(
+                    onPressed: _saving ? null : _resetHeroImage,
+                    icon: const Icon(Icons.restart_alt),
+                    label: const Text('بازگشت به تصویر پیش‌فرض'),
+                  ),
+              ],
+            ),
+          ],
+        ),
+        ...entries.map((entry) {
+          final image = _isImageSetting(entry.key);
+          final longText = entry.value.text.length > 100 ||
+              entry.key.contains('body') ||
+              entry.key.contains('lead') ||
+              entry.key.contains('title') ||
+              entry.key.contains('note');
+          return Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: _EditorCard(
+              children: [
+                TextField(
+                  controller: entry.value,
+                  minLines: longText ? 3 : 1,
+                  maxLines: longText ? 7 : 1,
+                  onChanged: (_) => setState(() {}),
+                  decoration: InputDecoration(
+                    labelText: _settingLabel(entry.key),
+                    helperText: _settingLabels.containsKey(entry.key)
+                        ? null
+                        : 'کلید وردپرس: ${entry.key}',
+                    alignLabelWithHint: longText,
+                  ),
+                ),
+                if (image) ...[
+                  if (entry.value.text.startsWith('https://'))
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Image.network(
+                        entry.value.text,
+                        height: 90,
+                        errorBuilder: (context, error, stack) =>
+                            const Text('پیش‌نمایش تصویر در دسترس نیست.'),
+                      ),
+                    ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton.icon(
+                      onPressed: _saving ? null : () => _uploadSettingImage(entry.key),
+                      icon: const Icon(Icons.image_outlined),
+                      label: const Text('بارگذاری و جایگزینی تصویر'),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        }),
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          onPressed: _saving ? null : _saveSettings,
+          icon: const Icon(Icons.save_outlined),
+          label: Text(_saving ? 'در حال ذخیره...' : 'ذخیرهٔ تنظیمات سایت'),
+        ),
+      ],
+    );
+  }
+
+  Widget _recordsView() {
+    final records = _recordsFor(_area);
+    if (records.isEmpty) {
+      return const _EditorCard(
+        children: [Text('محتوایی در این بخش پیدا نشد.')],
+      );
+    }
+    return _EditorCard(
+      children: [
+        Text('محتوای ثبت‌شده: ${records.length}'),
+        ...records.map((record) => ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: record['featured_image_url'] is String &&
+                      '${record['featured_image_url']}'.isNotEmpty
+                  ? Image.network(
+                      '${record['featured_image_url']}',
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stack) =>
+                          const Icon(Icons.description_outlined),
+                    )
+                  : const Icon(Icons.description_outlined),
+              title: Text('${record['title'] ?? 'بدون عنوان'}'),
+              subtitle: Text('${record['status'] ?? ''} • #${record['id']}'),
+              trailing: const Icon(Icons.edit_outlined),
+              onTap: () => _editRecord(_area, record),
+            )),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      _EditorCard(
+        children: [
+          const Text('مدیریت محتوای وب‌سایت وتواپ'),
+          const Text(
+            'ویرایش از مسیر API امن سرور انجام می‌شود؛ گذرواژهٔ وردپرس در مرورگر قرار نمی‌گیرد.',
+          ),
+          DropdownButtonFormField<String>(
+            value: _area,
+            decoration: const InputDecoration(labelText: 'بخش سایت'),
+            items: _areas.entries
+                .map((entry) => DropdownMenuItem(
+                      value: entry.key,
+                      child: Text(entry.value),
+                    ))
+                .toList(),
+            onChanged: _loading
+                ? null
+                : (value) => setState(() => _area = value ?? 'settings'),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: _loading ? null : _load,
+              icon: const Icon(Icons.refresh),
+              label: const Text('بارگذاری دوباره از وردپرس'),
+            ),
+          ),
+        ],
+      ),
+      if (_loading)
+        const Padding(
+          padding: EdgeInsets.all(24),
+          child: Center(child: CircularProgressIndicator()),
+        )
+      else ...[
+        const SizedBox(height: 12),
+        if (_area == 'settings') _settingsView() else _recordsView(),
+      ],
     ],
   );
 }
